@@ -11,15 +11,18 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.CountDownLatch;
 
 
 public class DownloadBlockTask implements Task {
     private DownloadBatch batch;
     private DownloadStatus downloadStatus;
+    private CountDownLatch countDownLatch;
 
-    public DownloadBlockTask(DownloadBatch batch, DownloadStatus downloadListener) {
+    public DownloadBlockTask(DownloadBatch batch, CountDownLatch countDownLatch, DownloadStatus downloadListener) {
         this.batch = batch;
         this.downloadStatus = downloadListener;
+        this.countDownLatch = countDownLatch;
     }
 
     @Override
@@ -30,35 +33,37 @@ public class DownloadBlockTask implements Task {
         long startPosition = batch.startPos + downloadedSize;
         long endPosition = batch.endPos;
         File tempFile = batch.tempFile;
-        if (startPosition == endPosition) {
-            return;
-        }
-        try {
-            URL httpUrl = new URL(batch.url);
-            conn = (HttpURLConnection) httpUrl.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Range", "bytes=" + startPosition + "-" + endPosition);
-            conn.setConnectTimeout(15000);
-            conn.setReadTimeout(15000);
-            InputStream inputStream = conn.getInputStream();
-            byte[] buffer = new byte[8092];
-            int len;
-            raf = new RandomAccessFile(tempFile, "rwd");
-            raf.seek(startPosition);
-            int sum = 0;
-            while (!downloadStatus.isStopped() && (len = inputStream.read(buffer)) != -1) {
-                raf.write(buffer, 0, len);
-                sum += len;
-                downloadStatus.onDownload(batch.threadId, len, sum + downloadedSize);
+        if (startPosition != endPosition) {
+            InputStream inputStream = null;
+            try {
+                URL httpUrl = new URL(batch.url);
+                conn = (HttpURLConnection) httpUrl.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Range", "bytes=" + startPosition + "-" + endPosition);
+                conn.setConnectTimeout(15000);
+                conn.setReadTimeout(15000);
+                inputStream = conn.getInputStream();
+                byte[] buffer = new byte[8092];
+                int len;
+                raf = new RandomAccessFile(tempFile, "rwd");
+                raf.seek(startPosition);
+                int sum = 0;
+                while (!downloadStatus.isStopped() && (len = inputStream.read(buffer)) != -1) {
+                    raf.write(buffer, 0, len);
+                    sum += len;
+                    downloadStatus.onDownload(batch.threadId, len, sum + downloadedSize);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                //TODO download failed.
+            } finally {
+                Util.closeQuietly(inputStream);
+                if (conn != null) {
+                    conn.disconnect();
+                }
+                Util.closeQuietly(raf);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            //TODO download failed.
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
-            Util.closeQuietly(raf);
         }
+        countDownLatch.countDown();
     }
 }

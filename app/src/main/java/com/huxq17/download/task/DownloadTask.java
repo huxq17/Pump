@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class DownloadTask implements Task, DownloadStatus {
     private DownloadInfo downloadInfo;
@@ -28,8 +29,11 @@ public class DownloadTask implements Task, DownloadStatus {
         dbService = DBService.getInstance();
     }
 
+    private long start, end;
+
     @Override
     public void run() {
+        start = System.currentTimeMillis();
         String url = downloadInfo.url;
         GetFileSizeAction getFileSizeAction = new GetFileSizeAction();
         long fileLength = getFileSizeAction.proceed(url);
@@ -73,27 +77,55 @@ public class DownloadTask implements Task, DownloadStatus {
             batches = dbService.queryLocalBatch(url);
         }
         //
+        CountDownLatch countDownLatch;
         if (batches != null && batches.size() > 0) {
             threadNum = batches.size();
+            countDownLatch = new CountDownLatch(threadNum);
             for (DownloadBatch batch : batches) {
                 completeSize += batch.downloadedSize;
                 batch.tempFile = tempFile;
                 batch.calcuStartPos(fileLength, threadNum);
                 batch.calcuEndPos(fileLength, threadNum);
-                DownloadBlockTask task = new DownloadBlockTask(batch, this);
+                DownloadBlockTask task = new DownloadBlockTask(batch, countDownLatch, this);
                 TaskManager.execute(task);
             }
         } else {
+            countDownLatch = new CountDownLatch(threadNum);
             for (int i = 0; i < threadNum; i++) {
                 DownloadBatch batch = new DownloadBatch();
+                batch.threadId = i;
                 batch.calcuStartPos(fileLength, threadNum);
                 batch.calcuEndPos(fileLength, threadNum);
                 batch.tempFile = tempFile;
                 batch.url = url;
-                batch.threadId = i;
-                DownloadBlockTask task = new DownloadBlockTask(batch, this);
+                DownloadBlockTask task = new DownloadBlockTask(batch, countDownLatch, this);
                 TaskManager.execute(task);
             }
+        }
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        if (completeSize == fileLength) {
+            //10*8012 28584 28800 28437
+            //8012    56443 66582 55008
+            end = System.currentTimeMillis();
+            Log.e("tag", "download finished spend=" + (end - start));
+            File file = new File(downloadInfo.filePath);
+            if (file.exists()) {
+                boolean fileDelete = file.delete();
+                Log.e("tag", "fileDelete=" + fileDelete);
+            }
+            File downloadTempFile = downloadInfo.getTempFile();
+            boolean renameResult = downloadTempFile.renameTo(file);
+            Log.e("tag", "renameResult=" + renameResult);
+            dbService.deleteBatchByUrl(downloadInfo.url);
+            downloadInfo.finished = 1;
+            dbService.updateInfo(downloadInfo);
+//            dbService.deleteInfoByUrl(downloadInfo.url);
+        } else {
+            Log.e("tag", "download failed.");
         }
 //        ResumeDownloadAction resumeDownloadAction = new ResumeDownloadAction();
 //        resumeDownloadAction.proceed(url);
@@ -106,17 +138,6 @@ public class DownloadTask implements Task, DownloadStatus {
         int progress = (int) (completeSize * 1f / downloadInfo.contentLength * 100);
         Log.e("tag", "download progress=" + progress);
         dbService.updateBatch(downloadInfo.url, threadId, downloadedSize);
-        if (completeSize == fileLength) {
-            Log.e("tag", "download finished");
-            File file = new File(downloadInfo.filePath);
-            if (file.exists()) file.delete();
-            File downloadTempFile = downloadInfo.getTempFile();
-            downloadTempFile.renameTo(file);
-            dbService.deleteBatchByUrl(downloadInfo.url);
-            downloadInfo.finished = 1;
-            dbService.updateInfo(downloadInfo);
-//            dbService.deleteInfoByUrl(downloadInfo.url);
-        }
     }
 
     public void stop() {
