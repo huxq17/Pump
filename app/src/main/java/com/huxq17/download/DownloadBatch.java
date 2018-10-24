@@ -1,6 +1,7 @@
 package com.huxq17.download;
 
 import java.io.File;
+import java.io.IOException;
 
 public class DownloadBatch {
     public String url;
@@ -11,13 +12,28 @@ public class DownloadBatch {
     public long endPos;
     public File tempFile;
 
-    public void calcuStartPos(long fileLength, int threadNum) {
+    public long calculateCompletedPartSize(File tempDir) {
+        tempFile = new File(tempDir, "DOWNLOAD_PART-" + threadId);
+        if (tempFile.exists()) {
+            downloadedSize = tempFile.length();
+        } else {
+            try {
+                tempFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            downloadedSize = 0;
+        }
+        return downloadedSize;
+    }
+
+    public void calculateStartPos(long fileLength, int threadNum) {
         if (startPos == 0) {
             startPos = threadId * fileLength / threadNum;
         }
     }
 
-    public void calcuEndPos(long fileLength, int threadNum) {
+    public void calculateEndPos(long fileLength, int threadNum) {
         if (endPos == 0) {
             if (threadNum == threadId + 1) {
                 endPos = fileLength - 1;

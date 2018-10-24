@@ -4,6 +4,7 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -37,6 +38,7 @@ public class DownloadProvider extends ContentProvider {
     @Override
     public Cursor query(@NonNull Uri uri,
                         @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
+        MatrixCursor cursor;
         String table = getTableName(uri);
         Cursor result = getDatabase().query(table, projection, selection, selectionArgs, null, null, sortOrder, null);
         result.setNotificationUri(getContext().getContentResolver(), uri);

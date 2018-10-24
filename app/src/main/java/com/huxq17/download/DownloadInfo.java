@@ -16,9 +16,15 @@ public class DownloadInfo {
     public int threadNum = 3;
     public int finished = 0;
     public boolean forceRestart = true;
+    private File tempDir;
 
-    public File getTempFile() {
-        return new File(filePath.concat(".temp"));
+    public File getTempDir() {
+        if (tempDir == null) {
+            File file = new File(filePath);
+            File parentFile = file.getParentFile();
+            tempDir = new File(parentFile, "." + file.getName() + ".temp" + File.separatorChar);
+        }
+        return tempDir;
     }
 
     public boolean isFinished() {
