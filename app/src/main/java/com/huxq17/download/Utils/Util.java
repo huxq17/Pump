@@ -70,6 +70,12 @@ public class Util {
 //            closeQuietly(bufferedOutputStream);
             closeQuietly(fileInputStream);
         }
+    }
 
+    public static File getTempDir(String filePath) {
+        File file = new File(filePath);
+        File parentFile = file.getParentFile();
+        File tempDir = new File(parentFile, "." + file.getName() + ".temp" + File.separatorChar);
+        return tempDir;
     }
 }

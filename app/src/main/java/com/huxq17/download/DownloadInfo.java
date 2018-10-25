@@ -1,6 +1,7 @@
 package com.huxq17.download;
 
 
+import com.huxq17.download.Utils.Util;
 import com.huxq17.download.listener.StatusObserver;
 
 import java.io.File;
@@ -11,7 +12,7 @@ public class DownloadInfo {
     public StatusObserver statusObserver;
 
     public int progress;
-    public long downloadLength;
+    public long completedSize;
     public long contentLength;
     public int threadNum = 3;
     public int finished = 0;
@@ -20,9 +21,7 @@ public class DownloadInfo {
 
     public File getTempDir() {
         if (tempDir == null) {
-            File file = new File(filePath);
-            File parentFile = file.getParentFile();
-            tempDir = new File(parentFile, "." + file.getName() + ".temp" + File.separatorChar);
+            tempDir = Util.getTempDir(filePath);
         }
         return tempDir;
     }

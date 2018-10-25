@@ -23,7 +23,8 @@
         </activity>
         <provider
             android:name=".provider.DownloadProvider"
-            android:authorities="${applicationId}.provider" />
+            android:authorities="${applicationId}.provider"
+            android:multiprocess="true" />
     </application>
 
 </manifest>

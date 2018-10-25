@@ -2,12 +2,14 @@ package com.huxq17.download.task;
 
 import android.util.Log;
 
+import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.action.GetFileSizeAction;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownloadStatus;
+import com.huxq17.download.message.IMessageCenter;
 
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
@@ -17,12 +19,14 @@ public class DownloadTask implements Task, DownloadStatus {
     private DBService dbService;
     private long completedSize;
     private boolean isStopped;
+    private IMessageCenter messageCenter;
 
     public DownloadTask(DownloadInfo downloadInfo) {
         this.downloadInfo = downloadInfo;
         completedSize = 0l;
         isStopped = false;
         dbService = DBService.getInstance();
+        messageCenter = ServiceAgency.getService(IMessageCenter.class);
     }
 
     private long start, end;
@@ -98,12 +102,14 @@ public class DownloadTask implements Task, DownloadStatus {
     private int lastProgress = 0;
 
     @Override
-    public synchronized void onDownload(int threadId, int length, long downloadedSize) {
+    public synchronized void onDownload(int threadId, int length) {
         this.completedSize += length;
+        downloadInfo.completedSize = this.completedSize;
         int progress = (int) (completedSize * 1f / downloadInfo.contentLength * 100);
         if (progress != lastProgress) {
             Log.e("tag", "download progress=" + progress);
             lastProgress = progress;
+            messageCenter.notifyProgressChanged(downloadInfo);
         }
     }
 

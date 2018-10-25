@@ -52,7 +52,7 @@ public class DownloadBlockTask implements Task {
                 while (!downloadStatus.isStopped() && (len = inputStream.read(buffer)) != -1) {
                     fileOutputStream.write(buffer, 0, len);
                     sum += len;
-                    downloadStatus.onDownload(batch.threadId, len, sum + downloadedSize);
+                    downloadStatus.onDownload(batch.threadId, len);
                 }
             } catch (IOException e) {
                 e.printStackTrace();

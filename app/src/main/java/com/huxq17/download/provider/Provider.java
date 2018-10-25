@@ -1,7 +1,10 @@
 package com.huxq17.download.provider;
 
+import android.net.Uri;
+
 public class Provider {
     public static final String AUTHORITY = "com.huxq17.download.provider";
+    public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY);
 
     public static final class DownloadBlock {
         public static final String TABLE_NAME = "download_block";

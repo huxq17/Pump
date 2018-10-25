@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-
+apply plugin: 'service_agency'
 android {
     compileSdkVersion 28
     defaultConfig {

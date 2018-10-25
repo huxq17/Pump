@@ -2,6 +2,7 @@ package com.huxq17.download.provider;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.MatrixCursor;
@@ -11,7 +12,11 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.buyi.huxq17.serviceagency.ServiceAgency;
+import com.huxq17.download.ContextHelper;
 import com.huxq17.download.db.DBService;
+import com.huxq17.download.listener.IDownloadObserverManager;
+import com.huxq17.download.message.IMessageCenter;
 
 
 public class DownloadProvider extends ContentProvider {
@@ -30,7 +35,11 @@ public class DownloadProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        DBService.init(getContext());
+        Context context = getContext();
+        DBService.init(context);
+        ContextHelper.init(context);
+        ServiceAgency.getService(IMessageCenter.class).start(context);
+        ServiceAgency.getService(IDownloadObserverManager.class).start(context);
         return true;
     }
 

@@ -1,11 +1,17 @@
 package com.huxq17.download;
 
 
-import com.huxq17.download.listener.StatusObserver;
+import com.buyi.huxq17.serviceagency.ServiceAgency;
+import com.huxq17.download.listener.DownloadObserver;
+import com.huxq17.download.listener.IDownloadObserverManager;
 
 public class Pump {
     public static Request from(String url) {
         return new Request(url);
+    }
+
+    public void subscribe(DownloadObserver observer) {
+        ServiceAgency.getService(IDownloadObserverManager.class).register(observer);
     }
 
     public static class Request {
@@ -21,9 +27,11 @@ public class Pump {
             return this;
         }
 
-        public void subscribe(StatusObserver observer) {
-            downloadInfo.statusObserver = observer;
+        public void subscribe(DownloadObserver observer) {
+            observer.setDownloadInfo(downloadInfo);
+            ServiceAgency.getService(IDownloadObserverManager.class).register(observer);
             DownloadManager.getInstance().submit(downloadInfo);
         }
     }
+
 }
