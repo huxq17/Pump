@@ -79,7 +79,6 @@ public class DownloadTask implements Task, DownloadStatus {
         }
         if (completedSize == fileLength) {
             end = System.currentTimeMillis();
-            Log.e("tag", "download finished spend=" + (end - start));
             File file = new File(downloadInfo.filePath);
             if (file.exists()) {
                 file.delete();

@@ -28,8 +28,6 @@ public class DownloadProvider extends ContentProvider {
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         sUriMatcher.addURI(Provider.AUTHORITY, "block", ID_BLOCK);
-
-        sUriMatcher.addURI(Provider.AUTHORITY, "info", ID_INFO);
     }
 
 

@@ -10,7 +10,7 @@ import com.huxq17.download.listener.DownloadObserver;
 import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
-    private String url = "http://www.clcxx.com/app/clcxx.apk";
+    private String url = "http://dlied5.myapp.com/myapp/1104466820/sgame/2017_com.tencent.tmgp.sgame_h178_1.41.2.16_5a7ef8.apk";
     private ProgressDialog progressDialog;
 
     @Override
