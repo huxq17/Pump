@@ -76,8 +76,9 @@ public class DBService {
     public long queryLocalLength(DownloadInfo info) {
         long length = 0;
         SQLiteDatabase db = helper.getReadableDatabase();
-        String sql = "select * from " + Provider.DownloadInfo.TABLE_NAME + " where " + Provider.DownloadInfo.URL + "=?";
-        Cursor cursor = db.rawQuery(sql, new String[]{info.url});
+        String sql = "select * from " + Provider.DownloadInfo.TABLE_NAME + " where " + Provider.DownloadInfo.URL + "=? and "
+                + Provider.DownloadInfo.PATH + " =?";
+        Cursor cursor = db.rawQuery(sql, new String[]{info.url, info.filePath});
         while (cursor.moveToNext()) {
             info.filePath = cursor.getString(1);
             info.threadNum = cursor.getInt(2);

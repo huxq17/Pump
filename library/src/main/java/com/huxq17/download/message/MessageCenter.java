@@ -44,7 +44,8 @@ public class MessageCenter implements IMessageCenter {
 
     @Override
     public void register(DownloadObserver downloadObserver) {
-        observers.add(downloadObserver);
+        if (!observers.contains(downloadObserver))
+            observers.add(downloadObserver);
     }
 
     @Override

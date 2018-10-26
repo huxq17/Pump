@@ -3,7 +3,6 @@ package com.huxq17.download.task;
 
 import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.Utils.Util;
-import com.huxq17.download.listener.DownloadStatus;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -17,12 +16,12 @@ import java.util.concurrent.CountDownLatch;
 
 public class DownloadBlockTask implements Task {
     private DownloadBatch batch;
-    private DownloadStatus downloadStatus;
+    private DownloadTask downloadTask;
     private CountDownLatch countDownLatch;
 
-    public DownloadBlockTask(DownloadBatch batch, CountDownLatch countDownLatch, DownloadStatus downloadListener) {
+    public DownloadBlockTask(DownloadBatch batch, CountDownLatch countDownLatch, DownloadTask downloadTask) {
         this.batch = batch;
-        this.downloadStatus = downloadListener;
+        this.downloadTask = downloadTask;
         this.countDownLatch = countDownLatch;
     }
 
@@ -61,10 +60,10 @@ public class DownloadBlockTask implements Task {
                     //TODO 写入文件的时候可以尝试用MappedByteBuffer共享内存优化。
                     fileOutputStream = new FileOutputStream(tempFile, true);
                     int sum = 0;
-                    while (!downloadStatus.isStopped() && (len = inputStream.read(buffer)) != -1) {
+                    while (!downloadTask.isStopped() && (len = inputStream.read(buffer)) != -1) {
                         fileOutputStream.write(buffer, 0, len);
                         sum += len;
-                        downloadStatus.onDownload(batch.threadId, len);
+                        downloadTask.onDownload(len);
                     }
                 }
             } catch (IOException e) {

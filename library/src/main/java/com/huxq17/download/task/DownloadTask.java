@@ -9,38 +9,41 @@ import com.huxq17.download.TaskManager;
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.action.GetFileSizeAction;
 import com.huxq17.download.db.DBService;
-import com.huxq17.download.listener.DownloadStatus;
+import com.huxq17.download.listener.DownLoadLifeCycleObserver;
 import com.huxq17.download.message.IMessageCenter;
 
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
 
-public class DownloadTask implements Task, DownloadStatus {
+public class DownloadTask implements Task {
     private DownloadInfo downloadInfo;
     private DBService dbService;
     private long completedSize;
     private boolean isStopped;
     private IMessageCenter messageCenter;
+    private DownLoadLifeCycleObserver downLoadLifeCycleObserver;
 
-    public DownloadTask(DownloadInfo downloadInfo) {
+    public DownloadTask(DownloadInfo downloadInfo, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         this.downloadInfo = downloadInfo;
+        Log.e("tag", "downloadTask path=" + downloadInfo.filePath);
         completedSize = 0l;
         isStopped = false;
         dbService = DBService.getInstance();
         messageCenter = ServiceAgency.getService(IMessageCenter.class);
+        this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
     }
 
-    private Semaphore semaphore;
-
-    public void setSemaphore(Semaphore semaphore) {
-        this.semaphore = semaphore;
-    }
 
     private long start, end;
 
     @Override
     public void run() {
+        downLoadLifeCycleObserver.onDownloadStart(this);
+        download();
+        downLoadLifeCycleObserver.onDownloadEnd(this);
+    }
+
+    private void download() {
         start = System.currentTimeMillis();
         String url = downloadInfo.url;
         GetFileSizeAction getFileSizeAction = new GetFileSizeAction();
@@ -48,7 +51,6 @@ public class DownloadTask implements Task, DownloadStatus {
         downloadInfo.contentLength = fileLength;
         File tempDir = downloadInfo.getTempDir();
         long localLength = dbService.queryLocalLength(downloadInfo);
-        Log.e("tag", "fileLength=" + fileLength + ";localLength=" + localLength);
         if (fileLength != localLength) {
             //If file's length have changed,we need to re-download it.
             downloadInfo.finished = 0;
@@ -108,20 +110,16 @@ public class DownloadTask implements Task, DownloadStatus {
         } else {
             Log.e("tag", "download failed.");
         }
-        semaphore.release();
-//        ResumeDownloadAction resumeDownloadAction = new ResumeDownloadAction();
-//        resumeDownloadAction.proceed(url);
     }
 
     private int lastProgress = 0;
 
-    @Override
-    public synchronized void onDownload(int threadId, int length) {
+    public synchronized void onDownload(int length) {
         this.completedSize += length;
         downloadInfo.completedSize = this.completedSize;
         int progress = (int) (completedSize * 1f / downloadInfo.contentLength * 100);
         if (progress != lastProgress) {
-            Log.e("tag", "download progress=" + progress);
+//            Log.e("tag", "download progress=" + progress);
             lastProgress = progress;
             downloadInfo.progress = progress;
             if (progress != 100) {
@@ -138,7 +136,6 @@ public class DownloadTask implements Task, DownloadStatus {
         isStopped = true;
     }
 
-    @Override
     public boolean isStopped() {
         return isStopped;
     }

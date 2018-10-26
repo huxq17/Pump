@@ -11,20 +11,15 @@ import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.task.DownloadTask;
 import com.huxq17.download.task.Task;
 
-import java.util.concurrent.Semaphore;
-
 public class PumpService extends Service implements Task {
     private IDownloadManager downloadManager;
     private boolean isRunning;
-    private Semaphore semaphore;
 
     @Override
     public void onCreate() {
         super.onCreate();
         isRunning = true;
         downloadManager = ServiceAgency.getService(IDownloadManager.class);
-        //TODO 限制同时进行下载的任务数量
-        semaphore = new Semaphore(3, true);
         TaskManager.execute(this);
     }
 
@@ -50,9 +45,7 @@ public class PumpService extends Service implements Task {
     public void run() {
         while (isRunning) {
             try {
-                semaphore.acquire();
                 DownloadTask downloadTask = downloadManager.take();
-                downloadTask.setSemaphore(semaphore);
                 TaskManager.execute(downloadTask);
             } catch (InterruptedException e) {
                 e.printStackTrace();

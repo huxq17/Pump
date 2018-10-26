@@ -13,19 +13,13 @@ public class DBOpenHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS " + Provider.DownloadBlock.TABLE_NAME + " ("
-                + Provider.DownloadBlock.THREAD_ID + " INTEGER,"
-                + Provider.DownloadBlock.URL + " CHAR,"
-                + Provider.DownloadBlock.COMPLETE_SIZE + " INTEGER,"
-                + "primary key(" + Provider.DownloadBlock.THREAD_ID + "," + Provider.DownloadBlock.URL + ")"
-                + ");");
-
         db.execSQL("CREATE TABLE IF NOT EXISTS " + Provider.DownloadInfo.TABLE_NAME + " ("
-                + Provider.DownloadInfo.URL + " CHAR primary key,"
+                + Provider.DownloadInfo.URL + " CHAR,"
                 + Provider.DownloadInfo.PATH + " CHAR,"
                 + Provider.DownloadInfo.THREAD_NUM + " INTEGER,"
                 + Provider.DownloadInfo.FILE_LENGTH + " INTEGER,"
-                + Provider.DownloadInfo.FINISHED + " INTEGER"
+                + Provider.DownloadInfo.FINISHED + " INTEGER,"
+                + "primary key(" + Provider.DownloadInfo.URL + "," + Provider.DownloadInfo.PATH + ")"
                 + ");");
     }
 
