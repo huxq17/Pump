@@ -57,7 +57,7 @@ public class DownloadBlockTask implements Task {
                     inputStream = conn.getInputStream();
                     byte[] buffer = new byte[8092 * 10];
                     int len;
-                    //TODO 写入文件的时候可以尝试用MappedByteBuffer共享内存优化。
+                    //TODO 写入文件的时候可以尝试用MappedByteBuffer共享内存优化。 用okio优化比较下
                     fileOutputStream = new FileOutputStream(tempFile, true);
                     int sum = 0;
                     while (!downloadTask.isStopped() && (len = inputStream.read(buffer)) != -1) {

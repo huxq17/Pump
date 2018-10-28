@@ -14,7 +14,7 @@ public class DownloadInfo {
     public long contentLength;
     public int threadNum = 3;
     public int finished = 0;
-    public boolean forceRestart = true;
+    public boolean forceReDownload = true;
     private File tempDir;
 
     public File getTempDir() {
@@ -25,6 +25,14 @@ public class DownloadInfo {
     }
 
     public boolean isFinished() {
-        return finished == 1;
+        if (finished == 1) {
+            File downloadFile = new File(filePath);
+            if (downloadFile.exists() && downloadFile.length() == contentLength) {
+                return true;
+            } else if (downloadFile.exists()) {
+                downloadFile.delete();
+            }
+        }
+        return false;
     }
 }

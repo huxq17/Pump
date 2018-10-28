@@ -11,7 +11,7 @@ import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.task.DownloadTask;
 import com.huxq17.download.task.Task;
 
-public class PumpService extends Service implements Task {
+public class DownloadService extends Service implements Task {
     private IDownloadManager downloadManager;
     private boolean isRunning;
 

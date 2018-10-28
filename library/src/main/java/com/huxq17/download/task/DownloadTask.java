@@ -25,7 +25,6 @@ public class DownloadTask implements Task {
 
     public DownloadTask(DownloadInfo downloadInfo, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         this.downloadInfo = downloadInfo;
-        Log.e("tag", "downloadTask path=" + downloadInfo.filePath);
         completedSize = 0l;
         isStopped = false;
         dbService = DBService.getInstance();
@@ -54,12 +53,11 @@ public class DownloadTask implements Task {
         if (fileLength != localLength) {
             //If file's length have changed,we need to re-download it.
             downloadInfo.finished = 0;
-            downloadInfo.contentLength = fileLength;
             dbService.updateInfo(downloadInfo);
             Util.deleteDir(tempDir);
         } else {
-            if (downloadInfo.isFinished() && !downloadInfo.forceRestart) {
-                //TODO 已经下完过了，无需重复下载.
+            if (downloadInfo.isFinished() && !downloadInfo.forceReDownload) {
+                //TODO 已经下完过了，无需重复下载,提示用户
                 return;
             }
         }

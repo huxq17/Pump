@@ -6,6 +6,6 @@
             android:name=".provider.DownloadProvider"
             android:authorities="${applicationId}.provider"
             android:multiprocess="true" />
-        <service android:name=".service.PumpService" />
+        <service android:name=".service.DownloadService" />
     </application>
 </manifest>

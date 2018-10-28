@@ -26,7 +26,6 @@ public class DBOpenHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         //TODO 当版本号发生改变时调用该方法,这里删除数据表,在实际业务中一般是要进行数据备份的
-        db.execSQL("DROP TABLE IF EXISTS " + Provider.DownloadBlock.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + Provider.DownloadInfo.TABLE_NAME);
         onCreate(db);
     }

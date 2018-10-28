@@ -79,7 +79,7 @@ public class Util {
         }
         renameTo(sortedFiles[0], dest);
     }
-    
+
 //    public static void mergeFiles(File[] sources, File dest) {
 //        File[] sortedFiles = new File[sources.length];
 //        for (int i = 0; i < sources.length; i++) {
