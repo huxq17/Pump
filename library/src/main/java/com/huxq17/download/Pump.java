@@ -10,8 +10,15 @@ import java.util.List;
 
 public class Pump {
     public static void download(String url, String filePath) {
-
         ServiceAgency.getService(IDownloadManager.class).submit(url, filePath);
+    }
+
+    public static void stop(DownloadInfo downloadInfo) {
+        ServiceAgency.getService(IDownloadManager.class).stop(downloadInfo);
+    }
+
+    public static void reStart(DownloadInfo downloadInfo) {
+        ServiceAgency.getService(IDownloadManager.class).reStart(downloadInfo);
     }
 
     public static void subscribe(DownloadObserver observer) {

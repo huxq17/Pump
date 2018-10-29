@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.Pump;
@@ -113,11 +114,45 @@ public class DownloadListActivity extends AppCompatActivity {
             int progress = downloadInfo.getProgress();
             tvName.setText(downloadInfo.getName());
             progressBar.setProgress(progress);
+            switch (downloadInfo.getStatus()) {
+                case STOPPED:
+                    tvStatus.setText("开始");
+                    break;
+                case WAIT:
+                    tvStatus.setText("等待中");
+                    break;
+                case RUNNING:
+                    tvStatus.setText("暂停");
+                    break;
+                case FINISHED:
+                    tvStatus.setText("下载完成");
+                    break;
+                case FAILED:
+                    tvStatus.setText("重试");
+                    break;
+            }
         }
 
         @Override
         public void onClick(View v) {
             Log.e("tag", "onclick");
+            switch (downloadInfo.getStatus()) {
+                case STOPPED:
+                    Pump.reStart(downloadInfo);
+                    break;
+                case WAIT:
+                    //do nothing.
+                    break;
+                case RUNNING:
+                    Pump.stop(downloadInfo);
+                    break;
+                case FINISHED:
+                    Toast.makeText(v.getContext(), "下载完成", Toast.LENGTH_SHORT).show();
+                    break;
+                case FAILED:
+                    Pump.reStart(downloadInfo);
+                    break;
+            }
         }
     }
 

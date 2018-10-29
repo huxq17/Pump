@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.huxq17.download.DownloadBatch;
+import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.TransferInfo;
 import com.huxq17.download.TaskManager;
 import com.huxq17.download.Utils.Util;
@@ -30,6 +31,8 @@ public class DownloadTask implements Task {
         dbService = DBService.getInstance();
         messageCenter = ServiceAgency.getService(IMessageCenter.class);
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
+        downloadInfo.setStatus(DownloadInfo.Status.WAIT);
+        notifyProgressChanged(downloadInfo);
     }
 
 
@@ -43,6 +46,7 @@ public class DownloadTask implements Task {
     }
 
     private void download() {
+        downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
         start = System.currentTimeMillis();
         String url = downloadInfo.getUrl();
         GetFileSizeAction getFileSizeAction = new GetFileSizeAction();
@@ -87,6 +91,7 @@ public class DownloadTask implements Task {
             e.printStackTrace();
         }
         if (completedSize == fileLength) {
+            downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
             end = System.currentTimeMillis();
             Log.e("tag", "download spend=" + (end - start));
             File file = new File(downloadInfo.getFilePath());
@@ -106,6 +111,10 @@ public class DownloadTask implements Task {
             notifyProgressChanged(downloadInfo);
 //            dbService.deleteInfoByUrl(downloadInfo.url);
         } else {
+            if (downloadInfo.getStatus() == DownloadInfo.Status.RUNNING) {
+                downloadInfo.setStatus(DownloadInfo.Status.FAILED);
+                notifyProgressChanged(downloadInfo);
+            }
             Log.e("tag", "download failed.");
         }
     }
@@ -130,15 +139,17 @@ public class DownloadTask implements Task {
         messageCenter.notifyProgressChanged(downloadInfo);
     }
 
-    public void stop() {
-        isStopped = true;
-    }
 
     public TransferInfo getDownloadInfo() {
         return downloadInfo;
     }
 
+    public void stop() {
+        downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
+        notifyProgressChanged(downloadInfo);
+    }
+
     public boolean isStopped() {
-        return isStopped;
+        return downloadInfo.getStatus() == DownloadInfo.Status.STOPPED;
     }
 }

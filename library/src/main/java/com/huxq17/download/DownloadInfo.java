@@ -1,10 +1,7 @@
 package com.huxq17.download;
 
 
-import com.huxq17.download.Utils.Util;
-
 import java.io.File;
-import java.util.ArrayList;
 
 public class DownloadInfo {
     private Object tag;
@@ -15,43 +12,7 @@ public class DownloadInfo {
     protected long completedSize;
     protected long contentLength;
     protected int finished = 0;
-    protected int status;
-    private ArrayList<File> downloadPartFiles = new ArrayList<>();
-
-    private void loadDownloadFiles() {
-        String filePath = getFilePath();
-        File file = new File(filePath);
-        if (file.exists()) {
-            File tempDir = Util.getTempDir(filePath);
-            File[] listFiles = tempDir.listFiles();
-            if (listFiles != null && listFiles.length > 0) {
-                for (int i = 0; i < listFiles.length; i++) {
-                    downloadPartFiles.add(listFiles[i]);
-                }
-            }
-        }
-    }
-
-    public void calculateDownloadProgress() {
-        if (isFinished()) {
-            TransferInfo transferInfo = (TransferInfo) this;
-            transferInfo.setProgress(100);
-            transferInfo.setCompletedSize(contentLength);
-        } else {
-            if (downloadPartFiles.size() == 0) {
-                loadDownloadFiles();
-            }
-            int completedSize = 0;
-            int size = downloadPartFiles.size();
-            for (int i = 0; i < size; i++) {
-                completedSize += downloadPartFiles.get(i).length();
-            }
-            int progress = (int) (completedSize * 1f / getContentLength() * 100);
-            TransferInfo transferInfo = (TransferInfo) this;
-            transferInfo.setProgress(progress);
-            transferInfo.setCompletedSize(completedSize);
-        }
-    }
+    protected Status status;
 
     public void setTag(Object tag) {
         this.tag = tag;
@@ -99,18 +60,11 @@ public class DownloadInfo {
     }
 
     public Status getStatus() {
-        Status status = Status.STOPPED;
-        for (Status value : Status.values()) {
-            if (value.status == this.status) {
-                status = value;
-                break;
-            }
-        }
         return status;
     }
 
     public enum Status {
-        STOPPED(0), RUNNING(1), FINISHED(2), FAILED(3);
+        WAIT(0),STOPPED(1), RUNNING(2), FINISHED(3), FAILED(4);
 
         private int status;
 

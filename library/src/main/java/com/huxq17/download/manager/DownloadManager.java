@@ -6,6 +6,7 @@ import android.content.Intent;
 
 import com.buyi.huxq17.serviceagency.annotation.ServiceAgent;
 import com.huxq17.download.DownloadConfig;
+import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.TransferInfo;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownLoadLifeCycleObserver;
@@ -34,7 +35,6 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         List<TransferInfo> allDownloadInfo = DBService.getInstance().getDownloadList();
         for (TransferInfo info : allDownloadInfo) {
             String filePath = info.getFilePath();
-            info.calculateDownloadProgress();
             transferInfoMap.put(filePath, info);
         }
     }
@@ -49,6 +49,10 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     public void submit(String url, String filePath) {
         TransferInfo downloadInfo = getDownloadInfo(url, filePath);
+        submit(downloadInfo);
+    }
+
+    private void submit(TransferInfo downloadInfo) {
         if (downloadConfig == null) {
             downloadConfig = new DownloadConfig();
         }
@@ -64,6 +68,21 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
             context.startService(new Intent(context, DownloadService.class));
             isServiceRunning = true;
         }
+    }
+
+    @Override
+    public void stop(DownloadInfo downloadInfo) {
+        for (DownloadTask task :
+                runningTaskQueue) {
+            if (task.getDownloadInfo() == downloadInfo) {
+                task.stop();
+            }
+        }
+    }
+
+    @Override
+    public void reStart(DownloadInfo downloadInfo) {
+        submit((TransferInfo) downloadInfo);
     }
 
     @Override
