@@ -32,20 +32,25 @@ public class DownloadInfo {
         }
     }
 
-    public int calculateDownloadProgress() {
-        if (downloadPartFiles.size() == 0) {
-            loadDownloadFiles();
+    public void calculateDownloadProgress() {
+        if (isFinished()) {
+            TransferInfo transferInfo = (TransferInfo) this;
+            transferInfo.setProgress(100);
+            transferInfo.setCompletedSize(contentLength);
+        } else {
+            if (downloadPartFiles.size() == 0) {
+                loadDownloadFiles();
+            }
+            int completedSize = 0;
+            int size = downloadPartFiles.size();
+            for (int i = 0; i < size; i++) {
+                completedSize += downloadPartFiles.get(i).length();
+            }
+            int progress = (int) (completedSize * 1f / getContentLength() * 100);
+            TransferInfo transferInfo = (TransferInfo) this;
+            transferInfo.setProgress(progress);
+            transferInfo.setCompletedSize(completedSize);
         }
-        int completedSize = 0;
-        int size = downloadPartFiles.size();
-        for (int i = 0; i < size; i++) {
-            completedSize += downloadPartFiles.get(i).length();
-        }
-        int progress = (int) (completedSize * 1f / getContentLength() * 100);
-        TransferInfo transferInfo = (TransferInfo) this;
-        transferInfo.setProgress(progress);
-        transferInfo.setCompletedSize(completedSize);
-        return progress;
     }
 
     public void setTag(Object tag) {
