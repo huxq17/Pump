@@ -18,22 +18,20 @@
     <TextView
         android:id="@+id/tv_name"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginLeft="15dp"
         android:text="微信"
-        android:textColor="666666"
+        android:textColor="#666666"
         android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@id/pb_progress"
         app:layout_constraintLeft_toRightOf="@id/iv_icon"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ProgressBar
         android:id="@+id/pb_progress"
-        app:layout_constraintVertical_chainStyle="packed"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="20dp"
         android:max="100"

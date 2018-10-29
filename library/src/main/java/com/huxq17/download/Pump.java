@@ -10,10 +10,8 @@ import java.util.List;
 
 public class Pump {
     public static void download(String url, String filePath) {
-        DownloadInfo downloadInfo = new DownloadInfo();
-        downloadInfo.url = url;
-        downloadInfo.filePath = filePath;
-        ServiceAgency.getService(IDownloadManager.class).submit(downloadInfo);
+
+        ServiceAgency.getService(IDownloadManager.class).submit(url, filePath);
     }
 
     public static void subscribe(DownloadObserver observer) {
@@ -28,15 +26,15 @@ public class Pump {
         ServiceAgency.getService(IDownloadManager.class).setDownloadConfig(downloadConfig);
     }
 
-    public static List<DownloadInfo> getDownloadingList() {
+    public static List<? extends DownloadInfo> getDownloadingList() {
         return ServiceAgency.getService(IDownloadManager.class).getDownloadingList();
     }
 
-    public static List<DownloadInfo> getDownloadedList() {
+    public static List<? extends DownloadInfo> getDownloadedList() {
         return ServiceAgency.getService(IDownloadManager.class).getDownloadedList();
     }
 
-    public static List<DownloadInfo> getAllDownloadList() {
+    public static List<? extends DownloadInfo> getAllDownloadList() {
         return ServiceAgency.getService(IDownloadManager.class).getAllDownloadList();
     }
 }

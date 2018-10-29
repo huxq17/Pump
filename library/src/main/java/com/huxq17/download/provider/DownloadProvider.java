@@ -24,6 +24,9 @@ public class DownloadProvider extends ContentProvider {
         DBService.init(context);
         ServiceAgency.getService(IMessageCenter.class).start(context);
         ServiceAgency.getService(IDownloadManager.class).start(context);
+        //If DownloadService is running,stop it.
+//        Intent intent = new Intent(context, DownloadService.class);
+//        context.stopService(intent);
         return true;
     }
 

@@ -5,7 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import com.huxq17.download.DownloadInfo;
+import com.huxq17.download.TransferInfo;
 import com.huxq17.download.provider.Provider;
 
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class DBService {
         return helper.getWritableDatabase();
     }
 
-    public void updateInfo(DownloadInfo downloadInfo) {
+    public void updateInfo(TransferInfo downloadInfo) {
         SQLiteDatabase db = helper.getWritableDatabase();
         String sql = "replace into " + Provider.DownloadInfo.TABLE_NAME +
                 "(" + Provider.DownloadInfo.URL + ", "
@@ -39,45 +39,40 @@ public class DBService {
                 + Provider.DownloadInfo.THREAD_NUM + ","
                 + Provider.DownloadInfo.FILE_LENGTH + ","
                 + Provider.DownloadInfo.FINISHED + ") values(?,?,?,?,?)";
-        db.execSQL(sql, new Object[]{downloadInfo.url, downloadInfo.filePath,
-                downloadInfo.threadNum, downloadInfo.contentLength, downloadInfo.finished});
+        db.execSQL(sql, new Object[]{downloadInfo.getUrl(), downloadInfo.getFilePath(),
+                downloadInfo.threadNum, downloadInfo.getContentLength(), downloadInfo.getFinished()});
     }
 
-    public long queryLocalLength(DownloadInfo info) {
+    public long queryLocalLength(TransferInfo info) {
         long length = 0;
         SQLiteDatabase db = helper.getReadableDatabase();
         String sql = "select * from " + Provider.DownloadInfo.TABLE_NAME + " where " + Provider.DownloadInfo.URL + "=? and "
                 + Provider.DownloadInfo.PATH + " =?";
-        Cursor cursor = db.rawQuery(sql, new String[]{info.url, info.filePath});
+        Cursor cursor = db.rawQuery(sql, new String[]{info.getUrl(), info.getFilePath()});
         while (cursor.moveToNext()) {
-            info.filePath = cursor.getString(1);
             info.threadNum = cursor.getInt(2);
-            info.contentLength = cursor.getLong(3);
-            info.finished = cursor.getShort(4);
-            length = info.contentLength;
+            info.setContentLength(cursor.getLong(3));
+            info.setFinished(cursor.getShort(4));
+            length = info.getContentLength();
             break;
         }
         cursor.close();
         return length;
     }
 
-    public List<DownloadInfo> getDownloadList(boolean isAll,boolean isFinished) {
-        List<DownloadInfo> tasks = new ArrayList<>();
+    public List<TransferInfo> getDownloadList() {
+        List<TransferInfo> tasks = new ArrayList<>();
         SQLiteDatabase db = helper.getReadableDatabase();
         String sql = "select * from " + Provider.DownloadInfo.TABLE_NAME;
         Cursor cursor = db.rawQuery(sql, null);
         while (cursor.moveToNext()) {
-            int finished = cursor.getShort(4);
-            if (isAll||isFinished && finished == 1 || !isFinished && finished == 0) {
-                DownloadInfo info = new DownloadInfo();
-                info.url = cursor.getString(0);
-                info.filePath = cursor.getString(1);
-                info.threadNum = cursor.getInt(2);
-                info.contentLength = cursor.getLong(3);
-                info.finished = finished;
-                tasks.add(info);
-            }
+            TransferInfo info = new TransferInfo(cursor.getString(0), cursor.getString(1));
+            info.threadNum = cursor.getInt(2);
+            info.setContentLength(cursor.getLong(3));
+            info.setFinished(cursor.getShort(4));
+            tasks.add(info);
         }
+        cursor.close();
         return tasks;
     }
 

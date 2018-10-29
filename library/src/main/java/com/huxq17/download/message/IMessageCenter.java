@@ -2,7 +2,7 @@ package com.huxq17.download.message;
 
 import android.content.Context;
 
-import com.huxq17.download.DownloadInfo;
+import com.huxq17.download.TransferInfo;
 import com.huxq17.download.listener.DownloadObserver;
 
 public interface IMessageCenter {
@@ -12,6 +12,6 @@ public interface IMessageCenter {
 
     void unRegister(DownloadObserver downloadObserver);
 
-    void notifyProgressChanged(DownloadInfo downloadInfo);
+    void notifyProgressChanged(TransferInfo downloadInfo);
 
 }

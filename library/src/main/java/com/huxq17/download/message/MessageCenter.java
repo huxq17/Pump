@@ -6,7 +6,7 @@ import android.os.Looper;
 import android.os.Message;
 
 import com.buyi.huxq17.serviceagency.annotation.ServiceAgent;
-import com.huxq17.download.DownloadInfo;
+import com.huxq17.download.TransferInfo;
 import com.huxq17.download.listener.DownloadObserver;
 
 import java.util.ArrayList;
@@ -19,12 +19,12 @@ public class MessageCenter implements IMessageCenter {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            DownloadInfo downloadInfo = (DownloadInfo) msg.obj;
+            TransferInfo downloadInfo = (TransferInfo) msg.obj;
             int observerSize = observers.size();
             for (int i = 0; i < observerSize; i++) {
                 DownloadObserver observer = observers.get(i);
                 observer.setDownloadInfo(downloadInfo);
-                observer.onProgressUpdate(downloadInfo.progress);
+                observer.onProgressUpdate(downloadInfo.getProgress());
             }
         }
     };
@@ -35,7 +35,7 @@ public class MessageCenter implements IMessageCenter {
     }
 
     @Override
-    public void notifyProgressChanged(DownloadInfo downloadInfo) {
+    public void notifyProgressChanged(TransferInfo downloadInfo) {
         Message message = Message.obtain();
         message.obj = downloadInfo;
         handler.sendMessage(message);

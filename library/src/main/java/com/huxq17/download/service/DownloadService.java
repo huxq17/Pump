@@ -25,8 +25,8 @@ public class DownloadService extends Service implements Task {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
-        return super.onStartCommand(intent, flags, startId);
+//        return super.onStartCommand(intent, flags, startId);
+        return START_NOT_STICKY;
     }
 
     @Nullable
@@ -46,11 +46,15 @@ public class DownloadService extends Service implements Task {
         while (isRunning) {
             try {
                 DownloadTask downloadTask = downloadManager.take();
-                TaskManager.execute(downloadTask);
+                if (downloadTask != null) {
+                    TaskManager.execute(downloadTask);
+                } else {
+                    isRunning = false;
+                    stopSelf();
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
         }
     }
 }

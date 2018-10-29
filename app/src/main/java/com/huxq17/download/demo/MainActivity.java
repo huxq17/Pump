@@ -4,10 +4,10 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.Pump;
 import com.huxq17.download.listener.DownloadObserver;
@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onProgressUpdate(int progress) {
             DownloadInfo downloadInfo = getDownloadInfo();
-            Log.e("main", "Main progress=" + progress + ";filePath=" + downloadInfo.filePath);
+//            Log.e("main", "Main progress=" + progress + ";filePath=" + downloadInfo.filePath);
 //        progressDialog.setProgress(progress);
 //        if (progress == 100) {
 //            progressDialog.dismiss();
@@ -42,11 +42,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initProgressDialog();
 //        progressDialog.show();
+        DownloadConfig downloadConfig = new DownloadConfig();
+        downloadConfig.downloadThreadNumber = 3;
+        downloadConfig.maxRunningTaskNumber = 3;
+        downloadConfig.forceReDownload = true;
+        Pump.setDownloadConfig(downloadConfig);
         Pump.subscribe(downloadObserver);
         final File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
         File file2 = new File(getExternalCacheDir().getAbsolutePath(), "download2.apk");
         File file3 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
-        File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
+        File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download4.apk");
         Pump.download(url, file1.getAbsolutePath());
         Pump.download(url, file2.getAbsolutePath());
         Pump.download(url, file3.getAbsolutePath());
@@ -59,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "ok", Toast.LENGTH_SHORT).show();
             }
         });
-        findViewById(R.id.add_task).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.jump_download_list).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, DownloadListActivity.class));

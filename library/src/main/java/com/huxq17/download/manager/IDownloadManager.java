@@ -3,7 +3,7 @@ package com.huxq17.download.manager;
 import android.content.Context;
 
 import com.huxq17.download.DownloadConfig;
-import com.huxq17.download.DownloadInfo;
+import com.huxq17.download.TransferInfo;
 import com.huxq17.download.task.DownloadTask;
 
 import java.util.List;
@@ -13,13 +13,13 @@ public interface IDownloadManager {
 
     DownloadTask take() throws InterruptedException;
 
-    void submit(DownloadInfo downloadInfo);
+    void submit(String url, String filePath);
 
-    List<DownloadInfo> getDownloadingList();
+    List<TransferInfo> getDownloadingList();
 
-    List<DownloadInfo> getDownloadedList();
+    List<TransferInfo> getDownloadedList();
 
-    List<DownloadInfo> getAllDownloadList();
+    List<TransferInfo> getAllDownloadList();
 
     void setDownloadConfig(DownloadConfig downloadConfig);
 

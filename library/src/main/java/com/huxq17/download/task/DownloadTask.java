@@ -4,7 +4,7 @@ import android.util.Log;
 
 import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.huxq17.download.DownloadBatch;
-import com.huxq17.download.DownloadInfo;
+import com.huxq17.download.TransferInfo;
 import com.huxq17.download.TaskManager;
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.action.GetFileSizeAction;
@@ -16,14 +16,14 @@ import java.io.File;
 import java.util.concurrent.CountDownLatch;
 
 public class DownloadTask implements Task {
-    private DownloadInfo downloadInfo;
+    private TransferInfo downloadInfo;
     private DBService dbService;
     private long completedSize;
     private boolean isStopped;
     private IMessageCenter messageCenter;
     private DownLoadLifeCycleObserver downLoadLifeCycleObserver;
 
-    public DownloadTask(DownloadInfo downloadInfo, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
+    public DownloadTask(TransferInfo downloadInfo, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         this.downloadInfo = downloadInfo;
         completedSize = 0l;
         isStopped = false;
@@ -44,16 +44,14 @@ public class DownloadTask implements Task {
 
     private void download() {
         start = System.currentTimeMillis();
-        String url = downloadInfo.url;
+        String url = downloadInfo.getUrl();
         GetFileSizeAction getFileSizeAction = new GetFileSizeAction();
         long fileLength = getFileSizeAction.proceed(url);
-        downloadInfo.contentLength = fileLength;
+        downloadInfo.setContentLength(fileLength);
         File tempDir = downloadInfo.getTempDir();
         long localLength = dbService.queryLocalLength(downloadInfo);
         if (fileLength != localLength) {
             //If file's length have changed,we need to re-download it.
-            downloadInfo.finished = 0;
-            dbService.updateInfo(downloadInfo);
             Util.deleteDir(tempDir);
         } else {
             if (downloadInfo.isFinished() && !downloadInfo.forceReDownload) {
@@ -61,6 +59,8 @@ public class DownloadTask implements Task {
                 return;
             }
         }
+        downloadInfo.setFinished(0);
+        dbService.updateInfo(downloadInfo);
         int threadNum = downloadInfo.threadNum;
         String[] childList = tempDir.list();
         if (childList != null && childList.length != threadNum) {
@@ -89,7 +89,7 @@ public class DownloadTask implements Task {
         if (completedSize == fileLength) {
             end = System.currentTimeMillis();
             Log.e("tag", "download spend=" + (end - start));
-            File file = new File(downloadInfo.filePath);
+            File file = new File(downloadInfo.getFilePath());
             if (file.exists()) {
                 file.delete();
             }
@@ -99,10 +99,10 @@ public class DownloadTask implements Task {
                 Util.deleteDir(tempDir);
             }
             Log.e("tag", "merge files spend=" + (System.currentTimeMillis() - end));
-            downloadInfo.finished = 1;
+            downloadInfo.setFinished(1);
+            downloadInfo.setCompletedSize(completedSize);
+            downloadInfo.setProgress(100);
             dbService.updateInfo(downloadInfo);
-            downloadInfo.completedSize = completedSize;
-            downloadInfo.progress = 100;
             notifyProgressChanged(downloadInfo);
 //            dbService.deleteInfoByUrl(downloadInfo.url);
         } else {
@@ -114,24 +114,28 @@ public class DownloadTask implements Task {
 
     public synchronized void onDownload(int length) {
         this.completedSize += length;
-        downloadInfo.completedSize = this.completedSize;
-        int progress = (int) (completedSize * 1f / downloadInfo.contentLength * 100);
+        downloadInfo.setCompletedSize(this.completedSize);
+        int progress = (int) (completedSize * 1f / downloadInfo.getContentLength() * 100);
         if (progress != lastProgress) {
 //            Log.e("tag", "download progress=" + progress);
             lastProgress = progress;
-            downloadInfo.progress = progress;
+            downloadInfo.setProgress(progress);
             if (progress != 100) {
                 notifyProgressChanged(downloadInfo);
             }
         }
     }
 
-    private void notifyProgressChanged(DownloadInfo downloadInfo) {
+    private void notifyProgressChanged(TransferInfo downloadInfo) {
         messageCenter.notifyProgressChanged(downloadInfo);
     }
 
     public void stop() {
         isStopped = true;
+    }
+
+    public TransferInfo getDownloadInfo() {
+        return downloadInfo;
     }
 
     public boolean isStopped() {

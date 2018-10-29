@@ -10,11 +10,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.Pump;
 import com.huxq17.download.listener.DownloadObserver;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class DownloadListActivity extends AppCompatActivity {
@@ -22,7 +24,14 @@ public class DownloadListActivity extends AppCompatActivity {
         @Override
         public void onProgressUpdate(int progress) {
             DownloadInfo downloadInfo = getDownloadInfo();
-            Log.e("main", "Main progress=" + progress + ";filePath=" + downloadInfo.filePath);
+            DownloadViewHolder viewHolder = (DownloadViewHolder) downloadInfo.getTag();
+            Log.e("main", "Main progress=" + progress + ";filePath=" + downloadInfo.getFilePath());
+            if (viewHolder != null) {
+                DownloadInfo tag = map.get(viewHolder);
+                if (tag.getFilePath().equals(downloadInfo.getFilePath())) {
+                    viewHolder.bindData(downloadInfo);
+                }
+            }
         }
 
         @Override
@@ -30,23 +39,23 @@ public class DownloadListActivity extends AppCompatActivity {
 
         }
     };
+    private HashMap<DownloadViewHolder, DownloadInfo> map = new HashMap<>();
     private RecyclerView recyclerView;
     private DownloadAdapter downloadAdapter;
-    private List<DownloadInfo> downloadInfoList;
+    private List<? extends DownloadInfo> downloadInfoList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_download_list);
         Pump.subscribe(downloadObserver);
         recyclerView = findViewById(R.id.rvDownloadList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         downloadInfoList = Pump.getAllDownloadList();
         recyclerView.setLayoutManager(linearLayoutManager);
-        downloadAdapter = new DownloadAdapter(downloadInfoList);
+        downloadAdapter = new DownloadAdapter(map, downloadInfoList);
         recyclerView.setAdapter(downloadAdapter);
     }
-
 
     @Override
     protected void onDestroy() {
@@ -55,10 +64,12 @@ public class DownloadListActivity extends AppCompatActivity {
     }
 
     public static class DownloadAdapter extends RecyclerView.Adapter<DownloadViewHolder> {
-        List<DownloadInfo> downloadInfoList;
+        List<? extends DownloadInfo> downloadInfoList;
+        HashMap<DownloadViewHolder, DownloadInfo> map;
 
-        public DownloadAdapter(List<DownloadInfo> downloadInfoList) {
+        public DownloadAdapter(HashMap<DownloadViewHolder, DownloadInfo> map, List<? extends DownloadInfo> downloadInfoList) {
             this.downloadInfoList = downloadInfoList;
+            this.map = map;
         }
 
         @NonNull
@@ -71,8 +82,10 @@ public class DownloadListActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull DownloadViewHolder viewHolder, int i) {
             DownloadInfo downloadInfo = downloadInfoList.get(i);
-            int progress = downloadInfo.progress;
-            viewHolder.progressBar.setProgress(progress);
+            viewHolder.bindData(downloadInfo);
+
+            downloadInfo.setTag(viewHolder);
+            map.put(viewHolder, downloadInfo);
         }
 
         @Override
@@ -81,12 +94,30 @@ public class DownloadListActivity extends AppCompatActivity {
         }
     }
 
-    public static class DownloadViewHolder extends RecyclerView.ViewHolder {
+    public static class DownloadViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         ProgressBar progressBar;
+        TextView tvName;
+        TextView tvStatus;
+        DownloadInfo downloadInfo;
 
         public DownloadViewHolder(@NonNull View itemView) {
             super(itemView);
             progressBar = itemView.findViewById(R.id.pb_progress);
+            tvName = itemView.findViewById(R.id.tv_name);
+            tvStatus = itemView.findViewById(R.id.bt_status);
+            tvStatus.setOnClickListener(this);
+        }
+
+        public void bindData(DownloadInfo downloadInfo) {
+            this.downloadInfo = downloadInfo;
+            int progress = downloadInfo.getProgress();
+            tvName.setText(downloadInfo.getName());
+            progressBar.setProgress(progress);
+        }
+
+        @Override
+        public void onClick(View v) {
+            Log.e("tag", "onclick");
         }
     }
 
