@@ -54,7 +54,6 @@ public class DownloadTask implements Task {
         String url = downloadInfo.getUrl();
         GetFileSizeAction getFileSizeAction = new GetFileSizeAction();
         long fileLength = getFileSizeAction.proceed(url);
-        downloadInfo.setContentLength(fileLength);
         File tempDir = downloadInfo.getTempDir();
         long localLength = dbService.queryLocalLength(downloadInfo);
         if (fileLength != localLength) {
@@ -63,6 +62,7 @@ public class DownloadTask implements Task {
         }
         downloadInfo.setFinished(0);
         downloadInfo.setCompletedSize(0);
+        downloadInfo.setContentLength(fileLength);
         dbService.updateInfo(downloadInfo);
         int threadNum = downloadInfo.threadNum;
         String[] childList = tempDir.list();

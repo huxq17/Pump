@@ -73,4 +73,15 @@ public class DownloadInfo {
             this.status = status;
         }
     }
+
+    @Override
+    public String toString() {
+        return "DownloadInfo{" +
+                "url='" + url + '\'' +
+                ", filePath='" + filePath + '\'' +
+                ", completedSize=" + completedSize +
+                ", contentLength=" + contentLength +
+                ", finished=" + finished +
+                '}';
+    }
 }
