@@ -3,12 +3,7 @@ package com.huxq17.download.listener;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.TransferInfo;
 
-import java.io.File;
-import java.util.ArrayList;
-
 public abstract class DownloadObserver {
-    private ArrayList<File> downloadPartFiles = new ArrayList<>();
-
     public DownloadObserver() {
     }
 

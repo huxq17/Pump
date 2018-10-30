@@ -14,9 +14,7 @@ import com.huxq17.download.service.DownloadService;
 import com.huxq17.download.task.DownloadTask;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 
@@ -29,27 +27,35 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     private int maxRunningTaskNumber;
     private boolean isServiceRunning = false;
     private DownloadConfig downloadConfig;
-    private Map<String, TransferInfo> transferInfoMap = new HashMap<>();
+    List<TransferInfo> allDownloadInfo;
 
     private DownloadManager() {
-        List<TransferInfo> allDownloadInfo = DBService.getInstance().getDownloadList();
-        for (TransferInfo info : allDownloadInfo) {
-            String filePath = info.getFilePath();
-            transferInfoMap.put(filePath, info);
-        }
+        allDownloadInfo = DBService.getInstance().getDownloadList();
     }
 
     private TransferInfo getDownloadInfo(String url, String filePath) {
-        TransferInfo downloadInfo = transferInfoMap.get(filePath);
-        if (downloadInfo == null) {
-            transferInfoMap.put(filePath, downloadInfo = new TransferInfo(url, filePath));
+        for (TransferInfo downloadInfo : allDownloadInfo) {
+            if (downloadInfo.getFilePath().equals(filePath)) {
+                return downloadInfo;
+            }
         }
+        // create a new instance if not found.
+        TransferInfo downloadInfo = new TransferInfo(url, filePath);
+        downloadInfo.createTime = allDownloadInfo.size();
+        allDownloadInfo.add(downloadInfo);
         return downloadInfo;
     }
 
     public void submit(String url, String filePath) {
         TransferInfo downloadInfo = getDownloadInfo(url, filePath);
-        submit(downloadInfo);
+        if (!downloadInfo.isFinished() || downloadConfig.forceReDownload) {
+            downloadInfo.setFinished(0);
+            downloadInfo.setCompletedSize(0);
+            downloadInfo.setStatus(DownloadInfo.Status.WAIT);
+            submit(downloadInfo);
+        } else {
+            //TODO 已经下完过了，无需重复下载,提示用户
+        }
     }
 
     private void submit(TransferInfo downloadInfo) {
@@ -72,8 +78,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public void stop(DownloadInfo downloadInfo) {
-        for (DownloadTask task :
-                runningTaskQueue) {
+        for (DownloadTask task : runningTaskQueue) {
             if (task.getDownloadInfo() == downloadInfo) {
                 task.stop();
             }
@@ -88,7 +93,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     @Override
     public List<TransferInfo> getDownloadingList() {
         List<TransferInfo> downloadList = new ArrayList<>();
-        for (TransferInfo info : transferInfoMap.values()) {
+        for (TransferInfo info : allDownloadInfo) {
             if (!info.isFinished()) {
                 downloadList.add(info);
             }
@@ -99,7 +104,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     @Override
     public List<TransferInfo> getDownloadedList() {
         List<TransferInfo> downloadList = new ArrayList<>();
-        for (TransferInfo info : transferInfoMap.values()) {
+        for (TransferInfo info : allDownloadInfo) {
             if (info.isFinished()) {
                 downloadList.add(info);
             }
@@ -109,7 +114,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public List<TransferInfo> getAllDownloadList() {
-        return new ArrayList<>(transferInfoMap.values());
+        return new ArrayList<>(allDownloadInfo);
     }
 
     @Override

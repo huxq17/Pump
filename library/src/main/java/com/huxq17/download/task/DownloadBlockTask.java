@@ -1,6 +1,8 @@
 package com.huxq17.download.task;
 
 
+import android.util.Log;
+
 import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.Utils.Util;
 

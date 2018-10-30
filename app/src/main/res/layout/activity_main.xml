@@ -12,7 +12,7 @@
         android:id="@+id/add_task"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="添加下载任务" />
+        android:text="添加单个任务" />
 
     <Button
         android:id="@+id/jump_download_list"

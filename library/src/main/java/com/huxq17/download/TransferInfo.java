@@ -10,11 +10,14 @@ public class TransferInfo extends DownloadInfo {
     public int threadNum = 3;
     public boolean forceReDownload = true;
     private File tempDir;
+    public long createTime;
     private ArrayList<File> downloadPartFiles = new ArrayList<>();
+    private File downloadFile;
 
     public TransferInfo(String url, String filePath) {
         this.url = url;
         this.filePath = filePath;
+        downloadFile = new File(filePath);
     }
 
     public void setCompletedSize(long completedSize) {
@@ -25,8 +28,8 @@ public class TransferInfo extends DownloadInfo {
         this.contentLength = contentLength;
     }
 
-    public void setProgress(int progress) {
-        this.progress = progress;
+    public void setSpeed(String speed) {
+        this.speed = speed;
     }
 
     public void setFinished(int finished) {
@@ -46,13 +49,13 @@ public class TransferInfo extends DownloadInfo {
 
     public boolean isFinished() {
         if (finished == 1) {
-            File downloadFile = new File(filePath);
             if (downloadFile.exists() && downloadFile.length() == contentLength) {
                 return true;
             } else if (downloadFile.exists()) {
                 downloadFile.delete();
             }
         }
+        finished = 0;
         return false;
     }
 
@@ -70,30 +73,30 @@ public class TransferInfo extends DownloadInfo {
         }
     }
 
-    public int getProgress() {
-        calculateDownloadProgress();
-        return progress;
-    }
-
     public void calculateDownloadProgress() {
         if (isFinished()) {
-            setProgress(100);
             setCompletedSize(contentLength);
-            setStatus(Status.FINISHED);
+            if (status == null) {
+                setStatus(Status.FINISHED);
+            }
         } else {
-            if (progress == 0) {
-                if (downloadPartFiles.size() == 0) {
-                    loadDownloadFiles();
-                }
-                int completedSize = 0;
-                int size = downloadPartFiles.size();
-                for (int i = 0; i < size; i++) {
-                    completedSize += downloadPartFiles.get(i).length();
-                }
-                int progress = (int) (completedSize * 1f / getContentLength() * 100);
-                setProgress(progress);
-                setCompletedSize(completedSize);
+            if (downloadPartFiles.size() == 0) {
+                loadDownloadFiles();
+            }
+            int completedSize = 0;
+            int size = downloadPartFiles.size();
+            for (int i = 0; i < size; i++) {
+                completedSize += downloadPartFiles.get(i).length();
+            }
+            setCompletedSize(completedSize);
+            if (status == null) {
+                setStatus(Status.WAIT);
             }
         }
+    }
+
+    @Override
+    public String getName() {
+        return downloadFile.getName();
     }
 }

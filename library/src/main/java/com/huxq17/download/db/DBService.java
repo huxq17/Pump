@@ -1,5 +1,6 @@
 package com.huxq17.download.db;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -33,14 +34,32 @@ public class DBService {
 
     public void updateInfo(TransferInfo downloadInfo) {
         SQLiteDatabase db = helper.getWritableDatabase();
-        String sql = "replace into " + Provider.DownloadInfo.TABLE_NAME +
-                "(" + Provider.DownloadInfo.URL + ", "
-                + Provider.DownloadInfo.PATH + ","
-                + Provider.DownloadInfo.THREAD_NUM + ","
-                + Provider.DownloadInfo.FILE_LENGTH + ","
-                + Provider.DownloadInfo.FINISHED + ") values(?,?,?,?,?)";
-        db.execSQL(sql, new Object[]{downloadInfo.getUrl(), downloadInfo.getFilePath(),
-                downloadInfo.threadNum, downloadInfo.getContentLength(), downloadInfo.getFinished()});
+        String querySql = "select * from " + Provider.DownloadInfo.TABLE_NAME + " where " + Provider.DownloadInfo.URL + "=? and "
+                + Provider.DownloadInfo.PATH + " =?";
+        Cursor cursor = db.rawQuery(querySql, new String[]{downloadInfo.getUrl(), downloadInfo.getFilePath()});
+        if (cursor.getCount() == 1) {
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(Provider.DownloadInfo.URL, downloadInfo.getUrl());
+            contentValues.put(Provider.DownloadInfo.PATH, downloadInfo.getFilePath());
+            contentValues.put(Provider.DownloadInfo.THREAD_NUM, downloadInfo.threadNum);
+            contentValues.put(Provider.DownloadInfo.FILE_LENGTH, downloadInfo.getContentLength());
+            contentValues.put(Provider.DownloadInfo.FINISHED, downloadInfo.getFinished());
+            db.update(Provider.DownloadInfo.TABLE_NAME, contentValues,
+                    Provider.DownloadInfo.URL + "=? and " + Provider.DownloadInfo.PATH + "=?",
+                    new String[]{downloadInfo.getUrl(),downloadInfo.getFilePath()});
+        } else {
+            String sql = "insert into " + Provider.DownloadInfo.TABLE_NAME +
+                    "(" + Provider.DownloadInfo.URL + ", "
+                    + Provider.DownloadInfo.PATH + ","
+                    + Provider.DownloadInfo.THREAD_NUM + ","
+                    + Provider.DownloadInfo.FILE_LENGTH + ","
+                    + Provider.DownloadInfo.FINISHED + ","
+                    + Provider.DownloadInfo.CREATE_TIME +
+                    ") values(?,?,?,?,?,?)";
+            db.execSQL(sql, new Object[]{downloadInfo.getUrl(), downloadInfo.getFilePath(),
+                    downloadInfo.threadNum, downloadInfo.getContentLength(), downloadInfo.getFinished(), downloadInfo.createTime});
+        }
+        cursor.close();
     }
 
     public long queryLocalLength(TransferInfo info) {
@@ -53,6 +72,7 @@ public class DBService {
             info.threadNum = cursor.getInt(2);
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));
+            info.createTime = cursor.getLong(5);
             length = info.getContentLength();
             break;
         }
@@ -63,13 +83,15 @@ public class DBService {
     public List<TransferInfo> getDownloadList() {
         List<TransferInfo> tasks = new ArrayList<>();
         SQLiteDatabase db = helper.getReadableDatabase();
-        String sql = "select * from " + Provider.DownloadInfo.TABLE_NAME;
+        String sql = "select * from " + Provider.DownloadInfo.TABLE_NAME + " order by " + Provider.DownloadInfo.CREATE_TIME;
         Cursor cursor = db.rawQuery(sql, null);
         while (cursor.moveToNext()) {
             TransferInfo info = new TransferInfo(cursor.getString(0), cursor.getString(1));
             info.threadNum = cursor.getInt(2);
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));
+            info.createTime = cursor.getLong(5);
+            info.calculateDownloadProgress();
             tasks.add(info);
         }
         cursor.close();

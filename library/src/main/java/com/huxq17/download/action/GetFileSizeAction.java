@@ -1,7 +1,5 @@
 package com.huxq17.download.action;
 
-import android.util.Log;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -17,6 +15,7 @@ public class GetFileSizeAction {
             conn = (HttpURLConnection) httpUrl.openConnection();
             conn.setInstanceFollowRedirects(true);
             conn.setRequestMethod("HEAD");
+            conn.setRequestProperty("Accept-Encoding", "identity");
             conn.setConnectTimeout(15000);
             conn.setReadTimeout(15000);
             if (conn.getResponseCode() == 302) {
@@ -24,6 +23,7 @@ public class GetFileSizeAction {
                 conn = (HttpURLConnection) httpUrl.openConnection();
                 conn.setInstanceFollowRedirects(true);
                 conn.setRequestMethod("HEAD");
+                conn.setRequestProperty("Accept-Encoding", "identity");
                 conn.setConnectTimeout(15000);
                 conn.setReadTimeout(15000);
             }
@@ -33,7 +33,7 @@ public class GetFileSizeAction {
                 String key = entry.getKey();
                 if (entry.getValue() != null)
                     for (String value : entry.getValue()) {
-                        Log.e("tag", "head key=" + key + ";value=" + value);
+//                        Log.e("tag", "head key=" + key + ";value=" + value);
                     }
             }
             String contentLengthStr = conn.getHeaderField("content-length");

@@ -19,6 +19,7 @@ public class DBOpenHelper extends SQLiteOpenHelper {
                 + Provider.DownloadInfo.THREAD_NUM + " INTEGER,"
                 + Provider.DownloadInfo.FILE_LENGTH + " INTEGER,"
                 + Provider.DownloadInfo.FINISHED + " INTEGER,"
+                + Provider.DownloadInfo.CREATE_TIME + " INTEGER,"
                 + "primary key(" + Provider.DownloadInfo.URL + "," + Provider.DownloadInfo.PATH + ")"
                 + ");");
     }

@@ -35,7 +35,6 @@ public class DownloadTask implements Task {
         notifyProgressChanged(downloadInfo);
     }
 
-
     private long start, end;
 
     @Override
@@ -43,6 +42,10 @@ public class DownloadTask implements Task {
         downLoadLifeCycleObserver.onDownloadStart(this);
         download();
         downLoadLifeCycleObserver.onDownloadEnd(this);
+    }
+
+    private void log(String msg) {
+        Log.e("tag", msg);
     }
 
     private void download() {
@@ -57,13 +60,9 @@ public class DownloadTask implements Task {
         if (fileLength != localLength) {
             //If file's length have changed,we need to re-download it.
             Util.deleteDir(tempDir);
-        } else {
-            if (downloadInfo.isFinished() && !downloadInfo.forceReDownload) {
-                //TODO 已经下完过了，无需重复下载,提示用户
-                return;
-            }
         }
         downloadInfo.setFinished(0);
+        downloadInfo.setCompletedSize(0);
         dbService.updateInfo(downloadInfo);
         int threadNum = downloadInfo.threadNum;
         String[] childList = tempDir.list();
@@ -91,7 +90,6 @@ public class DownloadTask implements Task {
             e.printStackTrace();
         }
         if (completedSize == fileLength) {
-            downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
             end = System.currentTimeMillis();
             Log.e("tag", "download spend=" + (end - start));
             File file = new File(downloadInfo.getFilePath());
@@ -106,8 +104,8 @@ public class DownloadTask implements Task {
             Log.e("tag", "merge files spend=" + (System.currentTimeMillis() - end));
             downloadInfo.setFinished(1);
             downloadInfo.setCompletedSize(completedSize);
-            downloadInfo.setProgress(100);
             dbService.updateInfo(downloadInfo);
+            downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
             notifyProgressChanged(downloadInfo);
 //            dbService.deleteInfoByUrl(downloadInfo.url);
         } else {
@@ -124,14 +122,48 @@ public class DownloadTask implements Task {
     public synchronized void onDownload(int length) {
         this.completedSize += length;
         downloadInfo.setCompletedSize(this.completedSize);
+        computeSpeed(length);
         int progress = (int) (completedSize * 1f / downloadInfo.getContentLength() * 100);
         if (progress != lastProgress) {
-//            Log.e("tag", "download progress=" + progress);
             lastProgress = progress;
-            downloadInfo.setProgress(progress);
             if (progress != 100) {
                 notifyProgressChanged(downloadInfo);
             }
+        }
+    }
+
+    private long totalRead = 0;
+    private long lastSpeedCountTime = 0;
+    final double NANOS_PER_SECOND = 1000000000.0;  //1秒=10亿nanoseconds
+    final double BYTES_PER_MIB = 1024 * 1024;    //1M=1024*1024byte
+    final double BYTES_PER_KB = 1024;
+    final String BYTE_SUFFIX = "B/s";
+    final String KB_SUFFIX = "KB/s";
+    final String MIB_SUFFIX = "M/s";
+
+    private void computeSpeed(int length) {
+        totalRead += length;
+        long curTime = System.nanoTime();
+        if (lastSpeedCountTime == 0) {
+            lastSpeedCountTime = curTime;
+        }
+        if (curTime >= lastSpeedCountTime + NANOS_PER_SECOND) {
+            double speed = 0;
+            String suffix = "";
+            if (totalRead < BYTES_PER_KB) {
+                speed = NANOS_PER_SECOND * totalRead / (curTime - lastSpeedCountTime);
+                suffix = BYTE_SUFFIX;
+            } else if (totalRead >= BYTES_PER_KB && totalRead < BYTES_PER_MIB) {
+                speed = NANOS_PER_SECOND * totalRead / BYTES_PER_KB / (curTime - lastSpeedCountTime);
+                suffix = KB_SUFFIX;
+            } else if (totalRead >= BYTES_PER_MIB) {
+                speed = NANOS_PER_SECOND * totalRead / BYTES_PER_MIB / (curTime - lastSpeedCountTime);
+                suffix = MIB_SUFFIX;
+            }
+            speed = (double) Math.round(speed * 100) / 100;
+            downloadInfo.setSpeed(speed + suffix);
+            lastSpeedCountTime = curTime;
+            totalRead = 0;
         }
     }
 

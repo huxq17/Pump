@@ -1,18 +1,16 @@
 package com.huxq17.download;
 
 
-import java.io.File;
-
 public class DownloadInfo {
     private Object tag;
     protected String url;
     protected String filePath;
 
-    protected int progress;
     protected long completedSize;
     protected long contentLength;
     protected int finished = 0;
     protected Status status;
+    protected String speed;
 
     public void setTag(Object tag) {
         this.tag = tag;
@@ -22,7 +20,10 @@ public class DownloadInfo {
         return tag;
     }
 
-    private File file;
+    public String getSpeed() {
+        return speed;
+    }
+
 
     public String getUrl() {
         return url;
@@ -33,10 +34,7 @@ public class DownloadInfo {
     }
 
     public String getName() {
-        if (file == null) {
-            file = new File(filePath);
-        }
-        return file.getName();
+        return null;
     }
 
     public long getCompletedSize() {
@@ -48,7 +46,10 @@ public class DownloadInfo {
     }
 
     public int getProgress() {
-        return progress;
+        if (contentLength == 0) {
+            return 0;
+        }
+        return (int) (completedSize * 1f / contentLength * 100);
     }
 
     public int getFinished() {
@@ -64,7 +65,7 @@ public class DownloadInfo {
     }
 
     public enum Status {
-        WAIT(0),STOPPED(1), RUNNING(2), FINISHED(3), FAILED(4);
+        WAIT(0), STOPPED(1), RUNNING(2), FINISHED(3), FAILED(4);
 
         private int status;
 

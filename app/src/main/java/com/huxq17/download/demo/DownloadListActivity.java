@@ -26,7 +26,7 @@ public class DownloadListActivity extends AppCompatActivity {
         public void onProgressUpdate(int progress) {
             DownloadInfo downloadInfo = getDownloadInfo();
             DownloadViewHolder viewHolder = (DownloadViewHolder) downloadInfo.getTag();
-            Log.e("main", "Main progress=" + progress + ";filePath=" + downloadInfo.getFilePath());
+//            Log.e("main", "Main progress=" + progress + ";filePath=" + downloadInfo.getFilePath());
             if (viewHolder != null) {
                 DownloadInfo tag = map.get(viewHolder);
                 if (tag.getFilePath().equals(downloadInfo.getFilePath())) {
@@ -99,13 +99,19 @@ public class DownloadListActivity extends AppCompatActivity {
         ProgressBar progressBar;
         TextView tvName;
         TextView tvStatus;
+        TextView tvSpeed;
+        TextView tvDownload;
         DownloadInfo downloadInfo;
+        private String totalSizeString;
+        long totalSize;
 
         public DownloadViewHolder(@NonNull View itemView) {
             super(itemView);
             progressBar = itemView.findViewById(R.id.pb_progress);
             tvName = itemView.findViewById(R.id.tv_name);
             tvStatus = itemView.findViewById(R.id.bt_status);
+            tvSpeed = itemView.findViewById(R.id.tv_speed);
+            tvDownload = itemView.findViewById(R.id.tv_download);
             tvStatus.setOnClickListener(this);
         }
 
@@ -113,6 +119,7 @@ public class DownloadListActivity extends AppCompatActivity {
             this.downloadInfo = downloadInfo;
             int progress = downloadInfo.getProgress();
             tvName.setText(downloadInfo.getName());
+            String speed = "";
             progressBar.setProgress(progress);
             switch (downloadInfo.getStatus()) {
                 case STOPPED:
@@ -123,6 +130,7 @@ public class DownloadListActivity extends AppCompatActivity {
                     break;
                 case RUNNING:
                     tvStatus.setText("暂停");
+                    speed = downloadInfo.getSpeed();
                     break;
                 case FINISHED:
                     tvStatus.setText("下载完成");
@@ -131,6 +139,13 @@ public class DownloadListActivity extends AppCompatActivity {
                     tvStatus.setText("重试");
                     break;
             }
+            tvSpeed.setText(speed);
+            long completedSize = downloadInfo.getCompletedSize();
+            if (totalSize==0) {
+                long totalSize = downloadInfo.getContentLength();
+                totalSizeString = "/" + Util.getDataSize(totalSize);
+            }
+            tvDownload.setText(Util.getDataSize(completedSize) + totalSizeString);
         }
 
         @Override
