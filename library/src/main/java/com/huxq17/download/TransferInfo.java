@@ -13,11 +13,20 @@ public class TransferInfo extends DownloadInfo {
     public long createTime;
     private ArrayList<File> downloadPartFiles = new ArrayList<>();
     private File downloadFile;
+    private boolean needDelete = false;
 
     public TransferInfo(String url, String filePath) {
         this.url = url;
         this.filePath = filePath;
         downloadFile = new File(filePath);
+    }
+
+    public void setNeedDelete(boolean needDelete) {
+        this.needDelete = needDelete;
+    }
+
+    public boolean isNeedDelete() {
+        return needDelete;
     }
 
     public void setCompletedSize(long completedSize) {
@@ -38,6 +47,11 @@ public class TransferInfo extends DownloadInfo {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public void setErrorCode(int code) {
+        this.erroCode = code;
+        this.status = Status.FAILED;
     }
 
     public File getTempDir() {

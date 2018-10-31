@@ -11,6 +11,7 @@ public class DownloadInfo {
     protected int finished = 0;
     protected Status status;
     protected String speed;
+    protected int erroCode;
 
     public void setTag(Object tag) {
         this.tag = tag;
@@ -24,6 +25,9 @@ public class DownloadInfo {
         return speed;
     }
 
+    public int getErroCode() {
+        return erroCode;
+    }
 
     public String getUrl() {
         return url;
@@ -65,13 +69,8 @@ public class DownloadInfo {
     }
 
     public enum Status {
-        WAIT(0), STOPPED(1), RUNNING(2), FINISHED(3), FAILED(4);
+        WAIT, STOPPED, STOPPING, RUNNING, FINISHED, FAILED
 
-        private int status;
-
-        Status(int status) {
-            this.status = status;
-        }
     }
 
     @Override

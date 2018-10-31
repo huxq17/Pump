@@ -5,6 +5,7 @@ import android.util.Log;
 import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.DownloadInfo;
+import com.huxq17.download.SpeedMonitor;
 import com.huxq17.download.TransferInfo;
 import com.huxq17.download.TaskManager;
 import com.huxq17.download.Utils.Util;
@@ -23,12 +24,14 @@ public class DownloadTask implements Task {
     private boolean isStopped;
     private IMessageCenter messageCenter;
     private DownLoadLifeCycleObserver downLoadLifeCycleObserver;
+    private SpeedMonitor speedMonitor;
 
     public DownloadTask(TransferInfo downloadInfo, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         this.downloadInfo = downloadInfo;
         completedSize = 0l;
         isStopped = false;
         dbService = DBService.getInstance();
+        speedMonitor = new SpeedMonitor(downloadInfo);
         messageCenter = ServiceAgency.getService(IMessageCenter.class);
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
         downloadInfo.setStatus(DownloadInfo.Status.WAIT);
@@ -40,7 +43,12 @@ public class DownloadTask implements Task {
     @Override
     public void run() {
         downLoadLifeCycleObserver.onDownloadStart(this);
-        download();
+        if (!downloadInfo.isNeedDelete()) {
+            download();
+        } else {
+            Util.deleteDir(downloadInfo.getTempDir());
+            dbService.deleteInfo(downloadInfo.getUrl(), downloadInfo.getFilePath());
+        }
         downLoadLifeCycleObserver.onDownloadEnd(this);
     }
 
@@ -53,7 +61,11 @@ public class DownloadTask implements Task {
         start = System.currentTimeMillis();
         String url = downloadInfo.getUrl();
         GetFileSizeAction getFileSizeAction = new GetFileSizeAction();
-        long fileLength = getFileSizeAction.proceed(url);
+        long fileLength = getFileSizeAction.proceed(downloadInfo);
+        if (fileLength == -1) {
+            notifyProgressChanged(downloadInfo);
+            return;
+        }
         File tempDir = downloadInfo.getTempDir();
         long localLength = dbService.queryLocalLength(downloadInfo);
         if (fileLength != localLength) {
@@ -89,13 +101,19 @@ public class DownloadTask implements Task {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        File file = new File(downloadInfo.getFilePath());
+        if (file.exists()) {
+            file.delete();
+        }
+        if (downloadInfo.isNeedDelete()) {
+            Util.deleteDir(tempDir);
+            dbService.deleteInfo(downloadInfo.getUrl(), downloadInfo.getFilePath());
+            return;
+        }
         if (completedSize == fileLength) {
             end = System.currentTimeMillis();
             Log.e("tag", "download spend=" + (end - start));
-            File file = new File(downloadInfo.getFilePath());
-            if (file.exists()) {
-                file.delete();
-            }
+
             File[] downloadPartFiles = tempDir.listFiles();
             if (downloadPartFiles != null && downloadPartFiles.length > 0) {
                 Util.mergeFiles(downloadPartFiles, file);
@@ -107,13 +125,15 @@ public class DownloadTask implements Task {
             dbService.updateInfo(downloadInfo);
             downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
             notifyProgressChanged(downloadInfo);
-//            dbService.deleteInfoByUrl(downloadInfo.url);
         } else {
-            if (downloadInfo.getStatus() == DownloadInfo.Status.RUNNING) {
-                downloadInfo.setStatus(DownloadInfo.Status.FAILED);
-                notifyProgressChanged(downloadInfo);
+            if (downloadInfo.getStatus() != DownloadInfo.Status.STOPPING) {
+                if (downloadInfo.getStatus() != DownloadInfo.Status.FAILED) {
+                    downloadInfo.setStatus(DownloadInfo.Status.FAILED);
+                }
+            } else {
+                downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
             }
-            Log.e("tag", "download failed.");
+            notifyProgressChanged(downloadInfo);
         }
     }
 
@@ -122,7 +142,7 @@ public class DownloadTask implements Task {
     public synchronized void onDownload(int length) {
         this.completedSize += length;
         downloadInfo.setCompletedSize(this.completedSize);
-        computeSpeed(length);
+        speedMonitor.compute(length);
         int progress = (int) (completedSize * 1f / downloadInfo.getContentLength() * 100);
         if (progress != lastProgress) {
             lastProgress = progress;
@@ -132,40 +152,6 @@ public class DownloadTask implements Task {
         }
     }
 
-    private long totalRead = 0;
-    private long lastSpeedCountTime = 0;
-    final double NANOS_PER_SECOND = 1000000000.0;  //1秒=10亿nanoseconds
-    final double BYTES_PER_MIB = 1024 * 1024;    //1M=1024*1024byte
-    final double BYTES_PER_KB = 1024;
-    final String BYTE_SUFFIX = "B/s";
-    final String KB_SUFFIX = "KB/s";
-    final String MIB_SUFFIX = "M/s";
-
-    private void computeSpeed(int length) {
-        totalRead += length;
-        long curTime = System.nanoTime();
-        if (lastSpeedCountTime == 0) {
-            lastSpeedCountTime = curTime;
-        }
-        if (curTime >= lastSpeedCountTime + NANOS_PER_SECOND) {
-            double speed = 0;
-            String suffix = "";
-            if (totalRead < BYTES_PER_KB) {
-                speed = NANOS_PER_SECOND * totalRead / (curTime - lastSpeedCountTime);
-                suffix = BYTE_SUFFIX;
-            } else if (totalRead >= BYTES_PER_KB && totalRead < BYTES_PER_MIB) {
-                speed = NANOS_PER_SECOND * totalRead / BYTES_PER_KB / (curTime - lastSpeedCountTime);
-                suffix = KB_SUFFIX;
-            } else if (totalRead >= BYTES_PER_MIB) {
-                speed = NANOS_PER_SECOND * totalRead / BYTES_PER_MIB / (curTime - lastSpeedCountTime);
-                suffix = MIB_SUFFIX;
-            }
-            speed = (double) Math.round(speed * 100) / 100;
-            downloadInfo.setSpeed(speed + suffix);
-            lastSpeedCountTime = curTime;
-            totalRead = 0;
-        }
-    }
 
     private void notifyProgressChanged(TransferInfo downloadInfo) {
         messageCenter.notifyProgressChanged(downloadInfo);
@@ -177,11 +163,17 @@ public class DownloadTask implements Task {
     }
 
     public void stop() {
-        downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
+        downloadInfo.setStatus(DownloadInfo.Status.STOPPING);
         notifyProgressChanged(downloadInfo);
     }
 
-    public boolean isStopped() {
-        return downloadInfo.getStatus() == DownloadInfo.Status.STOPPED;
+    public void setErrorCode(int errorCode) {
+        if (downloadInfo.getStatus() != DownloadInfo.Status.STOPPING) {
+            downloadInfo.setErrorCode(errorCode);
+        }
+    }
+
+    public boolean shouldStop() {
+        return downloadInfo.getStatus() == DownloadInfo.Status.STOPPING || downloadInfo.isNeedDelete();
     }
 }

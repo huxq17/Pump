@@ -17,6 +17,10 @@ public class Pump {
         ServiceAgency.getService(IDownloadManager.class).stop(downloadInfo);
     }
 
+    public static void delete(DownloadInfo downloadInfo) {
+        ServiceAgency.getService(IDownloadManager.class).delete(downloadInfo);
+    }
+
     public static void reStart(DownloadInfo downloadInfo) {
         ServiceAgency.getService(IDownloadManager.class).reStart(downloadInfo);
     }

@@ -97,7 +97,7 @@ public class Util {
 //            for (int i = 1; i < sortedFiles.length; i++) {
 //                File file = sortedFiles[i];
 //                fileInputStream = new FileInputStream(file);
-//                while ((len = fileInputStream.read(buffer)) != -1) {
+//                while ((len = fileInputStream.compute(buffer)) != -1) {
 //                    outputStream.write(buffer, 0, len);
 //                }
 //                fileInputStream.close();

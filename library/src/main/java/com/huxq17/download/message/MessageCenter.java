@@ -24,7 +24,7 @@ public class MessageCenter implements IMessageCenter {
             for (int i = 0; i < observerSize; i++) {
                 DownloadObserver observer = observers.get(i);
                 observer.setDownloadInfo(downloadInfo);
-                observer.onProgressUpdate(downloadInfo.getProgress());
+                observer.onProgress(downloadInfo.getProgress());
             }
         }
     };

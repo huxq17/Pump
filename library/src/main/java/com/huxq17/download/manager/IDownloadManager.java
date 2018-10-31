@@ -11,8 +11,13 @@ import java.util.List;
 
 public interface IDownloadManager {
     void start(Context context);
+
     void submit(String url, String filePath);
+
+    void delete(DownloadInfo downloadInfo);
+
     void stop(DownloadInfo downloadInfo);
+
     void reStart(DownloadInfo downloadInfo);
 
     DownloadTask take() throws InterruptedException;

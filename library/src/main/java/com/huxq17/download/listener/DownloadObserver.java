@@ -9,7 +9,7 @@ public abstract class DownloadObserver {
 
     private DownloadInfo downloadInfo;
 
-    public abstract void onProgressUpdate(int progress);
+    public abstract void onProgress(int progress);
 
     public abstract void onError(int errorCode);
 

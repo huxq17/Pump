@@ -1,9 +1,8 @@
 package com.huxq17.download.task;
 
 
-import android.util.Log;
-
 import com.huxq17.download.DownloadBatch;
+import com.huxq17.download.ErrorCode;
 import com.huxq17.download.Utils.Util;
 
 import java.io.BufferedOutputStream;
@@ -61,16 +60,14 @@ public class DownloadBlockTask implements Task {
                     int len;
                     //TODO 写入文件的时候可以尝试用MappedByteBuffer共享内存优化。 用okio优化比较下
                     fileOutputStream = new FileOutputStream(tempFile, true);
-                    int sum = 0;
-                    while (!downloadTask.isStopped() && (len = inputStream.read(buffer)) != -1) {
+                    while (!downloadTask.shouldStop() && (len = inputStream.read(buffer)) != -1) {
                         fileOutputStream.write(buffer, 0, len);
-                        sum += len;
                         downloadTask.onDownload(len);
                     }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                //TODO download failed.
+                downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
             } finally {
                 Util.closeQuietly(inputStream);
                 if (conn != null) {

@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressDialog progressDialog;
     DownloadObserver downloadObserver = new DownloadObserver() {
         @Override
-        public void onProgressUpdate(int progress) {
+        public void onProgress(int progress) {
             DownloadInfo downloadInfo = getDownloadInfo();
             if (downloadInfo.getUrl().equals(pipixiaUrl)) {
                 progressDialog.setProgress(progress);

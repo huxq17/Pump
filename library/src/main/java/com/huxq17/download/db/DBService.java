@@ -32,7 +32,7 @@ public class DBService {
         return helper.getWritableDatabase();
     }
 
-    public void updateInfo(TransferInfo downloadInfo) {
+    public synchronized void updateInfo(TransferInfo downloadInfo) {
         SQLiteDatabase db = helper.getWritableDatabase();
         String querySql = "select * from " + Provider.DownloadInfo.TABLE_NAME + " where " + Provider.DownloadInfo.URL + "=? and "
                 + Provider.DownloadInfo.PATH + " =?";
@@ -46,7 +46,7 @@ public class DBService {
             contentValues.put(Provider.DownloadInfo.FINISHED, downloadInfo.getFinished());
             db.update(Provider.DownloadInfo.TABLE_NAME, contentValues,
                     Provider.DownloadInfo.URL + "=? and " + Provider.DownloadInfo.PATH + "=?",
-                    new String[]{downloadInfo.getUrl(),downloadInfo.getFilePath()});
+                    new String[]{downloadInfo.getUrl(), downloadInfo.getFilePath()});
         } else {
             String sql = "insert into " + Provider.DownloadInfo.TABLE_NAME +
                     "(" + Provider.DownloadInfo.URL + ", "
@@ -98,17 +98,12 @@ public class DBService {
         return tasks;
     }
 
-    public void clearByUrl(String url) {
-        deleteInfoByUrl(url);
-    }
-
-
-    public void deleteInfoByUrl(String url) {
+    public synchronized void deleteInfo(String url, String filePath) {
         SQLiteDatabase db = helper.getWritableDatabase();
-        int result = db.delete(Provider.DownloadInfo.TABLE_NAME, Provider.DownloadInfo.URL + "=?", new String[]{url});
+        int result = db.delete(Provider.DownloadInfo.TABLE_NAME, Provider.DownloadInfo.URL + "=? and "
+                + Provider.DownloadInfo.PATH + " =?", new String[]{url, filePath});
         Log.d("tag", "deleteInfo url=" + url + ";result=" + result);
     }
-
     public void close() {
         helper.close();
     }

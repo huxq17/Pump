@@ -1,7 +1,9 @@
 package com.huxq17.download.demo;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,13 +25,12 @@ import java.util.List;
 public class DownloadListActivity extends AppCompatActivity {
     DownloadObserver downloadObserver = new DownloadObserver() {
         @Override
-        public void onProgressUpdate(int progress) {
+        public void onProgress(int progress) {
             DownloadInfo downloadInfo = getDownloadInfo();
             DownloadViewHolder viewHolder = (DownloadViewHolder) downloadInfo.getTag();
-//            Log.e("main", "Main progress=" + progress + ";filePath=" + downloadInfo.getFilePath());
             if (viewHolder != null) {
                 DownloadInfo tag = map.get(viewHolder);
-                if (tag.getFilePath().equals(downloadInfo.getFilePath())) {
+                if (tag != null && tag.getFilePath().equals(downloadInfo.getFilePath())) {
                     viewHolder.bindData(downloadInfo);
                 }
             }
@@ -95,7 +96,7 @@ public class DownloadListActivity extends AppCompatActivity {
         }
     }
 
-    public static class DownloadViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public static class DownloadViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         ProgressBar progressBar;
         TextView tvName;
         TextView tvStatus;
@@ -104,6 +105,7 @@ public class DownloadListActivity extends AppCompatActivity {
         DownloadInfo downloadInfo;
         private String totalSizeString;
         long totalSize;
+        AlertDialog dialog;
 
         public DownloadViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -113,6 +115,22 @@ public class DownloadListActivity extends AppCompatActivity {
             tvSpeed = itemView.findViewById(R.id.tv_speed);
             tvDownload = itemView.findViewById(R.id.tv_download);
             tvStatus.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
+            dialog = new AlertDialog.Builder(itemView.getContext())
+                    .setTitle("是否删除下载")
+                    .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Pump.delete(downloadInfo);
+                        }
+                    })
+                    .setNegativeButton("否", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    })
+                    .create();
         }
 
         public void bindData(DownloadInfo downloadInfo) {
@@ -123,7 +141,14 @@ public class DownloadListActivity extends AppCompatActivity {
             progressBar.setProgress(progress);
             switch (downloadInfo.getStatus()) {
                 case STOPPED:
-                    tvStatus.setText("开始");
+                    if (progress == 0) {
+                        tvStatus.setText("开始");
+                    } else {
+                        tvStatus.setText("继续");
+                    }
+                    break;
+                case STOPPING:
+                    tvStatus.setText("停止中");
                     break;
                 case WAIT:
                     tvStatus.setText("等待中");
@@ -141,7 +166,7 @@ public class DownloadListActivity extends AppCompatActivity {
             }
             tvSpeed.setText(speed);
             long completedSize = downloadInfo.getCompletedSize();
-            if (totalSize==0) {
+            if (totalSize == 0) {
                 long totalSize = downloadInfo.getContentLength();
                 totalSizeString = "/" + Util.getDataSize(totalSize);
             }
@@ -168,6 +193,12 @@ public class DownloadListActivity extends AppCompatActivity {
                     Pump.reStart(downloadInfo);
                     break;
             }
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            dialog.show();
+            return true;
         }
     }
 

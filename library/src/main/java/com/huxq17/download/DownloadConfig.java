@@ -12,5 +12,5 @@ public class DownloadConfig {
     /**
      * 是否重复下载已经下载完成了的文件
      */
-    public boolean forceReDownload = true;
+    public boolean forceReDownload = false;
 }
