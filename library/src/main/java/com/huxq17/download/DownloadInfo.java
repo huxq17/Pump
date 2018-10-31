@@ -1,8 +1,10 @@
 package com.huxq17.download;
 
 
+import java.lang.ref.WeakReference;
+
 public class DownloadInfo {
-    private Object tag;
+    private WeakReference wfTag;
     protected String url;
     protected String filePath;
 
@@ -11,22 +13,23 @@ public class DownloadInfo {
     protected int finished = 0;
     protected Status status;
     protected String speed;
-    protected int erroCode;
+    protected int errorCode;
+
 
     public void setTag(Object tag) {
-        this.tag = tag;
+        wfTag = new WeakReference<>(tag);
     }
 
     public Object getTag() {
-        return tag;
+        return wfTag == null ? null : wfTag.get();
     }
 
     public String getSpeed() {
         return speed;
     }
 
-    public int getErroCode() {
-        return erroCode;
+    public int getErrorCode() {
+        return errorCode;
     }
 
     public String getUrl() {
@@ -69,7 +72,7 @@ public class DownloadInfo {
     }
 
     public enum Status {
-        WAIT, STOPPED, STOPPING, RUNNING, FINISHED, FAILED
+        STOPPED, WAIT, PAUSED, PAUSING, RUNNING, FINISHED, FAILED
 
     }
 

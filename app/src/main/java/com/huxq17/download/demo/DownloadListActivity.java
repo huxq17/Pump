@@ -63,6 +63,9 @@ public class DownloadListActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         Pump.unSubscribe(downloadObserver);
+        for (DownloadInfo downloadInfo : downloadInfoList) {
+            Pump.stop(downloadInfo);
+        }
     }
 
     public static class DownloadAdapter extends RecyclerView.Adapter<DownloadViewHolder> {
@@ -149,14 +152,13 @@ public class DownloadListActivity extends AppCompatActivity {
             progressBar.setProgress(progress);
             switch (downloadInfo.getStatus()) {
                 case STOPPED:
-                    if (progress == 0) {
-                        tvStatus.setText("开始");
-                    } else {
-                        tvStatus.setText("继续");
-                    }
+                    tvStatus.setText("开始");
                     break;
-                case STOPPING:
+                case PAUSING:
                     tvStatus.setText("停止中");
+                    break;
+                case PAUSED:
+                    tvStatus.setText("继续");
                     break;
                 case WAIT:
                     tvStatus.setText("等待中");
@@ -186,13 +188,16 @@ public class DownloadListActivity extends AppCompatActivity {
             Log.e("tag", "onclick");
             switch (downloadInfo.getStatus()) {
                 case STOPPED:
+                    Pump.download(downloadInfo.getUrl(), downloadInfo.getFilePath());
+                    break;
+                case PAUSED:
                     Pump.reStart(downloadInfo);
                     break;
                 case WAIT:
                     //do nothing.
                     break;
                 case RUNNING:
-                    Pump.stop(downloadInfo);
+                    Pump.pause(downloadInfo);
                     break;
                 case FINISHED:
                     Toast.makeText(v.getContext(), "下载完成", Toast.LENGTH_SHORT).show();

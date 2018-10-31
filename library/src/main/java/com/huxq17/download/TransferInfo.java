@@ -6,7 +6,7 @@ import com.huxq17.download.Utils.Util;
 import java.io.File;
 import java.util.ArrayList;
 
-public class TransferInfo extends DownloadInfo {
+public class TransferInfo extends DownloadInfo implements Cloneable {
     public int threadNum = 3;
     public boolean forceReDownload = true;
     private File tempDir;
@@ -14,11 +14,27 @@ public class TransferInfo extends DownloadInfo {
     private ArrayList<File> downloadPartFiles = new ArrayList<>();
     private File downloadFile;
     private volatile boolean needDelete = false;
+    private boolean isUsed = false;
 
     public TransferInfo(String url, String filePath) {
         this.url = url;
         this.filePath = filePath;
         downloadFile = new File(filePath);
+    }
+
+    @Override
+    public TransferInfo clone() throws CloneNotSupportedException {
+        TransferInfo transferInfo = (TransferInfo) super.clone();
+        transferInfo.downloadPartFiles = (ArrayList<File>) downloadPartFiles.clone();
+        return transferInfo;
+    }
+
+    public void setUsed(boolean used) {
+        this.isUsed = used;
+    }
+
+    public boolean isUsed() {
+        return isUsed;
     }
 
     public void setNeedDelete(boolean needDelete) {
@@ -50,7 +66,7 @@ public class TransferInfo extends DownloadInfo {
     }
 
     public void setErrorCode(int code) {
-        this.erroCode = code;
+        this.errorCode = code;
         this.status = Status.FAILED;
     }
 
@@ -116,5 +132,25 @@ public class TransferInfo extends DownloadInfo {
     @Override
     public String getName() {
         return downloadFile.getName();
+    }
+
+    @Override
+    public String toString() {
+        return "TransferInfo{" +
+                "threadNum=" + threadNum +
+                ", forceReDownload=" + forceReDownload +
+                ", tempDir=" + tempDir +
+                ", downloadPartFiles=" + downloadPartFiles +
+                ", downloadFile=" + downloadFile +
+                ", needDelete=" + needDelete +
+                ", isUsed=" + isUsed +
+                ", url='" + url + '\'' +
+                ", filePath='" + filePath + '\'' +
+                ", completedSize=" + completedSize +
+                ", contentLength=" + contentLength +
+                ", finished=" + finished +
+                ", status=" + status +
+                ", speed='" + speed + '\'' +
+                '}';
     }
 }

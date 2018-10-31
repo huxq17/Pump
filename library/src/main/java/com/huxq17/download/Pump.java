@@ -13,6 +13,9 @@ public class Pump {
         ServiceAgency.getService(IDownloadManager.class).submit(url, filePath);
     }
 
+    public static void pause(DownloadInfo downloadInfo) {
+        ServiceAgency.getService(IDownloadManager.class).pause(downloadInfo);
+    }
     public static void stop(DownloadInfo downloadInfo) {
         ServiceAgency.getService(IDownloadManager.class).stop(downloadInfo);
     }

@@ -31,10 +31,12 @@ public class DownloadTask implements Task {
         completedSize = 0l;
         isStopped = false;
         dbService = DBService.getInstance();
+        downloadInfo.setUsed(true);
         speedMonitor = new SpeedMonitor(downloadInfo);
         messageCenter = ServiceAgency.getService(IMessageCenter.class);
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
         downloadInfo.setStatus(DownloadInfo.Status.WAIT);
+        Log.e("tag","name="+downloadInfo.getName()+";status="+downloadInfo.getStatus());
         notifyProgressChanged(downloadInfo);
     }
 
@@ -119,12 +121,12 @@ public class DownloadTask implements Task {
                 downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
                 notifyProgressChanged(downloadInfo);
             } else {
-                if (downloadInfo.getStatus() != DownloadInfo.Status.STOPPING) {
+                if (downloadInfo.getStatus() != DownloadInfo.Status.PAUSING) {
                     if (downloadInfo.getStatus() != DownloadInfo.Status.FAILED) {
                         downloadInfo.setStatus(DownloadInfo.Status.FAILED);
                     }
                 } else {
-                    downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
+                    downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
                 }
                 notifyProgressChanged(downloadInfo);
             }
@@ -148,7 +150,8 @@ public class DownloadTask implements Task {
 
 
     private void notifyProgressChanged(TransferInfo downloadInfo) {
-        messageCenter.notifyProgressChanged(downloadInfo);
+        if (messageCenter != null)
+            messageCenter.notifyProgressChanged(downloadInfo);
     }
 
 
@@ -156,18 +159,24 @@ public class DownloadTask implements Task {
         return downloadInfo;
     }
 
-    public void stop() {
-        downloadInfo.setStatus(DownloadInfo.Status.STOPPING);
+    public void pause() {
+        downloadInfo.setStatus(DownloadInfo.Status.PAUSING);
         notifyProgressChanged(downloadInfo);
     }
 
+    public void stop() {
+        downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
+        messageCenter = null;
+    }
+
     public void setErrorCode(int errorCode) {
-        if (downloadInfo.getStatus() != DownloadInfo.Status.STOPPING) {
+        if (downloadInfo.getStatus() != DownloadInfo.Status.PAUSING) {
             downloadInfo.setErrorCode(errorCode);
         }
     }
 
     public boolean shouldStop() {
-        return downloadInfo.getStatus() == DownloadInfo.Status.STOPPING || downloadInfo.isNeedDelete();
+        DownloadInfo.Status status = downloadInfo.getStatus();
+        return status == DownloadInfo.Status.PAUSING || status == DownloadInfo.Status.STOPPED || downloadInfo.isNeedDelete();
     }
 }

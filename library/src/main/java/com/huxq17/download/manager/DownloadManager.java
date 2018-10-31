@@ -45,7 +45,17 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     private TransferInfo getDownloadInfo(String url, String filePath) {
         TransferInfo downloadInfo = allDownloadInfo.get(filePath);
         if (downloadInfo != null) {
-            return downloadInfo;
+            if (!downloadInfo.isUsed()) {
+                return downloadInfo;
+            } else {
+                try {
+                    TransferInfo transferInfo = downloadInfo.clone();
+                    allDownloadInfo.put(filePath,transferInfo);
+                    return transferInfo;
+                } catch (CloneNotSupportedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         // create a new instance if not found.
         downloadInfo = new TransferInfo(url, filePath);
@@ -60,7 +70,11 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         if (!downloadInfo.isFinished() || downloadConfig.forceReDownload) {
             downloadInfo.setFinished(0);
             downloadInfo.setCompletedSize(0);
+            downloadInfo.setTag(null);
             downloadInfo.setStatus(DownloadInfo.Status.WAIT);
+            if (downloadInfo.getDownloadFile().exists()) {
+                downloadInfo.getDownloadFile().delete();
+            }
             submit(downloadInfo);
         } else {
             downloadInfo.setErrorCode(ErrorCode.FILE_ALREADY_EXISTS);
@@ -114,6 +128,15 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     }
 
     @Override
+    public void pause(DownloadInfo downloadInfo) {
+        for (DownloadTask task : runningTaskQueue) {
+            if (task.getDownloadInfo() == downloadInfo) {
+                task.pause();
+            }
+        }
+    }
+
+    @Override
     public void reStart(DownloadInfo downloadInfo) {
         submit((TransferInfo) downloadInfo);
     }
@@ -155,7 +178,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         context.stopService(new Intent(context, DownloadService.class));
     }
 
-    public DownloadTask take() throws InterruptedException {
+    public DownloadTask acquireTask() throws InterruptedException {
         semaphore.acquire();
         return readyTaskQueue.take();
     }

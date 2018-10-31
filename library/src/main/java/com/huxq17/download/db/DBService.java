@@ -102,7 +102,7 @@ public class DBService {
         SQLiteDatabase db = helper.getWritableDatabase();
         int result = db.delete(Provider.DownloadInfo.TABLE_NAME, Provider.DownloadInfo.URL + "=? and "
                 + Provider.DownloadInfo.PATH + " =?", new String[]{url, filePath});
-        Log.d("tag", "deleteInfo url=" + url + ";result=" + result);
+        Log.d("tag", "deleteInfo PATH=" + filePath + ";result=" + result);
     }
     public void close() {
         helper.close();

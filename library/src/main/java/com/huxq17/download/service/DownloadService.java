@@ -45,7 +45,7 @@ public class DownloadService extends Service implements Task {
     public void run() {
         while (isRunning) {
             try {
-                DownloadTask downloadTask = downloadManager.take();
+                DownloadTask downloadTask = downloadManager.acquireTask();
                 if (downloadTask != null) {
                     TaskManager.execute(downloadTask);
                 } else {

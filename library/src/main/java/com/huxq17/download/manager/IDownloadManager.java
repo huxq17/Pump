@@ -16,11 +16,13 @@ public interface IDownloadManager {
 
     void delete(DownloadInfo downloadInfo);
 
+    void pause(DownloadInfo downloadInfo);
+
     void stop(DownloadInfo downloadInfo);
 
     void reStart(DownloadInfo downloadInfo);
 
-    DownloadTask take() throws InterruptedException;
+    DownloadTask acquireTask() throws InterruptedException;
 
 
     List<TransferInfo> getDownloadingList();
