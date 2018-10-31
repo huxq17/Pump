@@ -10,6 +10,7 @@ import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.TransferInfo;
+import com.huxq17.download.Utils.Util;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownLoadLifeCycleObserver;
 import com.huxq17.download.message.IMessageCenter;
@@ -93,11 +94,14 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
             if (readyTaskQueue.contains(downloadInfo)) {
                 readyTaskQueue.remove(downloadInfo);
             } else {
-                TransferInfo transferInfo = (TransferInfo) downloadInfo;
-                transferInfo.setNeedDelete(true);
+                synchronized (runningTaskQueue) {
+                    TransferInfo transferInfo = (TransferInfo) downloadInfo;
+                    transferInfo.setNeedDelete(true);
+                    transferInfo.getDownloadFile().delete();
+                }
             }
+            DBService.getInstance().deleteInfo(downloadInfo.getUrl(), downloadInfo.getFilePath());
         }
-        DBService.getInstance().deleteInfo(downloadInfo.getUrl(), downloadInfo.getFilePath());
     }
 
     @Override
@@ -171,6 +175,14 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public void onDownloadEnd(DownloadTask downloadTask) {
+        TransferInfo downloadInfo = downloadTask.getDownloadInfo();
+        synchronized (runningTaskQueue) {
+            if (downloadInfo.isNeedDelete()) {
+                Util.deleteDir(downloadInfo.getTempDir());
+                downloadInfo.getDownloadFile().delete();
+                DBService.getInstance().deleteInfo(downloadInfo.getUrl(), downloadInfo.getFilePath());
+            }
+        }
         runningTaskQueue.remove(downloadTask);
         semaphore.release();
     }

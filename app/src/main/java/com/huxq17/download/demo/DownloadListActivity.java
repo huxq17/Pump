@@ -78,7 +78,7 @@ public class DownloadListActivity extends AppCompatActivity {
         @Override
         public DownloadViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
             View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_download_list, viewGroup, false);
-            return new DownloadViewHolder(v);
+            return new DownloadViewHolder(v, this);
         }
 
         @Override
@@ -88,6 +88,13 @@ public class DownloadListActivity extends AppCompatActivity {
 
             downloadInfo.setTag(viewHolder);
             map.put(viewHolder, downloadInfo);
+        }
+
+        public void delete(DownloadViewHolder viewHolder) {
+            int position = viewHolder.getAdapterPosition();
+            downloadInfoList.remove(position);
+            notifyItemRemoved(position);
+            map.remove(viewHolder);
         }
 
         @Override
@@ -107,7 +114,7 @@ public class DownloadListActivity extends AppCompatActivity {
         long totalSize;
         AlertDialog dialog;
 
-        public DownloadViewHolder(@NonNull View itemView) {
+        public DownloadViewHolder(@NonNull View itemView, final DownloadAdapter adapter) {
             super(itemView);
             progressBar = itemView.findViewById(R.id.pb_progress);
             tvName = itemView.findViewById(R.id.tv_name);
@@ -121,6 +128,7 @@ public class DownloadListActivity extends AppCompatActivity {
                     .setPositiveButton("是", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            adapter.delete(DownloadViewHolder.this);
                             Pump.delete(downloadInfo);
                         }
                     })

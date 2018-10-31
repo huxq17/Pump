@@ -45,9 +45,6 @@ public class DownloadTask implements Task {
         downLoadLifeCycleObserver.onDownloadStart(this);
         if (!downloadInfo.isNeedDelete()) {
             download();
-        } else {
-            Util.deleteDir(downloadInfo.getTempDir());
-            dbService.deleteInfo(downloadInfo.getUrl(), downloadInfo.getFilePath());
         }
         downLoadLifeCycleObserver.onDownloadEnd(this);
     }
@@ -101,39 +98,36 @@ public class DownloadTask implements Task {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        File file = new File(downloadInfo.getFilePath());
+        File file = downloadInfo.getDownloadFile();
         if (file.exists()) {
             file.delete();
         }
-        if (downloadInfo.isNeedDelete()) {
-            Util.deleteDir(tempDir);
-            dbService.deleteInfo(downloadInfo.getUrl(), downloadInfo.getFilePath());
-            return;
-        }
-        if (completedSize == fileLength) {
-            end = System.currentTimeMillis();
-            Log.e("tag", "download spend=" + (end - start));
+        if (!downloadInfo.isNeedDelete()) {
+            if (completedSize == fileLength) {
+                end = System.currentTimeMillis();
+                Log.e("tag", "download spend=" + (end - start));
 
-            File[] downloadPartFiles = tempDir.listFiles();
-            if (downloadPartFiles != null && downloadPartFiles.length > 0) {
-                Util.mergeFiles(downloadPartFiles, file);
-                Util.deleteDir(tempDir);
-            }
-            Log.e("tag", "merge files spend=" + (System.currentTimeMillis() - end));
-            downloadInfo.setFinished(1);
-            downloadInfo.setCompletedSize(completedSize);
-            dbService.updateInfo(downloadInfo);
-            downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
-            notifyProgressChanged(downloadInfo);
-        } else {
-            if (downloadInfo.getStatus() != DownloadInfo.Status.STOPPING) {
-                if (downloadInfo.getStatus() != DownloadInfo.Status.FAILED) {
-                    downloadInfo.setStatus(DownloadInfo.Status.FAILED);
+                File[] downloadPartFiles = tempDir.listFiles();
+                if (downloadPartFiles != null && downloadPartFiles.length > 0) {
+                    Util.mergeFiles(downloadPartFiles, file);
+                    Util.deleteDir(tempDir);
                 }
+                Log.e("tag", "merge files spend=" + (System.currentTimeMillis() - end));
+                downloadInfo.setFinished(1);
+                downloadInfo.setCompletedSize(completedSize);
+                dbService.updateInfo(downloadInfo);
+                downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
+                notifyProgressChanged(downloadInfo);
             } else {
-                downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
+                if (downloadInfo.getStatus() != DownloadInfo.Status.STOPPING) {
+                    if (downloadInfo.getStatus() != DownloadInfo.Status.FAILED) {
+                        downloadInfo.setStatus(DownloadInfo.Status.FAILED);
+                    }
+                } else {
+                    downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
+                }
+                notifyProgressChanged(downloadInfo);
             }
-            notifyProgressChanged(downloadInfo);
         }
     }
 

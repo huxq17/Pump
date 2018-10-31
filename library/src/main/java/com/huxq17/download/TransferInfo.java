@@ -13,7 +13,7 @@ public class TransferInfo extends DownloadInfo {
     public long createTime;
     private ArrayList<File> downloadPartFiles = new ArrayList<>();
     private File downloadFile;
-    private boolean needDelete = false;
+    private volatile boolean needDelete = false;
 
     public TransferInfo(String url, String filePath) {
         this.url = url;
@@ -107,6 +107,10 @@ public class TransferInfo extends DownloadInfo {
                 setStatus(Status.WAIT);
             }
         }
+    }
+
+    public File getDownloadFile() {
+        return downloadFile;
     }
 
     @Override
