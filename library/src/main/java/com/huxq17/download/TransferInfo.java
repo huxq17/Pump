@@ -24,7 +24,7 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
         downloadFile = new File(filePath);
     }
 
-    public synchronized void setDownloadTask(DownloadTask downloadTask) {
+    public void setDownloadTask(DownloadTask downloadTask) {
         this.downloadTask = downloadTask;
     }
 

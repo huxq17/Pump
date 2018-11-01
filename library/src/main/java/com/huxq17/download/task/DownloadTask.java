@@ -3,18 +3,22 @@ package com.huxq17.download.task;
 import android.util.Log;
 
 import com.buyi.huxq17.serviceagency.ServiceAgency;
-import com.huxq17.download.DownloadBatch;
+import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.SpeedMonitor;
 import com.huxq17.download.TransferInfo;
-import com.huxq17.download.TaskManager;
-import com.huxq17.download.Utils.Util;
-import com.huxq17.download.action.GetFileSizeAction;
+import com.huxq17.download.action.Action;
+import com.huxq17.download.action.CorrectDownloadInfoAction;
+import com.huxq17.download.action.GetContentLengthAction;
+import com.huxq17.download.action.MergeFileAction;
+import com.huxq17.download.action.StartDownloadAction;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownLoadLifeCycleObserver;
 import com.huxq17.download.message.IMessageCenter;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class DownloadTask implements Task {
@@ -25,6 +29,7 @@ public class DownloadTask implements Task {
     private IMessageCenter messageCenter;
     private DownLoadLifeCycleObserver downLoadLifeCycleObserver;
     private SpeedMonitor speedMonitor;
+    CountDownLatch countDownLatch;
 
     public DownloadTask(TransferInfo downloadInfo, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         downloadInfo.setDownloadTask(this);
@@ -58,82 +63,21 @@ public class DownloadTask implements Task {
         Log.e("tag", msg);
     }
 
+    private void downloadWithDownloadChain() {
+        List<Action> actions = new ArrayList<>();
+        actions.add(new GetContentLengthAction());
+        actions.add(new CorrectDownloadInfoAction());
+        actions.add(new StartDownloadAction());
+        actions.add(new MergeFileAction());
+        DownloadChain chain = new DownloadChain(this, actions);
+        chain.proceed();
+    }
+
     private void download() {
         start = System.currentTimeMillis();
-        String url = downloadInfo.getUrl();
-        GetFileSizeAction getFileSizeAction = new GetFileSizeAction();
-        long fileLength = getFileSizeAction.proceed(downloadInfo);
-        if (fileLength == -1) {
-            notifyProgressChanged(downloadInfo);
-            return;
-        }
-        File tempDir = downloadInfo.getTempDir();
-        long localLength = dbService.queryLocalLength(downloadInfo);
-        if (fileLength != localLength) {
-            //If file's length have changed,we need to re-download it.
-            Util.deleteDir(tempDir);
-        }
-        downloadInfo.setFinished(0);
-        downloadInfo.setCompletedSize(0);
-        downloadInfo.setContentLength(fileLength);
-        dbService.updateInfo(downloadInfo);
-        int threadNum = downloadInfo.threadNum;
-        String[] childList = tempDir.list();
-        if (childList != null && childList.length != threadNum) {
-            Util.deleteDir(tempDir);
-        }
-        if (!tempDir.exists()) {
-            tempDir.mkdirs();
-        }
-        CountDownLatch countDownLatch;
-        countDownLatch = new CountDownLatch(threadNum);
-        for (int i = 0; i < threadNum; i++) {
-            DownloadBatch batch = new DownloadBatch();
-            batch.threadId = i;
-            batch.calculateStartPos(fileLength, threadNum);
-            batch.calculateEndPos(fileLength, threadNum);
-            completedSize += batch.calculateCompletedPartSize(tempDir);
-            batch.url = url;
-            DownloadBlockTask task = new DownloadBlockTask(batch, countDownLatch, this);
-            TaskManager.execute(task);
-        }
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        File file = downloadInfo.getDownloadFile();
-        if (file.exists()) {
-            file.delete();
-        }
-        if (!downloadInfo.isNeedDelete()) {
-            if (completedSize == fileLength) {
-                end = System.currentTimeMillis();
-                Log.e("tag", "download spend=" + (end - start));
-
-                File[] downloadPartFiles = tempDir.listFiles();
-                if (downloadPartFiles != null && downloadPartFiles.length > 0) {
-                    Util.mergeFiles(downloadPartFiles, file);
-                    Util.deleteDir(tempDir);
-                }
-                Log.e("tag", "merge files spend=" + (System.currentTimeMillis() - end));
-                downloadInfo.setFinished(1);
-                downloadInfo.setCompletedSize(completedSize);
-                dbService.updateInfo(downloadInfo);
-                downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
-                notifyProgressChanged(downloadInfo);
-            } else {
-                if (!isStopped) {
-                    DownloadInfo.Status status = downloadInfo.getStatus();
-                    if (status == DownloadInfo.Status.PAUSING) {
-                        downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
-                    } else {
-                        downloadInfo.setStatus(DownloadInfo.Status.FAILED);
-                    }
-                    notifyProgressChanged(downloadInfo);
-                }
-            }
-        }
+        downloadWithDownloadChain();
+        end = System.currentTimeMillis();
+        log("download spend=" + (end - start));
     }
 
     private int lastProgress = 0;
@@ -151,8 +95,11 @@ public class DownloadTask implements Task {
         }
     }
 
+    public void setCountDownLatch(CountDownLatch countDownLatch) {
+        this.countDownLatch = countDownLatch;
+    }
 
-    private void notifyProgressChanged(TransferInfo downloadInfo) {
+    public void notifyProgressChanged(TransferInfo downloadInfo) {
         if (messageCenter != null)
             messageCenter.notifyProgressChanged(downloadInfo);
     }
@@ -168,14 +115,35 @@ public class DownloadTask implements Task {
     }
 
     public void stop() {
+        Date date = new Date();
+        Log.e("tag", "stop task name=" + downloadInfo.getName() + "  at " + date.toString());
         isStopped = true;
         downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
+        downloadInfo.setDownloadTask(null);
         messageCenter = null;
+        if (countDownLatch != null) {
+            long count = countDownLatch.getCount();
+            for (int i = 0; i < count; i++) {
+                countDownLatch.countDown();
+            }
+        }
+    }
+
+    public boolean isDestroy() {
+        return isStopped;
     }
 
     public void setErrorCode(int errorCode) {
         if (downloadInfo.getStatus() != DownloadInfo.Status.PAUSING) {
             downloadInfo.setErrorCode(errorCode);
+        }
+    }
+
+    public void updateInfo(TransferInfo transferInfo) {
+        synchronized (transferInfo) {
+            if (!transferInfo.isNeedDelete()) {
+                dbService.updateInfo(transferInfo);
+            }
         }
     }
 

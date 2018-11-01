@@ -1,5 +1,7 @@
 package com.huxq17.download.action;
 
-public interface Action<T, R> {
-    R proceed(T t);
+import com.huxq17.download.task.DownloadTask;
+
+public interface Action {
+    boolean proceed(DownloadTask t);
 }

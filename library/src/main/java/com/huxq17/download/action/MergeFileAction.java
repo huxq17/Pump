@@ -1,0 +1,51 @@
+package com.huxq17.download.action;
+
+import android.util.Log;
+
+import com.huxq17.download.DownloadInfo;
+import com.huxq17.download.TransferInfo;
+import com.huxq17.download.Utils.Util;
+import com.huxq17.download.task.DownloadTask;
+
+import java.io.File;
+
+public class MergeFileAction implements Action {
+    @Override
+    public boolean proceed(DownloadTask t) {
+        TransferInfo downloadInfo = t.getDownloadInfo();
+        long fileLength = downloadInfo.getContentLength();
+        File tempDir = downloadInfo.getTempDir();
+        File file = downloadInfo.getDownloadFile();
+        if (file.exists()) {
+            file.delete();
+        }
+        long completedSize = downloadInfo.getCompletedSize();
+        if (!downloadInfo.isNeedDelete()) {
+            long startTime = System.currentTimeMillis();
+            if (completedSize == fileLength) {
+                File[] downloadPartFiles = tempDir.listFiles();
+                if (downloadPartFiles != null && downloadPartFiles.length > 0) {
+                    Util.mergeFiles(downloadPartFiles, file);
+                    Util.deleteDir(tempDir);
+                }
+                Log.e("tag", "merge files spend=" + (System.currentTimeMillis() - startTime));
+                downloadInfo.setFinished(1);
+                downloadInfo.setCompletedSize(completedSize);
+                t.updateInfo(downloadInfo);
+                downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
+                t.notifyProgressChanged(downloadInfo);
+            } else {
+                if (!t.isDestroy()) {
+                    DownloadInfo.Status status = downloadInfo.getStatus();
+                    if (status == DownloadInfo.Status.PAUSING) {
+                        downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
+                    } else {
+                        downloadInfo.setStatus(DownloadInfo.Status.FAILED);
+                    }
+                    t.notifyProgressChanged(downloadInfo);
+                }
+            }
+        }
+        return true;
+    }
+}

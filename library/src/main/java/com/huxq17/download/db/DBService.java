@@ -62,7 +62,7 @@ public class DBService {
         cursor.close();
     }
 
-    public long queryLocalLength(TransferInfo info) {
+    public synchronized long queryLocalLength(TransferInfo info) {
         long length = 0;
         SQLiteDatabase db = helper.getReadableDatabase();
         String sql = "select * from " + Provider.DownloadInfo.TABLE_NAME + " where " + Provider.DownloadInfo.URL + "=? and "
@@ -80,7 +80,7 @@ public class DBService {
         return length;
     }
 
-    public List<TransferInfo> getDownloadList() {
+    public synchronized List<TransferInfo> getDownloadList() {
         List<TransferInfo> tasks = new ArrayList<>();
         SQLiteDatabase db = helper.getReadableDatabase();
         String sql = "select * from " + Provider.DownloadInfo.TABLE_NAME + " order by " + Provider.DownloadInfo.CREATE_TIME;
@@ -104,7 +104,7 @@ public class DBService {
                 + Provider.DownloadInfo.PATH + " =?", new String[]{url, filePath});
         Log.d("tag", "deleteInfo PATH=" + filePath + ";result=" + result);
     }
-    public void close() {
+    public synchronized void close() {
         helper.close();
     }
 }
