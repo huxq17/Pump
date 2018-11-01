@@ -1,8 +1,6 @@
 package com.huxq17.download.task;
 
 
-import android.os.SystemClock;
-
 import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.Utils.Util;
@@ -65,7 +63,7 @@ public class DownloadBlockTask implements Task {
                     while (!downloadTask.shouldStop() && (len = inputStream.read(buffer)) != -1) {
                         fileOutputStream.write(buffer, 0, len);
                         downloadTask.onDownload(len);
-                        SystemClock.sleep(300000);
+//                        SystemClock.sleep(300000);
                     }
                 }
             } catch (IOException e) {

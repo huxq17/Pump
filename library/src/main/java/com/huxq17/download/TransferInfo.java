@@ -14,7 +14,6 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
     public long createTime;
     private ArrayList<File> downloadPartFiles = new ArrayList<>();
     private File downloadFile;
-    private volatile boolean needDelete = false;
     private boolean isUsed = false;
     private DownloadTask downloadTask;
 
@@ -47,16 +46,12 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
         return isUsed;
     }
 
-    public void setNeedDelete(boolean needDelete) {
-        this.needDelete = needDelete;
-    }
-
-    public boolean isNeedDelete() {
-        return needDelete;
-    }
-
     public void setCompletedSize(long completedSize) {
         this.completedSize = completedSize;
+    }
+
+    public void download(int length) {
+        completedSize += length;
     }
 
     public void setContentLength(long contentLength) {
@@ -152,7 +147,6 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
                 ", tempDir=" + tempDir +
                 ", downloadPartFiles=" + downloadPartFiles +
                 ", downloadFile=" + downloadFile +
-                ", needDelete=" + needDelete +
                 ", isUsed=" + isUsed +
                 ", url='" + url + '\'' +
                 ", filePath='" + filePath + '\'' +

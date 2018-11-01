@@ -51,17 +51,17 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     private TransferInfo getDownloadInfo(String url, String filePath) {
         TransferInfo downloadInfo = allDownloadInfo.get(filePath);
         if (downloadInfo != null) {
-            if (!downloadInfo.isUsed()) {
-                return downloadInfo;
-            } else {
-                try {
-                    TransferInfo transferInfo = downloadInfo.clone();
-                    allDownloadInfo.put(filePath, transferInfo);
-                    return transferInfo;
-                } catch (CloneNotSupportedException e) {
-                    e.printStackTrace();
-                }
-            }
+            return downloadInfo;
+//            if (!downloadInfo.isUsed()) {
+//            } else {
+//                try {
+//                    TransferInfo transferInfo = downloadInfo.clone();
+//                    allDownloadInfo.put(filePath, transferInfo);
+//                    return transferInfo;
+//                } catch (CloneNotSupportedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
         }
         // create a new instance if not found.
         downloadInfo = new TransferInfo(url, filePath);
@@ -75,7 +75,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     public synchronized void submit(String url, String filePath) {
         TransferInfo downloadInfo = getDownloadInfo(url, filePath);
         DownloadTask downloadTask = downloadInfo.getDownloadTask();
-        if (downloadTask != null && !downloadTask.isDestroy() && (readyTaskQueue.contains(downloadTask) || runningTaskQueue.contains(downloadTask))) {
+        if (downloadTask != null && (readyTaskQueue.contains(downloadTask) || runningTaskQueue.contains(downloadTask))) {
             // the task is running,we need do nothing.
             return;
         }
@@ -125,7 +125,10 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
             }
             synchronized (downloadInfo) {
                 TransferInfo transferInfo = (TransferInfo) downloadInfo;
-                transferInfo.setNeedDelete(true);
+                DownloadTask downloadTask = transferInfo.getDownloadTask();
+                if (downloadTask != null) {
+                    downloadTask.delete();
+                }
                 transferInfo.getDownloadFile().delete();
                 Util.deleteDir(transferInfo.getTempDir());
                 DBService.getInstance().deleteInfo(downloadInfo.getUrl(), downloadInfo.getFilePath());
@@ -215,15 +218,9 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     @Override
     public void onDownloadEnd(DownloadTask downloadTask) {
         TransferInfo downloadInfo = downloadTask.getDownloadInfo();
-        synchronized (downloadInfo) {
-            if (downloadInfo.isNeedDelete()) {
-                Util.deleteDir(downloadInfo.getTempDir());
-                downloadInfo.getDownloadFile().delete();
-                DBService.getInstance().deleteInfo(downloadInfo.getUrl(), downloadInfo.getFilePath());
-            }
-        }
+
         Date date = new Date();
-        Log.e("tag","task name="+downloadInfo.getName()+" is stopped at "+date.toString());
+        Log.e("tag", "task name=" + downloadInfo.getName() + " is stopped at " + date.toString());
         runningTaskQueue.remove(downloadTask);
         semaphore.release();
     }

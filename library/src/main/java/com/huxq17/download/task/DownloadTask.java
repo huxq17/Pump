@@ -17,25 +17,25 @@ import com.huxq17.download.listener.DownLoadLifeCycleObserver;
 import com.huxq17.download.message.IMessageCenter;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 public class DownloadTask implements Task {
     private TransferInfo downloadInfo;
     private DBService dbService;
-    private long completedSize;
     private boolean isStopped;
+    private boolean isDestroyed;
+    private boolean isNeedDelete;
     private IMessageCenter messageCenter;
     private DownLoadLifeCycleObserver downLoadLifeCycleObserver;
     private SpeedMonitor speedMonitor;
-    CountDownLatch countDownLatch;
+    private Thread thread;
 
     public DownloadTask(TransferInfo downloadInfo, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         downloadInfo.setDownloadTask(this);
         this.downloadInfo = downloadInfo;
-        completedSize = 0l;
         isStopped = false;
+        isNeedDelete = false;
+        isDestroyed = false;
         dbService = DBService.getInstance();
         downloadInfo.setUsed(true);
         speedMonitor = new SpeedMonitor(downloadInfo);
@@ -49,13 +49,15 @@ public class DownloadTask implements Task {
 
     @Override
     public void run() {
+        thread = Thread.currentThread();
         if (!isStopped) {
             downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
         }
         downLoadLifeCycleObserver.onDownloadStart(this);
-        if (!downloadInfo.isNeedDelete() && !shouldStop()) {
+        if (!shouldStop()) {
             download();
         }
+        thread = null;
         downLoadLifeCycleObserver.onDownloadEnd(this);
     }
 
@@ -82,21 +84,18 @@ public class DownloadTask implements Task {
 
     private int lastProgress = 0;
 
-    public synchronized void onDownload(int length) {
-        this.completedSize += length;
-        downloadInfo.setCompletedSize(this.completedSize);
-        speedMonitor.compute(length);
-        int progress = (int) (completedSize * 1f / downloadInfo.getContentLength() * 100);
-        if (progress != lastProgress) {
-            lastProgress = progress;
-            if (progress != 100) {
-                notifyProgressChanged(downloadInfo);
+    public void onDownload(int length) {
+        synchronized (downloadInfo) {
+            downloadInfo.download(length);
+            speedMonitor.compute(length);
+            int progress = (int) (downloadInfo.getCompletedSize() * 1f / downloadInfo.getContentLength() * 100);
+            if (progress != lastProgress) {
+                lastProgress = progress;
+                if (progress != 100) {
+                    notifyProgressChanged(downloadInfo);
+                }
             }
         }
-    }
-
-    public void setCountDownLatch(CountDownLatch countDownLatch) {
-        this.countDownLatch = countDownLatch;
     }
 
     public void notifyProgressChanged(TransferInfo downloadInfo) {
@@ -110,27 +109,43 @@ public class DownloadTask implements Task {
     }
 
     public void pause() {
-        downloadInfo.setStatus(DownloadInfo.Status.PAUSING);
-        notifyProgressChanged(downloadInfo);
-    }
-
-    public void stop() {
-        Date date = new Date();
-        Log.e("tag", "stop task name=" + downloadInfo.getName() + "  at " + date.toString());
-        isStopped = true;
-        downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
-        downloadInfo.setDownloadTask(null);
-        messageCenter = null;
-        if (countDownLatch != null) {
-            long count = countDownLatch.getCount();
-            for (int i = 0; i < count; i++) {
-                countDownLatch.countDown();
+        synchronized (downloadInfo) {
+            if (!isDestroyed) {
+                downloadInfo.setStatus(DownloadInfo.Status.PAUSING);
+                notifyProgressChanged(downloadInfo);
+                interrupt();
             }
         }
     }
 
-    public boolean isDestroy() {
-        return isStopped;
+    public void stop() {
+        synchronized (downloadInfo) {
+            if (!isDestroyed) {
+                isStopped = true;
+                downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
+                downloadInfo.setDownloadTask(null);
+                interrupt();
+            }
+        }
+    }
+
+    private void interrupt() {
+        if (thread != null) {
+            thread.interrupt();
+        }
+    }
+
+    public void delete() {
+        synchronized (downloadInfo) {
+            if (!isDestroyed) {
+                isNeedDelete = true;
+                interrupt();
+            }
+        }
+    }
+
+    public boolean isNeedDelete() {
+        return isNeedDelete;
     }
 
     public void setErrorCode(int errorCode) {
@@ -141,14 +156,19 @@ public class DownloadTask implements Task {
 
     public void updateInfo(TransferInfo transferInfo) {
         synchronized (transferInfo) {
-            if (!transferInfo.isNeedDelete()) {
+            if (!isNeedDelete) {
                 dbService.updateInfo(transferInfo);
             }
         }
     }
 
+    public void destroy() {
+        isDestroyed = true;
+    }
+
     public boolean shouldStop() {
         DownloadInfo.Status status = downloadInfo.getStatus();
-        return status != DownloadInfo.Status.RUNNING || isStopped || downloadInfo.isNeedDelete();
+        return status != DownloadInfo.Status.RUNNING || isStopped || isNeedDelete;
     }
+
 }

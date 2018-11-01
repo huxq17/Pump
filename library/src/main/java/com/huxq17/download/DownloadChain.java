@@ -1,6 +1,7 @@
 package com.huxq17.download;
 
 import com.huxq17.download.action.Action;
+import com.huxq17.download.action.VerifyResultAction;
 import com.huxq17.download.task.DownloadTask;
 
 import java.util.List;
@@ -26,5 +27,6 @@ public class DownloadChain {
                 break;
             }
         }
+        new VerifyResultAction().proceed(downloadTask);
     }
 }

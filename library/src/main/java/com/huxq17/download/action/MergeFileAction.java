@@ -20,31 +20,20 @@ public class MergeFileAction implements Action {
             file.delete();
         }
         long completedSize = downloadInfo.getCompletedSize();
-        if (!downloadInfo.isNeedDelete()) {
-            long startTime = System.currentTimeMillis();
-            if (completedSize == fileLength) {
-                File[] downloadPartFiles = tempDir.listFiles();
-                if (downloadPartFiles != null && downloadPartFiles.length > 0) {
-                    Util.mergeFiles(downloadPartFiles, file);
-                    Util.deleteDir(tempDir);
-                }
-                Log.e("tag", "merge files spend=" + (System.currentTimeMillis() - startTime));
-                downloadInfo.setFinished(1);
-                downloadInfo.setCompletedSize(completedSize);
-                t.updateInfo(downloadInfo);
-                downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
-                t.notifyProgressChanged(downloadInfo);
-            } else {
-                if (!t.isDestroy()) {
-                    DownloadInfo.Status status = downloadInfo.getStatus();
-                    if (status == DownloadInfo.Status.PAUSING) {
-                        downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
-                    } else {
-                        downloadInfo.setStatus(DownloadInfo.Status.FAILED);
-                    }
-                    t.notifyProgressChanged(downloadInfo);
-                }
+        long startTime = System.currentTimeMillis();
+        if (completedSize == fileLength) {
+            File[] downloadPartFiles = tempDir.listFiles();
+            if (downloadPartFiles != null && downloadPartFiles.length > 0) {
+                Util.mergeFiles(downloadPartFiles, file);
+                Util.deleteDir(tempDir);
             }
+            Log.e("tag", "merge files spend=" + (System.currentTimeMillis() - startTime));
+            downloadInfo.setFinished(1);
+            downloadInfo.setCompletedSize(completedSize);
+            t.updateInfo(downloadInfo);
+            downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
+        } else {
+            downloadInfo.setStatus(DownloadInfo.Status.FAILED);
         }
         return true;
     }
