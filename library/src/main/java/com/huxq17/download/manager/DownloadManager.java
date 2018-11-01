@@ -3,7 +3,6 @@ package com.huxq17.download.manager;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.buyi.huxq17.serviceagency.annotation.ServiceAgent;
@@ -19,7 +18,6 @@ import com.huxq17.download.service.DownloadService;
 import com.huxq17.download.task.DownloadTask;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -217,10 +215,9 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public void onDownloadEnd(DownloadTask downloadTask) {
-        TransferInfo downloadInfo = downloadTask.getDownloadInfo();
-
-        Date date = new Date();
-        Log.e("tag", "task name=" + downloadInfo.getName() + " is stopped at " + date.toString());
+//        TransferInfo downloadInfo = downloadTask.getDownloadInfo();
+//        Date date = new Date();
+//        Log.e("tag", "task name=" + downloadInfo.getName() + " is stopped at " + date.toString());
         runningTaskQueue.remove(downloadTask);
         semaphore.release();
     }
