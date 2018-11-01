@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
                 progressDialog.show();
             }
         });
-        findViewById(R.id.jump_download_list).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.add_download_list).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
@@ -71,6 +71,11 @@ public class MainActivity extends AppCompatActivity {
                 Pump.download(url, file2.getAbsolutePath());
                 Pump.download(url, file3.getAbsolutePath());
                 Pump.download(url, file4.getAbsolutePath());
+            }
+        });
+        findViewById(R.id.jump_download_list).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, DownloadListActivity.class));
             }
         });

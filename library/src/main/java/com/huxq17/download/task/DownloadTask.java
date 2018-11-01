@@ -44,6 +44,9 @@ public class DownloadTask implements Task {
 
     @Override
     public void run() {
+        if (!isStopped) {
+            downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
+        }
         downLoadLifeCycleObserver.onDownloadStart(this);
         if (!downloadInfo.isNeedDelete() && !shouldStop()) {
             download();
@@ -56,7 +59,6 @@ public class DownloadTask implements Task {
     }
 
     private void download() {
-        downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
         start = System.currentTimeMillis();
         String url = downloadInfo.getUrl();
         GetFileSizeAction getFileSizeAction = new GetFileSizeAction();
@@ -121,14 +123,15 @@ public class DownloadTask implements Task {
                 downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
                 notifyProgressChanged(downloadInfo);
             } else {
-                if (downloadInfo.getStatus() != DownloadInfo.Status.PAUSING) {
-                    if (downloadInfo.getStatus() != DownloadInfo.Status.FAILED) {
+                if (!isStopped) {
+                    DownloadInfo.Status status = downloadInfo.getStatus();
+                    if (status == DownloadInfo.Status.PAUSING) {
+                        downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
+                    } else {
                         downloadInfo.setStatus(DownloadInfo.Status.FAILED);
                     }
-                } else {
-                    downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
+                    notifyProgressChanged(downloadInfo);
                 }
-                notifyProgressChanged(downloadInfo);
             }
         }
     }
@@ -165,6 +168,7 @@ public class DownloadTask implements Task {
     }
 
     public void stop() {
+        isStopped = true;
         downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
         messageCenter = null;
     }
@@ -177,6 +181,6 @@ public class DownloadTask implements Task {
 
     public boolean shouldStop() {
         DownloadInfo.Status status = downloadInfo.getStatus();
-        return status == DownloadInfo.Status.PAUSING || status == DownloadInfo.Status.STOPPED || downloadInfo.isNeedDelete();
+        return status != DownloadInfo.Status.RUNNING || isStopped || downloadInfo.isNeedDelete();
     }
 }

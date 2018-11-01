@@ -99,16 +99,15 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
         return false;
     }
 
+    /**
+     * load completedSize if not finished.
+     */
     private void loadDownloadFiles() {
-        String filePath = getFilePath();
-        File file = new File(filePath);
-        if (file.exists()) {
-            File tempDir = Util.getTempDir(filePath);
-            File[] listFiles = tempDir.listFiles();
-            if (listFiles != null && listFiles.length > 0) {
-                for (int i = 0; i < listFiles.length; i++) {
-                    downloadPartFiles.add(listFiles[i]);
-                }
+        File tempDir = Util.getTempDir(filePath);
+        File[] listFiles = tempDir.listFiles();
+        if (listFiles != null && listFiles.length > 0) {
+            for (int i = 0; i < listFiles.length; i++) {
+                downloadPartFiles.add(listFiles[i]);
             }
         }
     }
@@ -120,6 +119,7 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
                 setStatus(Status.FINISHED);
             }
         } else {
+            //Only load once.
             if (downloadPartFiles.size() == 0) {
                 loadDownloadFiles();
             }
@@ -128,9 +128,9 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
             for (int i = 0; i < size; i++) {
                 completedSize += downloadPartFiles.get(i).length();
             }
-            setCompletedSize(completedSize);
+            this.completedSize = completedSize;
             if (status == null) {
-                setStatus(Status.WAIT);
+                setStatus(Status.STOPPED);
             }
         }
     }
