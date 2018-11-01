@@ -2,6 +2,7 @@ package com.huxq17.download;
 
 
 import com.huxq17.download.Utils.Util;
+import com.huxq17.download.task.DownloadTask;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -15,11 +16,20 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
     private File downloadFile;
     private volatile boolean needDelete = false;
     private boolean isUsed = false;
+    private DownloadTask downloadTask;
 
     public TransferInfo(String url, String filePath) {
         this.url = url;
         this.filePath = filePath;
         downloadFile = new File(filePath);
+    }
+
+    public synchronized void setDownloadTask(DownloadTask downloadTask) {
+        this.downloadTask = downloadTask;
+    }
+
+    public DownloadTask getDownloadTask() {
+        return downloadTask;
     }
 
     @Override

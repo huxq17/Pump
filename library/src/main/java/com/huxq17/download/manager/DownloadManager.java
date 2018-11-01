@@ -50,7 +50,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
             } else {
                 try {
                     TransferInfo transferInfo = downloadInfo.clone();
-                    allDownloadInfo.put(filePath,transferInfo);
+                    allDownloadInfo.put(filePath, transferInfo);
                     return transferInfo;
                 } catch (CloneNotSupportedException e) {
                     e.printStackTrace();
@@ -120,9 +120,10 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public void stop(DownloadInfo downloadInfo) {
-        for (DownloadTask task : runningTaskQueue) {
-            if (task.getDownloadInfo() == downloadInfo) {
-                task.stop();
+        synchronized (downloadInfo) {
+            DownloadTask downloadTask = ((TransferInfo) downloadInfo).getDownloadTask();
+            if (downloadTask != null) {
+                downloadTask.stop();
             }
         }
     }
@@ -207,6 +208,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
             }
         }
         runningTaskQueue.remove(downloadTask);
+        downloadInfo.setDownloadTask(null);
         semaphore.release();
     }
 }

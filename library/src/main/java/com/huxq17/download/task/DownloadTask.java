@@ -27,6 +27,7 @@ public class DownloadTask implements Task {
     private SpeedMonitor speedMonitor;
 
     public DownloadTask(TransferInfo downloadInfo, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
+        downloadInfo.setDownloadTask(this);
         this.downloadInfo = downloadInfo;
         completedSize = 0l;
         isStopped = false;
@@ -36,7 +37,6 @@ public class DownloadTask implements Task {
         messageCenter = ServiceAgency.getService(IMessageCenter.class);
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
         downloadInfo.setStatus(DownloadInfo.Status.WAIT);
-        Log.e("tag","name="+downloadInfo.getName()+";status="+downloadInfo.getStatus());
         notifyProgressChanged(downloadInfo);
     }
 
@@ -45,7 +45,7 @@ public class DownloadTask implements Task {
     @Override
     public void run() {
         downLoadLifeCycleObserver.onDownloadStart(this);
-        if (!downloadInfo.isNeedDelete()) {
+        if (!downloadInfo.isNeedDelete() && !shouldStop()) {
             download();
         }
         downLoadLifeCycleObserver.onDownloadEnd(this);
