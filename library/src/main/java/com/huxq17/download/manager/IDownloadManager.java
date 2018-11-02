@@ -33,5 +33,7 @@ public interface IDownloadManager {
 
     void setDownloadConfig(DownloadConfig downloadConfig);
 
+    void onServiceDestroy();
+
     void shutdown();
 }

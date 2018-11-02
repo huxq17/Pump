@@ -1,9 +1,8 @@
 package com.huxq17.download.action;
 
-import android.util.Log;
-
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.TransferInfo;
+import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.task.DownloadTask;
 
@@ -27,7 +26,7 @@ public class MergeFileAction implements Action {
                 Util.mergeFiles(downloadPartFiles, file);
                 Util.deleteDir(tempDir);
             }
-            Log.e("tag", "merge files spend=" + (System.currentTimeMillis() - startTime));
+            LogUtil.e("merge files spend=" + (System.currentTimeMillis() - startTime));
             downloadInfo.setFinished(1);
             downloadInfo.setCompletedSize(completedSize);
             t.updateInfo(downloadInfo);

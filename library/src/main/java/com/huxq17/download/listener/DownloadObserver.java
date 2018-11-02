@@ -11,8 +11,6 @@ public abstract class DownloadObserver {
 
     public abstract void onProgress(int progress);
 
-    public abstract void onError(int errorCode);
-
     public void setDownloadInfo(TransferInfo downloadInfo) {
         this.downloadInfo = downloadInfo;
     }

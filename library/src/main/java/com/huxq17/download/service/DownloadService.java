@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 
 import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.huxq17.download.TaskManager;
+import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.task.DownloadTask;
 import com.huxq17.download.task.Task;
@@ -25,8 +26,7 @@ public class DownloadService extends Service implements Task {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-//        return super.onStartCommand(intent, flags, startId);
-        return START_NOT_STICKY;
+        return super.onStartCommand(intent, flags, startId);
     }
 
     @Nullable
@@ -39,6 +39,7 @@ public class DownloadService extends Service implements Task {
     public void onDestroy() {
         super.onDestroy();
         isRunning = false;
+        downloadManager.onServiceDestroy();
     }
 
     @Override
@@ -46,12 +47,8 @@ public class DownloadService extends Service implements Task {
         while (isRunning) {
             try {
                 DownloadTask downloadTask = downloadManager.acquireTask();
-                if (downloadTask != null) {
-                    TaskManager.execute(downloadTask);
-                } else {
-                    isRunning = false;
-                    stopSelf();
-                }
+                LogUtil.d("start run task=" + downloadTask.getDownloadInfo().getName());
+                TaskManager.execute(downloadTask);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

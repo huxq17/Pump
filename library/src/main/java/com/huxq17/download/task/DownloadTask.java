@@ -1,23 +1,14 @@
 package com.huxq17.download.task;
 
-import android.util.Log;
-
 import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.SpeedMonitor;
 import com.huxq17.download.TransferInfo;
-import com.huxq17.download.action.Action;
-import com.huxq17.download.action.CorrectDownloadInfoAction;
-import com.huxq17.download.action.GetContentLengthAction;
-import com.huxq17.download.action.MergeFileAction;
-import com.huxq17.download.action.StartDownloadAction;
+import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownLoadLifeCycleObserver;
 import com.huxq17.download.message.IMessageCenter;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class DownloadTask implements Task {
     private TransferInfo downloadInfo;
@@ -52,34 +43,22 @@ public class DownloadTask implements Task {
         thread = Thread.currentThread();
         if (!isStopped) {
             downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
+            notifyProgressChanged(downloadInfo);
         }
         downLoadLifeCycleObserver.onDownloadStart(this);
         if (!shouldStop()) {
-            download();
+            start = System.currentTimeMillis();
+            downloadWithDownloadChain();
+            end = System.currentTimeMillis();
+            LogUtil.e("download spend=" + (end - start));
         }
         thread = null;
         downLoadLifeCycleObserver.onDownloadEnd(this);
     }
 
-    private void log(String msg) {
-        Log.e("tag", msg);
-    }
-
     private void downloadWithDownloadChain() {
-        List<Action> actions = new ArrayList<>();
-        actions.add(new GetContentLengthAction());
-        actions.add(new CorrectDownloadInfoAction());
-        actions.add(new StartDownloadAction());
-        actions.add(new MergeFileAction());
-        DownloadChain chain = new DownloadChain(this, actions);
+        DownloadChain chain = new DownloadChain(this);
         chain.proceed();
-    }
-
-    private void download() {
-        start = System.currentTimeMillis();
-        downloadWithDownloadChain();
-        end = System.currentTimeMillis();
-        log("download spend=" + (end - start));
     }
 
     private int lastProgress = 0;
@@ -168,7 +147,7 @@ public class DownloadTask implements Task {
 
     public boolean shouldStop() {
         DownloadInfo.Status status = downloadInfo.getStatus();
-        return status != DownloadInfo.Status.RUNNING || isStopped || isNeedDelete;
+        return status != DownloadInfo.Status.RUNNING || isStopped || isNeedDelete || isDestroyed;
     }
 
 }

@@ -30,21 +30,26 @@ public class GetContentLengthAction implements Action {
                 conn = (HttpURLConnection) httpUrl.openConnection();
                 conn.setInstanceFollowRedirects(true);
                 conn.setRequestMethod("HEAD");
-                conn.setRequestProperty("Accept-Encoding", "identity");
                 conn.setConnectTimeout(15000);
                 conn.setReadTimeout(15000);
             }
-            Map<String, List<String>> headers = conn.getHeaderFields();
-            Set<Map.Entry<String, List<String>>> sets = headers.entrySet();
-            for (Map.Entry<String, List<String>> entry : sets) {
-                String key = entry.getKey();
-                if (entry.getValue() != null)
-                    for (String value : entry.getValue()) {
+            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                Map<String, List<String>> headers = conn.getHeaderFields();
+                Set<Map.Entry<String, List<String>>> sets = headers.entrySet();
+                for (Map.Entry<String, List<String>> entry : sets) {
+                    String key = entry.getKey();
+                    if (entry.getValue() != null)
+                        for (String value : entry.getValue()) {
 //                        Log.e("tag", "head key=" + key + ";value=" + value);
-                    }
+                        }
+                }
+                String contentLengthStr = conn.getHeaderField("content-length");
+                transferInfo.setContentLength(Long.parseLong(contentLengthStr));
+            } else {
+                result = false;
+                transferInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
             }
-            String contentLengthStr = conn.getHeaderField("content-length");
-            transferInfo.setContentLength(Long.parseLong(contentLengthStr));
+
         } catch (IOException e) {
             e.printStackTrace();
             transferInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);

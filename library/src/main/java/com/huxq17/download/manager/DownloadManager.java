@@ -10,6 +10,7 @@ import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.TransferInfo;
+import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownLoadLifeCycleObserver;
@@ -30,11 +31,22 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     LinkedBlockingQueue<DownloadTask> readyTaskQueue;
     LinkedBlockingQueue<DownloadTask> runningTaskQueue;
     private Semaphore semaphore;
-    private int maxRunningTaskNumber;
     private boolean isServiceRunning = false;
-    private DownloadConfig downloadConfig;
     private HashMap<String, TransferInfo> allDownloadInfo = new LinkedHashMap<>();
     private long maxCreateTime;
+
+    /**
+     * 下载单个文件时开启的线程数量
+     */
+    private int downloadThreadNumber = 3;
+    /**
+     * 允许同时下载的任务数量
+     */
+    private int maxRunningTaskNumber = 3;
+    /**
+     * 是否重复下载已经下载完成了的文件
+     */
+    private boolean forceReDownload = false;
 
     private DownloadManager() {
         List<TransferInfo> allDownloadInfo = DBService.getInstance().getDownloadList();
@@ -49,7 +61,12 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     private TransferInfo getDownloadInfo(String url, String filePath) {
         TransferInfo downloadInfo = allDownloadInfo.get(filePath);
         if (downloadInfo != null) {
-            return downloadInfo;
+            String localUrl = downloadInfo.getUrl();
+            if (localUrl.equals(url)) {
+                return downloadInfo;
+            } else {
+                delete(downloadInfo);
+            }
 //            if (!downloadInfo.isUsed()) {
 //            } else {
 //                try {
@@ -74,10 +91,11 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         TransferInfo downloadInfo = getDownloadInfo(url, filePath);
         DownloadTask downloadTask = downloadInfo.getDownloadTask();
         if (downloadTask != null && (readyTaskQueue.contains(downloadTask) || runningTaskQueue.contains(downloadTask))) {
-            // the task is running,we need do nothing.
+            //The task is running,we need do nothing.
+            LogUtil.e("task " + downloadInfo.getName() + " is running,we need do nothing.");
             return;
         }
-        if (!downloadInfo.isFinished() || downloadConfig.forceReDownload) {
+        if (!downloadInfo.isFinished() || forceReDownload) {
             if (downloadInfo.isFinished()) {
                 downloadInfo.setFinished(0);
                 downloadInfo.setCompletedSize(0);
@@ -96,17 +114,15 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     }
 
     private void submit(TransferInfo downloadInfo) {
-        if (downloadConfig == null) {
-            downloadConfig = new DownloadConfig();
-        }
-        downloadInfo.threadNum = downloadConfig.downloadThreadNumber;
-        downloadInfo.forceReDownload = downloadConfig.forceReDownload;
-        maxRunningTaskNumber = downloadConfig.maxRunningTaskNumber;
+        downloadInfo.threadNum = downloadThreadNumber;
+        downloadInfo.forceReDownload = forceReDownload;
         if (semaphore == null) {
             semaphore = new Semaphore(maxRunningTaskNumber);
         }
         DownloadTask downloadTask = new DownloadTask(downloadInfo, this);
+
         readyTaskQueue.offer(downloadTask);
+        LogUtil.d("task " + downloadInfo.getName() + " is ready" + ",remaining " + semaphore.availablePermits() + " permits.");
         if (!isServiceRunning) {
             context.startService(new Intent(context, DownloadService.class));
             isServiceRunning = true;
@@ -187,17 +203,30 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public void setDownloadConfig(DownloadConfig downloadConfig) {
-        this.downloadConfig = downloadConfig;
+        downloadThreadNumber = downloadConfig.getDownloadThreadNumber();
+        maxRunningTaskNumber = downloadConfig.getMaxRunningTaskNumber();
+        forceReDownload = downloadConfig.isForceReDownload();
     }
 
     @Override
-    public void shutdown() {
+    public void onServiceDestroy() {
+        isServiceRunning = false;
+    }
+
+    @Override
+    public synchronized void shutdown() {
         context.stopService(new Intent(context, DownloadService.class));
+        for (TransferInfo transferInfo : allDownloadInfo.values()) {
+            stop(transferInfo);
+        }
     }
 
     public DownloadTask acquireTask() throws InterruptedException {
-        semaphore.acquire();
-        return readyTaskQueue.take();
+        DownloadTask task = readyTaskQueue.take();
+        if (semaphore != null) {
+            semaphore.acquire();
+        }
+        return task;
     }
 
     @Override
@@ -215,9 +244,8 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public void onDownloadEnd(DownloadTask downloadTask) {
-//        TransferInfo downloadInfo = downloadTask.getDownloadInfo();
-//        Date date = new Date();
-//        Log.e("tag", "task name=" + downloadInfo.getName() + " is stopped at " + date.toString());
+        TransferInfo downloadInfo = downloadTask.getDownloadInfo();
+        LogUtil.d("Task " + downloadInfo.getName() + " is stopped.");
         runningTaskQueue.remove(downloadTask);
         semaphore.release();
     }

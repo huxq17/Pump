@@ -35,11 +35,6 @@ public class DownloadListActivity extends AppCompatActivity {
                 }
             }
         }
-
-        @Override
-        public void onError(int errorCode) {
-
-        }
     };
     private HashMap<DownloadViewHolder, DownloadInfo> map = new HashMap<>();
     private RecyclerView recyclerView;
@@ -127,15 +122,15 @@ public class DownloadListActivity extends AppCompatActivity {
             tvStatus.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
             dialog = new AlertDialog.Builder(itemView.getContext())
-                    .setTitle("是否删除下载")
-                    .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                    .setTitle("Confirm delete?")
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             adapter.delete(DownloadViewHolder.this);
                             Pump.delete(downloadInfo);
                         }
                     })
-                    .setNegativeButton("否", new DialogInterface.OnClickListener() {
+                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
 
@@ -152,26 +147,26 @@ public class DownloadListActivity extends AppCompatActivity {
             progressBar.setProgress(progress);
             switch (downloadInfo.getStatus()) {
                 case STOPPED:
-                    tvStatus.setText("开始");
+                    tvStatus.setText("Start");
                     break;
                 case PAUSING:
-                    tvStatus.setText("停止中");
+                    tvStatus.setText("Pausing");
                     break;
                 case PAUSED:
-                    tvStatus.setText("继续");
+                    tvStatus.setText("Continue");
                     break;
                 case WAIT:
-                    tvStatus.setText("等待中");
+                    tvStatus.setText("Waiting");
                     break;
                 case RUNNING:
-                    tvStatus.setText("暂停");
+                    tvStatus.setText("Pause");
                     speed = downloadInfo.getSpeed();
                     break;
                 case FINISHED:
-                    tvStatus.setText("下载完成");
+                    tvStatus.setText("Finished");
                     break;
                 case FAILED:
-                    tvStatus.setText("重试");
+                    tvStatus.setText("Retry");
                     break;
             }
             tvSpeed.setText(speed);
@@ -200,7 +195,7 @@ public class DownloadListActivity extends AppCompatActivity {
                     Pump.pause(downloadInfo);
                     break;
                 case FINISHED:
-                    Toast.makeText(v.getContext(), "下载完成", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(v.getContext(), "Download Completed.", Toast.LENGTH_SHORT).show();
                     break;
                 case FAILED:
                     Pump.reStart(downloadInfo);

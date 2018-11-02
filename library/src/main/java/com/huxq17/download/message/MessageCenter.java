@@ -36,6 +36,7 @@ public class MessageCenter implements IMessageCenter {
 
     @Override
     public void notifyProgressChanged(TransferInfo downloadInfo) {
+        handler.removeCallbacksAndMessages(null);
         Message message = Message.obtain();
         message.obj = downloadInfo;
         handler.sendMessage(message);

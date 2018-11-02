@@ -22,7 +22,6 @@ public class VerifyResultAction implements Action {
                 if (status == DownloadInfo.Status.PAUSING) {
                     downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
                 }
-                //
                 if (downloadInfo.getCompletedSize() == downloadInfo.getContentLength()) {
                     downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
                 }

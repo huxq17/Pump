@@ -11,9 +11,11 @@ public class SpeedMonitor {
     final String MIB_SUFFIX = "M/s";
     double speed = 0;
     String suffix = BYTE_SUFFIX;
-    private TransferInfo downloadInfo ;
-    public SpeedMonitor(TransferInfo downloadInfo){
+    private TransferInfo downloadInfo;
+
+    public SpeedMonitor(TransferInfo downloadInfo) {
         this.downloadInfo = downloadInfo;
+        downloadInfo.setSpeed(0 + suffix);
     }
 
     public void compute(int length) {
@@ -33,8 +35,7 @@ public class SpeedMonitor {
                 speed = NANOS_PER_SECOND * totalRead / BYTES_PER_MIB / (curTime - lastSpeedCountTime);
                 suffix = MIB_SUFFIX;
             }
-            speed = (double) Math.round(speed * 100) / 100;
-            downloadInfo.setSpeed(speed + suffix);
+            downloadInfo.setSpeed(((double) Math.round(speed * 100) / 100) + suffix);
             lastSpeedCountTime = curTime;
             totalRead = 0;
         }

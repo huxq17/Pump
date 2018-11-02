@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Toast;
 
 import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.DownloadInfo;
@@ -18,23 +19,19 @@ public class MainActivity extends AppCompatActivity {
 //    private String url = "http://down.youxifan.com/Q6ICeD";
 //    private String url = "http://www.anzhi.com/pkg/7083_com.sup.android.superb.html#";
     private String url = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
-    String pipixiaUrl = "http://gyxzss.syzjxz2018.cn/ss1/rj_limin1/huajingwx.apk";
+    String pipixiaUrl = "http://xiazai.3733.com/apk/game/podsctjpjb.apk";
     private ProgressDialog progressDialog;
     DownloadObserver downloadObserver = new DownloadObserver() {
         @Override
         public void onProgress(int progress) {
             DownloadInfo downloadInfo = getDownloadInfo();
-            if (downloadInfo.getUrl().equals(pipixiaUrl)) {
+            if (downloadInfo.getFilePath().endsWith("pipixia.apk")) {
                 progressDialog.setProgress(progress);
                 if (progress == 100) {
                     progressDialog.dismiss();
+                    Toast.makeText(MainActivity.this, "Download Finished", Toast.LENGTH_SHORT).show();
                 }
             }
-        }
-
-        @Override
-        public void onError(int errorCode) {
-
         }
     };
 
@@ -43,15 +40,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initProgressDialog();
-        DownloadConfig downloadConfig = new DownloadConfig();
-        downloadConfig.downloadThreadNumber = 3;
-        downloadConfig.maxRunningTaskNumber = 3;
-        downloadConfig.forceReDownload = true;
-        Pump.setDownloadConfig(downloadConfig);
+        DownloadConfig.newBuilder().setThreadNum(3)
+                .setMaxRunningTaskNum(3)
+                .setForceReDownload(true)
+                .build();
         Pump.subscribe(downloadObserver);
 
-        //merge 16157 12719 12754
-        //merge 13454 14297 14448
         findViewById(R.id.add_task).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -82,14 +76,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initProgressDialog() {
-        //创建进度条对话框
         progressDialog = new ProgressDialog(this);
-        //设置标题
-        progressDialog.setTitle("正在下载");
-        //设置信息
-        progressDialog.setMessage("玩命下载中...");
+        progressDialog.setTitle("Downloading");
+//        progressDialog.setMessage("Downloading now...");
         progressDialog.setProgress(0);
-        //设置显示的格式
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
     }
 
