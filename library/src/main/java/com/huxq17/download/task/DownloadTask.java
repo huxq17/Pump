@@ -69,8 +69,8 @@ public class DownloadTask implements Task {
             speedMonitor.compute(length);
             int progress = (int) (downloadInfo.getCompletedSize() * 1f / downloadInfo.getContentLength() * 100);
             if (progress != lastProgress) {
-                lastProgress = progress;
                 if (progress != 100) {
+                    lastProgress = progress;
                     notifyProgressChanged(downloadInfo);
                 }
             }

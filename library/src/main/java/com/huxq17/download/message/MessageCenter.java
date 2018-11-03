@@ -23,7 +23,7 @@ public class MessageCenter implements IMessageCenter {
             int observerSize = observers.size();
             for (int i = 0; i < observerSize; i++) {
                 DownloadObserver observer = observers.get(i);
-                observer.downloading(downloadInfo);
+                observer.downloading(msg.arg1, downloadInfo);
             }
         }
     };
@@ -35,9 +35,9 @@ public class MessageCenter implements IMessageCenter {
 
     @Override
     public void notifyProgressChanged(TransferInfo downloadInfo) {
-        handler.removeCallbacksAndMessages(null);
         Message message = Message.obtain();
         message.obj = downloadInfo;
+        message.arg1 = downloadInfo.getProgress();
         handler.sendMessage(message);
 //        context.getContentResolver().notifyChange(CONTENT_URI, null);
     }

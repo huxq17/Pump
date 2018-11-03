@@ -12,7 +12,6 @@ public class DownloadInfo {
     protected long contentLength;
     protected int finished = 0;
     protected Status status;
-    protected Status lastStatus;
     protected String speed;
     protected int errorCode;
 
@@ -27,14 +26,6 @@ public class DownloadInfo {
 
     public String getSpeed() {
         return speed;
-    }
-
-    public Status getLastStatus() {
-        return lastStatus;
-    }
-
-    public void setLastStatus(Status lastStatus) {
-        this.lastStatus = lastStatus;
     }
 
     public int getErrorCode() {
@@ -62,10 +53,7 @@ public class DownloadInfo {
     }
 
     public int getProgress() {
-        if (contentLength == 0) {
-            return 0;
-        }
-        return (int) (completedSize * 1f / contentLength * 100);
+        return contentLength == 0 ? 0 : (int) (completedSize * 1f / contentLength * 100);
     }
 
     public int getFinished() {

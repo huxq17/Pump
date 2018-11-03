@@ -17,6 +17,7 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
     private boolean isUsed = false;
     private DownloadTask downloadTask;
 
+
     public TransferInfo(String url, String filePath) {
         this.url = url;
         this.filePath = filePath;
@@ -128,6 +129,7 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
                 setStatus(Status.STOPPED);
             }
         }
+//        progress =
     }
 
     public File getDownloadFile() {

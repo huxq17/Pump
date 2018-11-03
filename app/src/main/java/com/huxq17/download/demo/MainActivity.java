@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
     //        private String url = "http://dlied5.myapp.com/myapp/1104466820/sgame/2017_com.tencent.tmgp.sgame_h178_1.41.2.16_5a7ef8.apk";
 //    private String url = "http://down.youxifan.com/Q6ICeD";
 //    private String url = "http://www.anzhi.com/pkg/7083_com.sup.android.superb.html#";
-    private String url = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
+    private String url = "http://xiazai.3733.com/apk/game/shactk.apk";
     String pipixiaUrl = "http://xiazai.3733.com/apk/game/shactk.apk";
     private ProgressDialog progressDialog;
     DownloadObserver downloadObserver = new DownloadObserver() {

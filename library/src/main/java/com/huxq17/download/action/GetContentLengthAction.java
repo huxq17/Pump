@@ -33,7 +33,8 @@ public class GetContentLengthAction implements Action {
                 conn.setConnectTimeout(15000);
                 conn.setReadTimeout(15000);
             }
-            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            int responseCode = conn.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
                 Map<String, List<String>> headers = conn.getHeaderFields();
                 Set<Map.Entry<String, List<String>>> sets = headers.entrySet();
                 for (Map.Entry<String, List<String>> entry : sets) {
@@ -45,9 +46,12 @@ public class GetContentLengthAction implements Action {
                 }
                 String contentLengthStr = conn.getHeaderField("content-length");
                 transferInfo.setContentLength(Long.parseLong(contentLengthStr));
-            } else {
+            } else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
                 result = false;
                 transferInfo.setErrorCode(ErrorCode.FILE_NOT_FOUND);
+            } else {
+                result = false;
+                transferInfo.setErrorCode(ErrorCode.UNKNOWN_SERVER_ERROR);
             }
 
         } catch (IOException e) {
