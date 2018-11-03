@@ -12,6 +12,7 @@ public class DownloadInfo {
     protected long contentLength;
     protected int finished = 0;
     protected Status status;
+    protected Status lastStatus;
     protected String speed;
     protected int errorCode;
 
@@ -26,6 +27,14 @@ public class DownloadInfo {
 
     public String getSpeed() {
         return speed;
+    }
+
+    public Status getLastStatus() {
+        return lastStatus;
+    }
+
+    public void setLastStatus(Status lastStatus) {
+        this.lastStatus = lastStatus;
     }
 
     public int getErrorCode() {
@@ -73,16 +82,5 @@ public class DownloadInfo {
 
     public enum Status {
         STOPPED, WAIT, PAUSED, PAUSING, RUNNING, FINISHED, FAILED
-    }
-
-    @Override
-    public String toString() {
-        return "DownloadInfo{" +
-                "url='" + url + '\'' +
-                ", filePath='" + filePath + '\'' +
-                ", completedSize=" + completedSize +
-                ", contentLength=" + contentLength +
-                ", finished=" + finished +
-                '}';
     }
 }

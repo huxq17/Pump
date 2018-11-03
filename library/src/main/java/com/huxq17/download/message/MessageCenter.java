@@ -23,8 +23,7 @@ public class MessageCenter implements IMessageCenter {
             int observerSize = observers.size();
             for (int i = 0; i < observerSize; i++) {
                 DownloadObserver observer = observers.get(i);
-                observer.setDownloadInfo(downloadInfo);
-                observer.onProgress(downloadInfo.getProgress());
+                observer.downloading(downloadInfo);
             }
         }
     };
@@ -44,13 +43,13 @@ public class MessageCenter implements IMessageCenter {
     }
 
     @Override
-    public void register(DownloadObserver downloadObserver) {
+    public synchronized void register(DownloadObserver downloadObserver) {
         if (!observers.contains(downloadObserver))
             observers.add(downloadObserver);
     }
 
     @Override
-    public void unRegister(DownloadObserver downloadObserver) {
+    public synchronized void unRegister(DownloadObserver downloadObserver) {
         observers.remove(downloadObserver);
     }
 }

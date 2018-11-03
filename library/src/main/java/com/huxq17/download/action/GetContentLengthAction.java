@@ -47,7 +47,7 @@ public class GetContentLengthAction implements Action {
                 transferInfo.setContentLength(Long.parseLong(contentLengthStr));
             } else {
                 result = false;
-                transferInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
+                transferInfo.setErrorCode(ErrorCode.FILE_NOT_FOUND);
             }
 
         } catch (IOException e) {

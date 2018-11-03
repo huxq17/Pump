@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
 //    private String url = "http://down.youxifan.com/Q6ICeD";
 //    private String url = "http://www.anzhi.com/pkg/7083_com.sup.android.superb.html#";
     private String url = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
-    String pipixiaUrl = "http://xiazai.3733.com/apk/game/podsctjpjb.apk";
+    String pipixiaUrl = "http://xiazai.3733.com/apk/game/shactk.apk";
     private ProgressDialog progressDialog;
     DownloadObserver downloadObserver = new DownloadObserver() {
         @Override
@@ -27,11 +27,18 @@ public class MainActivity extends AppCompatActivity {
             DownloadInfo downloadInfo = getDownloadInfo();
             if (downloadInfo.getFilePath().endsWith("pipixia.apk")) {
                 progressDialog.setProgress(progress);
-                if (progress == 100) {
-                    progressDialog.dismiss();
-                    Toast.makeText(MainActivity.this, "Download Finished", Toast.LENGTH_SHORT).show();
-                }
             }
+        }
+
+        @Override
+        public void onSuccess() {
+            progressDialog.dismiss();
+            Toast.makeText(MainActivity.this, "Download Finished", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onFailed() {
+            progressDialog.dismiss();
         }
     };
 
@@ -51,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
                 Pump.download(pipixiaUrl, pipixiaFile.getAbsolutePath());
+                progressDialog.setProgress(0);
                 progressDialog.show();
             }
         });

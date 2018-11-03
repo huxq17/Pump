@@ -13,21 +13,21 @@ public class DBOpenHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS " + Provider.DownloadInfo.TABLE_NAME + " ("
-                + Provider.DownloadInfo.URL + " CHAR,"
-                + Provider.DownloadInfo.PATH + " CHAR,"
-                + Provider.DownloadInfo.THREAD_NUM + " INTEGER,"
-                + Provider.DownloadInfo.FILE_LENGTH + " INTEGER,"
-                + Provider.DownloadInfo.FINISHED + " INTEGER,"
-                + Provider.DownloadInfo.CREATE_TIME + " INTEGER,"
-                + "primary key(" + Provider.DownloadInfo.URL + "," + Provider.DownloadInfo.PATH + ")"
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + Provider.DownloadTable.TABLE_NAME + " ("
+                + Provider.DownloadTable.URL + " CHAR,"
+                + Provider.DownloadTable.PATH + " CHAR,"
+                + Provider.DownloadTable.THREAD_NUM + " INTEGER,"
+                + Provider.DownloadTable.FILE_LENGTH + " INTEGER,"
+                + Provider.DownloadTable.FINISHED + " INTEGER,"
+                + Provider.DownloadTable.CREATE_TIME + " INTEGER,"
+                + "primary key(" + Provider.DownloadTable.URL + "," + Provider.DownloadTable.PATH + ")"
                 + ");");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         //TODO 当版本号发生改变时调用该方法,这里删除数据表,在实际业务中一般是要进行数据备份的
-        db.execSQL("DROP TABLE IF EXISTS " + Provider.DownloadInfo.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + Provider.DownloadTable.TABLE_NAME);
         onCreate(db);
     }
 

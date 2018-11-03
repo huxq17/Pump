@@ -10,7 +10,11 @@ public class ErrorCode {
      */
     public static final int NETWORK_UNAVAILABLE = 1001;
     /**
+     * Website return 404.
+     */
+    public static final int FILE_NOT_FOUND = 1002;
+    /**
      * Breakpoint download need request file's length first,but not found in http response head,connect server to resolve it.
      */
-    public static final int CONTENT_LENGTH_NOT_FOUND = 1002;
+    public static final int CONTENT_LENGTH_NOT_FOUND = 1003;
 }

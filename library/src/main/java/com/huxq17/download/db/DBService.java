@@ -34,27 +34,27 @@ public class DBService {
 
     public synchronized void updateInfo(TransferInfo downloadInfo) {
         SQLiteDatabase db = helper.getWritableDatabase();
-        String querySql = "select * from " + Provider.DownloadInfo.TABLE_NAME + " where " + Provider.DownloadInfo.URL + "=? and "
-                + Provider.DownloadInfo.PATH + " =?";
+        String querySql = "select * from " + Provider.DownloadTable.TABLE_NAME + " where " + Provider.DownloadTable.URL + "=? and "
+                + Provider.DownloadTable.PATH + " =?";
         Cursor cursor = db.rawQuery(querySql, new String[]{downloadInfo.getUrl(), downloadInfo.getFilePath()});
         if (cursor.getCount() == 1) {
             ContentValues contentValues = new ContentValues();
-            contentValues.put(Provider.DownloadInfo.URL, downloadInfo.getUrl());
-            contentValues.put(Provider.DownloadInfo.PATH, downloadInfo.getFilePath());
-            contentValues.put(Provider.DownloadInfo.THREAD_NUM, downloadInfo.threadNum);
-            contentValues.put(Provider.DownloadInfo.FILE_LENGTH, downloadInfo.getContentLength());
-            contentValues.put(Provider.DownloadInfo.FINISHED, downloadInfo.getFinished());
-            db.update(Provider.DownloadInfo.TABLE_NAME, contentValues,
-                    Provider.DownloadInfo.URL + "=? and " + Provider.DownloadInfo.PATH + "=?",
+            contentValues.put(Provider.DownloadTable.URL, downloadInfo.getUrl());
+            contentValues.put(Provider.DownloadTable.PATH, downloadInfo.getFilePath());
+            contentValues.put(Provider.DownloadTable.THREAD_NUM, downloadInfo.threadNum);
+            contentValues.put(Provider.DownloadTable.FILE_LENGTH, downloadInfo.getContentLength());
+            contentValues.put(Provider.DownloadTable.FINISHED, downloadInfo.getFinished());
+            db.update(Provider.DownloadTable.TABLE_NAME, contentValues,
+                    Provider.DownloadTable.URL + "=? and " + Provider.DownloadTable.PATH + "=?",
                     new String[]{downloadInfo.getUrl(), downloadInfo.getFilePath()});
         } else {
-            String sql = "insert into " + Provider.DownloadInfo.TABLE_NAME +
-                    "(" + Provider.DownloadInfo.URL + ", "
-                    + Provider.DownloadInfo.PATH + ","
-                    + Provider.DownloadInfo.THREAD_NUM + ","
-                    + Provider.DownloadInfo.FILE_LENGTH + ","
-                    + Provider.DownloadInfo.FINISHED + ","
-                    + Provider.DownloadInfo.CREATE_TIME +
+            String sql = "insert into " + Provider.DownloadTable.TABLE_NAME +
+                    "(" + Provider.DownloadTable.URL + ", "
+                    + Provider.DownloadTable.PATH + ","
+                    + Provider.DownloadTable.THREAD_NUM + ","
+                    + Provider.DownloadTable.FILE_LENGTH + ","
+                    + Provider.DownloadTable.FINISHED + ","
+                    + Provider.DownloadTable.CREATE_TIME +
                     ") values(?,?,?,?,?,?)";
             db.execSQL(sql, new Object[]{downloadInfo.getUrl(), downloadInfo.getFilePath(),
                     downloadInfo.threadNum, downloadInfo.getContentLength(), downloadInfo.getFinished(), downloadInfo.createTime});
@@ -65,8 +65,8 @@ public class DBService {
     public synchronized long queryLocalLength(TransferInfo info) {
         long length = 0;
         SQLiteDatabase db = helper.getReadableDatabase();
-        String sql = "select * from " + Provider.DownloadInfo.TABLE_NAME + " where " + Provider.DownloadInfo.URL + "=? and "
-                + Provider.DownloadInfo.PATH + " =?";
+        String sql = "select * from " + Provider.DownloadTable.TABLE_NAME + " where " + Provider.DownloadTable.URL + "=? and "
+                + Provider.DownloadTable.PATH + " =?";
         Cursor cursor = db.rawQuery(sql, new String[]{info.getUrl(), info.getFilePath()});
         while (cursor.moveToNext()) {
             info.threadNum = cursor.getInt(2);
@@ -83,7 +83,7 @@ public class DBService {
     public synchronized List<TransferInfo> getDownloadList() {
         List<TransferInfo> tasks = new ArrayList<>();
         SQLiteDatabase db = helper.getReadableDatabase();
-        String sql = "select * from " + Provider.DownloadInfo.TABLE_NAME + " order by " + Provider.DownloadInfo.CREATE_TIME;
+        String sql = "select * from " + Provider.DownloadTable.TABLE_NAME + " order by " + Provider.DownloadTable.CREATE_TIME;
         Cursor cursor = db.rawQuery(sql, null);
         while (cursor.moveToNext()) {
             TransferInfo info = new TransferInfo(cursor.getString(0), cursor.getString(1));
@@ -100,8 +100,8 @@ public class DBService {
 
     public synchronized void deleteInfo(String url, String filePath) {
         SQLiteDatabase db = helper.getWritableDatabase();
-        int result = db.delete(Provider.DownloadInfo.TABLE_NAME, Provider.DownloadInfo.URL + "=? and "
-                + Provider.DownloadInfo.PATH + " =?", new String[]{url, filePath});
+        int result = db.delete(Provider.DownloadTable.TABLE_NAME, Provider.DownloadTable.URL + "=? and "
+                + Provider.DownloadTable.PATH + " =?", new String[]{url, filePath});
         Log.d("tag", "deleteInfo PATH=" + filePath + ";result=" + result);
     }
     public synchronized void close() {

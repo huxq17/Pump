@@ -11,6 +11,7 @@ import java.io.File;
 public class MergeFileAction implements Action {
     @Override
     public boolean proceed(DownloadTask t) {
+        LogUtil.e("mergeFile i");
         TransferInfo downloadInfo = t.getDownloadInfo();
         long fileLength = downloadInfo.getContentLength();
         File tempDir = downloadInfo.getTempDir();

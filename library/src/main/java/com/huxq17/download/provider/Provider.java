@@ -6,7 +6,7 @@ public class Provider {
     public static final String AUTHORITY = "com.huxq17.download.provider";
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY);
 
-    public static final class DownloadInfo {
+    public static final class DownloadTable {
         public static final String TABLE_NAME = "download_info";
         public static final String URL = "url";
         public static final String PATH = "path";
