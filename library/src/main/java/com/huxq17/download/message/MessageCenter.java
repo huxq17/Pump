@@ -20,10 +20,11 @@ public class MessageCenter implements IMessageCenter {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             TransferInfo downloadInfo = (TransferInfo) msg.obj;
+            downloadInfo.setProgress(msg.arg1);
             int observerSize = observers.size();
             for (int i = 0; i < observerSize; i++) {
                 DownloadObserver observer = observers.get(i);
-                observer.downloading(msg.arg1, downloadInfo);
+                observer.downloading(downloadInfo);
             }
         }
     };
@@ -37,7 +38,7 @@ public class MessageCenter implements IMessageCenter {
     public void notifyProgressChanged(TransferInfo downloadInfo) {
         Message message = Message.obtain();
         message.obj = downloadInfo;
-        message.arg1 = downloadInfo.getProgress();
+        message.arg1 = downloadInfo.getRealTimeProgress();
         handler.sendMessage(message);
 //        context.getContentResolver().notifyChange(CONTENT_URI, null);
     }

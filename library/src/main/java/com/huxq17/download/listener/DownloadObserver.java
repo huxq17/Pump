@@ -1,6 +1,7 @@
 package com.huxq17.download.listener;
 
 import com.huxq17.download.DownloadInfo;
+import com.huxq17.download.TransferInfo;
 
 public abstract class DownloadObserver {
     public DownloadObserver() {
@@ -20,12 +21,14 @@ public abstract class DownloadObserver {
         return downloadInfo;
     }
 
-    public final void downloading(int progress, DownloadInfo downloadInfo) {
+    public final void downloading(DownloadInfo downloadInfo) {
         this.downloadInfo = downloadInfo;
+        int progress = downloadInfo.getProgress();
         DownloadInfo.Status status = downloadInfo.getStatus();
         onProgress(progress);
         if (progress == 100) {
             onSuccess();
+            ((TransferInfo) downloadInfo).setProgress(0);
         } else if (status == DownloadInfo.Status.FAILED) {
             onFailed();
         }

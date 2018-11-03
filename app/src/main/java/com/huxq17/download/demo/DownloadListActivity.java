@@ -31,7 +31,7 @@ public class DownloadListActivity extends AppCompatActivity {
             if (viewHolder != null) {
                 DownloadInfo tag = map.get(viewHolder);
                 if (tag != null && tag.getFilePath().equals(downloadInfo.getFilePath())) {
-                    viewHolder.bindData(downloadInfo,progress);
+                    viewHolder.bindData(downloadInfo);
                 }
             }
         }
@@ -82,7 +82,7 @@ public class DownloadListActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull DownloadViewHolder viewHolder, int i) {
             DownloadInfo downloadInfo = downloadInfoList.get(i);
-            viewHolder.bindData(downloadInfo,downloadInfo.getProgress());
+            viewHolder.bindData(downloadInfo);
 
             downloadInfo.setTag(viewHolder);
             map.put(viewHolder, downloadInfo);
@@ -139,11 +139,12 @@ public class DownloadListActivity extends AppCompatActivity {
                     .create();
         }
 
-        public void bindData(DownloadInfo downloadInfo,int progress) {
+        public void bindData(DownloadInfo downloadInfo) {
             this.downloadInfo = downloadInfo;
 //            int progress = downloadInfo.getProgress();
             tvName.setText(downloadInfo.getName());
             String speed = "";
+            int progress = downloadInfo.getProgress();
             progressBar.setProgress(progress);
             switch (downloadInfo.getStatus()) {
                 case STOPPED:

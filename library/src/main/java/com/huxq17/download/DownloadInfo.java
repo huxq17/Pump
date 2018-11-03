@@ -14,6 +14,7 @@ public class DownloadInfo {
     protected Status status;
     protected String speed;
     protected int errorCode;
+    protected int progress;
 
 
     public void setTag(Object tag) {
@@ -53,6 +54,14 @@ public class DownloadInfo {
     }
 
     public int getProgress() {
+        if (progress != 0) {
+            return progress;
+        } else {
+            return getRealTimeProgress();
+        }
+    }
+
+    public int getRealTimeProgress() {
         return contentLength == 0 ? 0 : (int) (completedSize * 1f / contentLength * 100);
     }
 

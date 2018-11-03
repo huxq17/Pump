@@ -55,6 +55,10 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
         completedSize += length;
     }
 
+    public void setProgress(int progress) {
+        this.progress = progress;
+    }
+
     public void setContentLength(long contentLength) {
         this.contentLength = contentLength;
     }
