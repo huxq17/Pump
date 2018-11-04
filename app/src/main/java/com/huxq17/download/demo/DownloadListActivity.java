@@ -187,7 +187,7 @@ public class DownloadListActivity extends AppCompatActivity {
                     Pump.download(downloadInfo.getUrl(), downloadInfo.getFilePath());
                     break;
                 case PAUSED:
-                    Pump.reStart(downloadInfo);
+                    Pump.resume(downloadInfo);
                     break;
                 case WAIT:
                     //do nothing.
@@ -199,7 +199,7 @@ public class DownloadListActivity extends AppCompatActivity {
                     Toast.makeText(v.getContext(), "Download Completed.", Toast.LENGTH_SHORT).show();
                     break;
                 case FAILED:
-                    Pump.reStart(downloadInfo);
+                    Pump.resume(downloadInfo);
                     break;
             }
         }

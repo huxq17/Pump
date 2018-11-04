@@ -69,8 +69,8 @@ public class Pump {
      *
      * @param downloadInfo get from {@link DownloadObserver#getDownloadInfo()}
      */
-    public static void reStart(DownloadInfo downloadInfo) {
-        ServiceAgency.getService(IDownloadManager.class).reStart(downloadInfo);
+    public static void resume(DownloadInfo downloadInfo) {
+        ServiceAgency.getService(IDownloadManager.class).resume(downloadInfo);
     }
 
     public static void shutdown() {

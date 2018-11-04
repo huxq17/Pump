@@ -170,7 +170,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     }
 
     @Override
-    public synchronized void reStart(DownloadInfo downloadInfo) {
+    public synchronized void resume(DownloadInfo downloadInfo) {
         submit((TransferInfo) downloadInfo);
     }
 

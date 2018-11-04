@@ -20,7 +20,7 @@ public interface IDownloadManager {
 
     void stop(DownloadInfo downloadInfo);
 
-    void reStart(DownloadInfo downloadInfo);
+    void resume(DownloadInfo downloadInfo);
 
     DownloadTask acquireTask() throws InterruptedException;
 

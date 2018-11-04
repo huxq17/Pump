@@ -19,7 +19,9 @@ public class MainActivity extends AppCompatActivity {
 //    private String url = "http://down.youxifan.com/Q6ICeD";
 //    private String url = "http://www.anzhi.com/pkg/7083_com.sup.android.superb.html#";
     private String url = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
-    String pipixiaUrl = "http://xiazai.3733.com/apk/game/shactk.apk";
+    private String url2 = "https://file.izuiyou.com/download/package/zuiyou.apk?from=ixiaochuan";
+    private String url3 = "http://57db.fm880.cn/com.caoshuoapp.caoshuo.apk";
+    String url4 = "http://v.nq6.com/xinqu.apk";
     private ProgressDialog progressDialog;
     DownloadObserver downloadObserver = new DownloadObserver() {
         @Override
@@ -57,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
-                Pump.download(pipixiaUrl, pipixiaFile.getAbsolutePath());
+                Pump.download(url4, pipixiaFile.getAbsolutePath());
                 progressDialog.setProgress(0);
                 progressDialog.show();
             }
@@ -70,9 +72,9 @@ public class MainActivity extends AppCompatActivity {
                 File file3 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
                 File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download4.apk");
                 Pump.download(url, file1.getAbsolutePath());
-                Pump.download(url, file2.getAbsolutePath());
-                Pump.download(url, file3.getAbsolutePath());
-                Pump.download(url, file4.getAbsolutePath());
+                Pump.download(url2, file2.getAbsolutePath());
+                Pump.download(url4, file3.getAbsolutePath());
+                Pump.download(url4, file4.getAbsolutePath());
             }
         });
         findViewById(R.id.jump_download_list).setOnClickListener(new View.OnClickListener() {
