@@ -1,5 +1,5 @@
 # Pump
-Pump是一个快速，易用的android下载库，支持多任务，多线程和断点下载。 [点我查看更多信息。](https://github.com/huxq17/Pump/wiki/Usage)
+Pump是一个快速，易用的android下载库，支持多任务，多线程和断点下载。 [点击查看更多信息。](https://github.com/huxq17/Pump/wiki/Usage)
 
 ### 配置 build.gradle：
 项目根目录的build.gradle：
