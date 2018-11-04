@@ -17,7 +17,7 @@ dependencies {
 
 |下载单个任务|下载多个任务|
 |:-----|:-----|
-| <img src="art/download_file.gif" width="280" height="475" /> | <img src="art/download_file.gif" width="280" height="475" /> |
+| <img src="art/download_file.gif" width="280" height="475" /> | <img src="art/download_files.gif" width="280" height="475" /> |
 
 
 ### 关于我
