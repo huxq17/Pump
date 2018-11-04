@@ -1,19 +1,29 @@
 # Pump
+Pump是一个快速，易用的android下载库，支持多任务，多线程和断点下载。
 
-### Usage
-----
-
-#### Gradle
-
-```groovy
-dependencies {
-   compile 'com.huxq17.xrefreshview:xrefreshview:3.6.9'
-   //依赖下面的库
-   compile 'com.android.support:recyclerview-v7:23.0.1'
-   compile 'com.android.support:support-v4:23.0.1'
+### 配置 build.gradle：
+项目根目录的build.gradle：
+```
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.buyi.huxq17:agencyplugin:1.1.0'
+    }
 }
 ```
-## 效果图
+App模块的build.gradle：
+
+```
+apply plugin: 'service_agency'
+
+dependencies {
+   implementation'com.huxq17.pump:download:1.0.0'
+}
+
+```
+### 效果图
 
 |下载单个任务|下载多个任务|
 |:-----|:-----|
