@@ -7,6 +7,16 @@ public abstract class DownloadObserver {
     public DownloadObserver() {
     }
 
+    /**
+     * Filter the download information to be received, all received by default.
+     *
+     * @param downloadInfo The download info.
+     * @return Receive if return true, or not receive.
+     */
+    public boolean filter(DownloadInfo downloadInfo) {
+        return true;
+    }
+
     private DownloadInfo downloadInfo;
 
     public abstract void onProgress(int progress);
@@ -28,7 +38,7 @@ public abstract class DownloadObserver {
         onProgress(progress);
         if (progress == 100) {
             onSuccess();
-            ((TransferInfo) downloadInfo).setProgress(0);
+            ((TransferInfo) downloadInfo).snapshotCompletedSize(0);
         } else if (status == DownloadInfo.Status.FAILED) {
             onFailed();
         }

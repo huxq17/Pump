@@ -7,7 +7,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +47,7 @@ public class DownloadListActivity extends AppCompatActivity {
         Pump.subscribe(downloadObserver);
         recyclerView = findViewById(R.id.rvDownloadList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        //获取全部下载任务
         downloadInfoList = Pump.getAllDownloadList();
         recyclerView.setLayoutManager(linearLayoutManager);
         downloadAdapter = new DownloadAdapter(map, downloadInfoList);
@@ -181,7 +181,6 @@ public class DownloadListActivity extends AppCompatActivity {
 
         @Override
         public void onClick(View v) {
-            Log.e("tag", "onclick");
             switch (downloadInfo.getStatus()) {
                 case STOPPED:
                     Pump.download(downloadInfo.getUrl(), downloadInfo.getFilePath());

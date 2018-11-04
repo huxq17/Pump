@@ -50,7 +50,7 @@ public class DownloadTask implements Task {
             start = System.currentTimeMillis();
             downloadWithDownloadChain();
             end = System.currentTimeMillis();
-            LogUtil.e("download spend=" + (end - start));
+            LogUtil.d("download spend=" + (end - start));
         }
         thread = null;
         downLoadLifeCycleObserver.onDownloadEnd(this);

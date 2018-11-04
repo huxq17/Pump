@@ -20,16 +20,19 @@ public class MainActivity extends AppCompatActivity {
 //    private String url = "http://www.anzhi.com/pkg/7083_com.sup.android.superb.html#";
     private String url = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
     private String url2 = "https://file.izuiyou.com/download/package/zuiyou.apk?from=ixiaochuan";
-    private String url3 = "http://57db.fm880.cn/com.caoshuoapp.caoshuo.apk";
     String url4 = "http://v.nq6.com/xinqu.apk";
     private ProgressDialog progressDialog;
     DownloadObserver downloadObserver = new DownloadObserver() {
         @Override
         public void onProgress(int progress) {
-            DownloadInfo downloadInfo = getDownloadInfo();
-            if (downloadInfo.getFilePath().endsWith("pipixia.apk")) {
-                progressDialog.setProgress(progress);
-            }
+            progressDialog.setProgress(progress);
+        }
+
+        @Override
+        public boolean filter(DownloadInfo downloadInfo) {
+            String filePath = downloadInfo.getFilePath();
+            String url = downloadInfo.getUrl();
+            return filePath.endsWith("pipixia.apk");
         }
 
         @Override
@@ -49,8 +52,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initProgressDialog();
-        DownloadConfig.newBuilder().setThreadNum(3)
+        //只要在第一次提交下载任务之前设置就可以。建议在application的onCreate里做
+        DownloadConfig.newBuilder()
+                //设置下载文件时分配的线程数量，默认是3个
+                .setThreadNum(3)
+                //设置最多允许同时运行几个下载任务，默认是3个
                 .setMaxRunningTaskNum(3)
+                //设置是否重复下载已经下载完成了的文件，默认不重复下载
                 .setForceReDownload(true)
                 .build();
         Pump.subscribe(downloadObserver);
@@ -67,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.add_download_list).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
+                File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
                 File file2 = new File(getExternalCacheDir().getAbsolutePath(), "download2.apk");
                 File file3 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
                 File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download4.apk");
@@ -101,6 +109,4 @@ public class MainActivity extends AppCompatActivity {
         }
         Pump.unSubscribe(downloadObserver);
     }
-
-
 }

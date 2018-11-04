@@ -20,11 +20,15 @@ public class MessageCenter implements IMessageCenter {
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             TransferInfo downloadInfo = (TransferInfo) msg.obj;
-            downloadInfo.setProgress(msg.arg1);
+            long high32Bit = (msg.arg1 & 0x00000000ffffffffL) << 32;
+            int low32Bit = msg.arg2;
+            downloadInfo.snapshotCompletedSize(high32Bit + low32Bit);
             int observerSize = observers.size();
             for (int i = 0; i < observerSize; i++) {
                 DownloadObserver observer = observers.get(i);
-                observer.downloading(downloadInfo);
+                if (observer.filter(downloadInfo)) {
+                    observer.downloading(downloadInfo);
+                }
             }
         }
     };
@@ -38,7 +42,11 @@ public class MessageCenter implements IMessageCenter {
     public void notifyProgressChanged(TransferInfo downloadInfo) {
         Message message = Message.obtain();
         message.obj = downloadInfo;
-        message.arg1 = downloadInfo.getRealTimeProgress();
+        long completedSize = downloadInfo.getCompletedSize();
+        //用arg1存高32位的long值
+        message.arg1 = (int) ((completedSize & 0xffffffff00000000L) >> 32);
+        //用arg2存低32位的long值
+        message.arg2 = (int) (completedSize & 0x00000000ffffffffL);
         handler.sendMessage(message);
 //        context.getContentResolver().notifyChange(CONTENT_URI, null);
     }
