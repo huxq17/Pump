@@ -32,7 +32,6 @@ dependencies {
 
 ### 关于我
     邮箱：huxq17@163.com
-    ps:有问题联系我的话请不要问我在不在，直接说问题，谢谢。
 
 ### License
 
