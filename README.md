@@ -1,10 +1,10 @@
 # Pump
-See the [English Doc](https://github.com/huxq17/Pump/blob/master/README_EN.md) for English readme.
+Pump is a fast, easy-to-use android download library that supports multitask, multithread, and breakpoint downloads. For more information, see  [the wiki](https://github.com/huxq17/Pump/wiki/Usage).
 
-Pump是一个快速，易用的android下载库，支持多任务，多线程和断点下载。 [点击查看更多信息。](https://github.com/huxq17/Pump/wiki/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)
+See the [中文文档](https://github.com/huxq17/Pump/blob/master/README_EN.md) for Chinese readme.
 
-### 配置 build.gradle：
-项目根目录的build.gradle：
+## Download
+Root project build.gradle：
 ```
 buildscript {
    allprojects {
@@ -17,7 +17,7 @@ buildscript {
     }
 }
 ```
-App模块的build.gradle：
+App module build.gradle：
 
 ```
 apply plugin: 'service_agency'
@@ -27,14 +27,14 @@ dependencies {
 }
 
 ```
-### 效果图
+### Gifs
 
-|下载单个任务|下载多个任务|
+|Single Task|Multiple Task|
 |:-----|:-----|
 | <img src="art/download_file.gif" width="280" height="475" /> | <img src="art/download_files.gif" width="280" height="475" /> |
 
-### 关于我
-    邮箱：huxq17@163.com
+### About me
+    Email：huxq17@gmail.com
 
 ### License
 
