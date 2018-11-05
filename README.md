@@ -7,7 +7,6 @@ Pump是一个快速，易用的android下载库，支持多任务，多线程和
 buildscript {
    allprojects {
        repositories {
-           maven{url 'https://dl.bintray.com/huxq17/maven'}
            jcenter()
        }
    }
