@@ -1,7 +1,7 @@
 # Pump
 Pump is a fast, easy-to-use android download library that supports multitask, multithread, and breakpoint downloads. For more information, see  [the wiki](https://github.com/huxq17/Pump/wiki/Usage).
 
-See the [中文文档](https://github.com/huxq17/Pump/blob/master/README_EN.md) for Chinese readme.
+See the [中文文档](https://github.com/huxq17/Pump/blob/master/README-cn.md) for Chinese readme.
 
 ## Download
 Root project build.gradle：
