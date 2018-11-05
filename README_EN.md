@@ -1,5 +1,5 @@
 # Pump
-Pump is a fast, easy-to-use android download library that supports multitask, multithread, and breakpoint downloads. For more information, see  [the wiki](https://github.com/huxq17/Pump/wiki/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E).
+Pump is a fast, easy-to-use android download library that supports multitask, multithread, and breakpoint downloads. For more information, see  [the wiki](https://github.com/huxq17/Pump/wiki/Usage).
 
 ## Download
 Root project build.gradle：
