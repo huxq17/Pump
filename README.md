@@ -5,9 +5,12 @@ Pump是一个快速，易用的android下载库，支持多任务，多线程和
 项目根目录的build.gradle：
 ```
 buildscript {
-    repositories {
-        jcenter()
-    }
+   allprojects {
+       repositories {
+           maven{url 'https://dl.bintray.com/huxq17/maven'}
+           jcenter()
+       }
+   }
     dependencies {
         classpath 'com.buyi.huxq17:agencyplugin:1.1.0'
     }
