@@ -1,4 +1,6 @@
 # Pump
+[![Android Arsenal]( https://img.shields.io/badge/Android%20Arsenal-Pump-green.svg?style=flat )]( https://android-arsenal.com/details/1/7293 )
+
 See the [English Doc](https://github.com/huxq17/Pump/blob/master/README.md) for English readme.
 
 Pump是一个快速，易用的android下载库，支持多任务，多线程和断点下载。 [点击查看更多信息。](https://github.com/huxq17/Pump/wiki/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)
