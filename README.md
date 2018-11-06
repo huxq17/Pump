@@ -1,4 +1,6 @@
 # Pump
+[![Android Arsenal]( https://img.shields.io/badge/Android%20Arsenal-Pump-green.svg?style=flat )]( https://android-arsenal.com/details/1/7293 )
+
 Pump is a fast, easy-to-use android download library that supports multitask, multithread, and breakpoint download. For more information, see  [the wiki](https://github.com/huxq17/Pump/wiki/Usage).
 
 See the [中文文档](https://github.com/huxq17/Pump/blob/master/README-cn.md) for Chinese readme.
