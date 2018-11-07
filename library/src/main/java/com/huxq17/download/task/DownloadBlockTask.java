@@ -5,7 +5,6 @@ import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.Utils.Util;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -19,6 +18,7 @@ public class DownloadBlockTask implements Task {
     private DownloadBatch batch;
     private DownloadTask downloadTask;
     private CountDownLatch countDownLatch;
+    private boolean isCanceled;
 
     public DownloadBlockTask(DownloadBatch batch, CountDownLatch countDownLatch, DownloadTask downloadTask) {
         this.batch = batch;
@@ -28,12 +28,12 @@ public class DownloadBlockTask implements Task {
 
     @Override
     public void run() {
+        isCanceled = false;
         HttpURLConnection conn = null;
         long downloadedSize = batch.downloadedSize;
         long startPosition = batch.startPos + downloadedSize;
         long endPosition = batch.endPos;
         File tempFile = batch.tempFile;
-        BufferedOutputStream bufferedOutputStream = null;
         FileOutputStream fileOutputStream = null;
         if (startPosition != endPosition + 1) {
             InputStream inputStream = null;
@@ -53,17 +53,18 @@ public class DownloadBlockTask implements Task {
 //                            Log.e("tag", "threadId=" + batch.threadId + ";head key=" + key + ";value=" + value);
 //                        }
 //                }
-                //TODO 有的网站不允许断点下载，则返回code就不是206，不知道是不是因为请求的时候userAgent是android的原因，下次带pc的试试。
                 if (conn.getResponseCode() == 206) {
                     inputStream = conn.getInputStream();
-                    byte[] buffer = new byte[8092 * 10];
+                    byte[] buffer = new byte[8092];
                     int len;
                     //TODO 写入文件的时候可以尝试用MappedByteBuffer共享内存优化。 用okio优化比较下
                     fileOutputStream = new FileOutputStream(tempFile, true);
-                    while (!downloadTask.shouldStop() && (len = inputStream.read(buffer)) != -1) {
-                        fileOutputStream.write(buffer, 0, len);
-                        downloadTask.onDownload(len);
-//                        SystemClock.sleep(300000);
+                    while (!isCanceled && (len = inputStream.read(buffer)) != -1) {
+                        if (downloadTask.onDownload(len)) {
+                            fileOutputStream.write(buffer, 0, len);
+                        } else {
+                            break;
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -75,9 +76,13 @@ public class DownloadBlockTask implements Task {
                     conn.disconnect();
                 }
                 Util.closeQuietly(fileOutputStream);
-                Util.closeQuietly(bufferedOutputStream);
             }
         }
         countDownLatch.countDown();
+    }
+
+    @Override
+    public void cancel() {
+        isCanceled = true;
     }
 }

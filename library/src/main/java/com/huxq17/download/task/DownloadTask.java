@@ -10,22 +10,23 @@ import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownLoadLifeCycleObserver;
 import com.huxq17.download.message.IMessageCenter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DownloadTask implements Task {
     private TransferInfo downloadInfo;
     private DBService dbService;
-    private boolean isStopped;
     private boolean isDestroyed;
     private boolean isNeedDelete;
     private IMessageCenter messageCenter;
     private DownLoadLifeCycleObserver downLoadLifeCycleObserver;
     private SpeedMonitor speedMonitor;
     private Thread thread;
+    private List<Task> downloadBlockTasks = new ArrayList<>();
 
     public DownloadTask(TransferInfo downloadInfo, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         downloadInfo.setDownloadTask(this);
         this.downloadInfo = downloadInfo;
-        isStopped = false;
-        isNeedDelete = false;
         isDestroyed = false;
         dbService = DBService.getInstance();
         downloadInfo.setUsed(true);
@@ -41,7 +42,7 @@ public class DownloadTask implements Task {
     @Override
     public void run() {
         thread = Thread.currentThread();
-        if (!isStopped) {
+        if (!isDestroyed) {
             downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
             notifyProgressChanged(downloadInfo);
         }
@@ -63,8 +64,11 @@ public class DownloadTask implements Task {
 
     private int lastProgress = 0;
 
-    public void onDownload(int length) {
+    public boolean onDownload(int length) {
         synchronized (downloadInfo) {
+            if (isDestroyed) {
+                return false;
+            }
             downloadInfo.download(length);
             speedMonitor.compute(length);
             int progress = (int) (downloadInfo.getCompletedSize() * 1f / downloadInfo.getContentLength() * 100);
@@ -75,6 +79,7 @@ public class DownloadTask implements Task {
                 }
             }
         }
+        return true;
     }
 
     public void notifyProgressChanged(TransferInfo downloadInfo) {
@@ -87,12 +92,16 @@ public class DownloadTask implements Task {
         return downloadInfo;
     }
 
+    public void addBlockTask(Task task) {
+        downloadBlockTasks.add(task);
+    }
+
     public void pause() {
         synchronized (downloadInfo) {
             if (!isDestroyed) {
                 downloadInfo.setStatus(DownloadInfo.Status.PAUSING);
                 notifyProgressChanged(downloadInfo);
-                interrupt();
+                cancel();
             }
         }
     }
@@ -100,25 +109,28 @@ public class DownloadTask implements Task {
     public void stop() {
         synchronized (downloadInfo) {
             if (!isDestroyed) {
-                isStopped = true;
                 downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
                 downloadInfo.setDownloadTask(null);
-                interrupt();
+                cancel();
             }
         }
     }
 
-    private void interrupt() {
+    public void cancel() {
         if (thread != null) {
             thread.interrupt();
         }
+        for (Task task : downloadBlockTasks) {
+            task.cancel();
+        }
+        destroy();
     }
 
     public void delete() {
         synchronized (downloadInfo) {
             if (!isDestroyed) {
                 isNeedDelete = true;
-                interrupt();
+                cancel();
             }
         }
     }
@@ -146,8 +158,7 @@ public class DownloadTask implements Task {
     }
 
     public boolean shouldStop() {
-        DownloadInfo.Status status = downloadInfo.getStatus();
-        return status != DownloadInfo.Status.RUNNING || isStopped || isNeedDelete || isDestroyed;
+        return isDestroyed;
     }
 
 }

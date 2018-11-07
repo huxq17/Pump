@@ -8,17 +8,14 @@ import com.huxq17.download.task.DownloadBlockTask;
 import com.huxq17.download.task.DownloadTask;
 
 import java.io.File;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class StartDownloadAction implements Action {
-    private List<DownloadBlockTask> tasks;
 
     @Override
-    public boolean proceed(DownloadTask t) {
-//        tasks = new ArrayList<>();
+    public boolean proceed(DownloadTask downloadTask) {
         boolean result = true;
-        TransferInfo downloadInfo = t.getDownloadInfo();
+        TransferInfo downloadInfo = downloadTask.getDownloadInfo();
         String url = downloadInfo.getUrl();
         long fileLength = downloadInfo.getContentLength();
         int threadNum = downloadInfo.threadNum;
@@ -33,13 +30,13 @@ public class StartDownloadAction implements Action {
             batch.calculateEndPos(fileLength, threadNum);
             completedSize += batch.calculateCompletedPartSize(tempDir);
             batch.url = url;
-            DownloadBlockTask task = new DownloadBlockTask(batch, countDownLatch, t);
-//            tasks.add(task);
+            DownloadBlockTask task = new DownloadBlockTask(batch, countDownLatch, downloadTask);
+            downloadTask.addBlockTask(task);
             TaskManager.execute(task);
         }
         downloadInfo.setCompletedSize(completedSize);
         downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
-        t.notifyProgressChanged(downloadInfo);
+        downloadTask.notifyProgressChanged(downloadInfo);
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {
