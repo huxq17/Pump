@@ -1,6 +1,7 @@
 package com.huxq17.download.action;
 
 import com.huxq17.download.DownloadBatch;
+import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.TaskManager;
 import com.huxq17.download.TransferInfo;
@@ -13,8 +14,9 @@ import java.util.concurrent.CountDownLatch;
 public class StartDownloadAction implements Action {
 
     @Override
-    public boolean proceed(DownloadTask downloadTask) {
+    public boolean proceed(DownloadChain chain) {
         boolean result = true;
+        DownloadTask downloadTask = chain.getDownloadTask();
         TransferInfo downloadInfo = downloadTask.getDownloadInfo();
         String url = downloadInfo.getUrl();
         long fileLength = downloadInfo.getContentLength();

@@ -25,7 +25,7 @@ App模块的build.gradle：
 apply plugin: 'service_agency'
 
 dependencies {
-   implementation'com.huxq17.pump:download:1.0.0'
+   implementation'com.huxq17.pump:download:1.0.1'
 }
 
 ```

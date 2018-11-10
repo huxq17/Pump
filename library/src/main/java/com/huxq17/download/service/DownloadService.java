@@ -54,4 +54,9 @@ public class DownloadService extends Service implements Task {
             }
         }
     }
+
+    @Override
+    public void cancel() {
+
+    }
 }

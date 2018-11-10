@@ -3,15 +3,19 @@ package com.huxq17.download.task;
 
 import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.ErrorCode;
+import com.huxq17.download.OKHttpUtils;
 import com.huxq17.download.Utils.Util;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.concurrent.CountDownLatch;
+
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 public class DownloadBlockTask implements Task {
@@ -19,6 +23,7 @@ public class DownloadBlockTask implements Task {
     private DownloadTask downloadTask;
     private CountDownLatch countDownLatch;
     private boolean isCanceled;
+    private Call call;
 
     public DownloadBlockTask(DownloadBatch batch, CountDownLatch countDownLatch, DownloadTask downloadTask) {
         this.batch = batch;
@@ -29,32 +34,27 @@ public class DownloadBlockTask implements Task {
     @Override
     public void run() {
         isCanceled = false;
-        HttpURLConnection conn = null;
         long downloadedSize = batch.downloadedSize;
         long startPosition = batch.startPos + downloadedSize;
         long endPosition = batch.endPos;
         File tempFile = batch.tempFile;
         FileOutputStream fileOutputStream = null;
         if (startPosition != endPosition + 1) {
+            OkHttpClient okHttpClient = OKHttpUtils.get();
+            Request request = new Request.Builder()
+                    .get()
+                    .addHeader("Range", "bytes=" + startPosition + "-" + endPosition)
+//                    .addHeader("Accept-Encoding", "identity")
+                    .url(batch.url)
+                    .build();
+            Response response = null;
             InputStream inputStream = null;
             try {
-                URL httpUrl = new URL(batch.url);
-                conn = (HttpURLConnection) httpUrl.openConnection();
-                conn.setRequestMethod("GET");
-                conn.setRequestProperty("Range", "bytes=" + startPosition + "-" + endPosition);
-                conn.setConnectTimeout(15000);
-                conn.setReadTimeout(15000);
-//                Map<String, List<String>> headers = conn.getHeaderFields();
-//                Set<Map.Entry<String, List<String>>> sets = headers.entrySet();
-//                for (Map.Entry<String, List<String>> entry : sets) {
-//                    String key = entry.getKey();
-//                    if (entry.getValue() != null)
-//                        for (String value : entry.getValue()) {
-//                            Log.e("tag", "threadId=" + batch.threadId + ";head key=" + key + ";value=" + value);
-//                        }
-//                }
-                if (conn.getResponseCode() == 206) {
-                    inputStream = conn.getInputStream();
+                call = okHttpClient.newCall(request);
+                response = call.execute();
+                int code = response.code();
+                if (code == 206) {
+                    inputStream = response.body().byteStream();
                     byte[] buffer = new byte[8092];
                     int len;
                     //TODO 写入文件的时候可以尝试用MappedByteBuffer共享内存优化。 用okio优化比较下
@@ -68,14 +68,14 @@ public class DownloadBlockTask implements Task {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
-                downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
+                if (!call.isCanceled()) {
+                    e.printStackTrace();
+                    downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
+                }
             } finally {
                 Util.closeQuietly(inputStream);
-                if (conn != null) {
-                    conn.disconnect();
-                }
                 Util.closeQuietly(fileOutputStream);
+                Util.closeQuietly(response);
             }
         }
         countDownLatch.countDown();
@@ -84,5 +84,8 @@ public class DownloadBlockTask implements Task {
     @Override
     public void cancel() {
         isCanceled = true;
+        if (call != null) {
+            call.cancel();
+        }
     }
 }

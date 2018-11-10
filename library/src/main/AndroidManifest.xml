@@ -4,7 +4,7 @@
     <application>
         <provider
             android:name=".provider.DownloadProvider"
-            android:authorities="${applicationId}.provider"
+            android:authorities="${applicationId}.huxq17.download-provider"
             android:multiprocess="true" />
         <service android:name=".service.DownloadService" />
     </application>

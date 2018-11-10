@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private String url = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
     private String url2 = "https://file.izuiyou.com/download/package/zuiyou.apk?from=ixiaochuan";
     String url4 = "http://v.nq6.com/xinqu.apk";
+    String url5 = "https://www.bcuae.info/app/DBEX.apk";
     private ProgressDialog progressDialog;
     DownloadObserver downloadObserver = new DownloadObserver() {
         @Override
@@ -62,35 +63,51 @@ public class MainActivity extends AppCompatActivity {
                 .setForceReDownload(true)
                 .build();
         Pump.subscribe(downloadObserver);
+        try {
+            File httpCacheDir = new File(getCacheDir(), "http");
+            long httpCacheSize = 50 * 1024 * 1024;
+            Class.forName("android.net.http.HttpResponseCache")
+                    .getMethod("install", File.class, long.class)
+                    .invoke(null, httpCacheDir, httpCacheSize);
+        } catch (Exception httpResponseCacheNotAvailable) {
+        }
 
         findViewById(R.id.add_task).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
-                Pump.download(url4, pipixiaFile.getAbsolutePath());
                 progressDialog.setProgress(0);
                 progressDialog.show();
+                File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
+                Pump.download(url4, pipixiaFile.getAbsolutePath());
             }
         });
-        findViewById(R.id.add_download_list).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
-                File file2 = new File(getExternalCacheDir().getAbsolutePath(), "download2.apk");
-                File file3 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
-                File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download4.apk");
-                Pump.download(url, file1.getAbsolutePath());
-                Pump.download(url2, file2.getAbsolutePath());
-                Pump.download(url4, file3.getAbsolutePath());
-                Pump.download(url4, file4.getAbsolutePath());
-            }
-        });
-        findViewById(R.id.jump_download_list).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, DownloadListActivity.class));
-            }
-        });
+
+        findViewById(R.id.add_download_list).
+
+                setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
+                        File file2 = new File(getExternalCacheDir().getAbsolutePath(), "download2.apk");
+                        File file3 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
+                        File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download4.apk");
+                        Pump.download(url, file1.getAbsolutePath());
+                        Pump.download(url2, file2.getAbsolutePath());
+                        Pump.download(url4, file3.getAbsolutePath());
+                        Pump.download(url5, file4.getAbsolutePath());
+//                        File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
+//                        Pump.download(url5, pipixiaFile.getAbsolutePath());
+                    }
+                });
+
+        findViewById(R.id.jump_download_list).
+
+                setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(new Intent(MainActivity.this, DownloadListActivity.class));
+                    }
+                });
     }
 
     private void initProgressDialog() {

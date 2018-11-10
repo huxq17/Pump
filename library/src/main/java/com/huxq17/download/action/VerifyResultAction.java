@@ -1,5 +1,6 @@
 package com.huxq17.download.action;
 
+import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.TransferInfo;
 import com.huxq17.download.Utils.Util;
@@ -8,12 +9,13 @@ import com.huxq17.download.task.DownloadTask;
 
 public class VerifyResultAction implements Action {
     @Override
-    public boolean proceed(DownloadTask t) {
-        TransferInfo downloadInfo = t.getDownloadInfo();
+    public boolean proceed(DownloadChain chain) {
+        DownloadTask downloadTask = chain.getDownloadTask();
+        TransferInfo downloadInfo = downloadTask.getDownloadInfo();
         synchronized (downloadInfo) {
             DownloadInfo.Status status = downloadInfo.getStatus();
-            t.destroy();
-            if (t.isNeedDelete()) {
+            downloadTask.destroy();
+            if (downloadTask.isNeedDelete()) {
                 Util.deleteDir(downloadInfo.getTempDir());
                 downloadInfo.getDownloadFile().delete();
                 downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
@@ -27,7 +29,7 @@ public class VerifyResultAction implements Action {
                 if (completedSize != 0 && completedSize == contentLength) {
                     downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
                 }
-                t.notifyProgressChanged(downloadInfo);
+                downloadTask.notifyProgressChanged(downloadInfo);
             }
         }
         return true;

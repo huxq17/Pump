@@ -1,5 +1,6 @@
 package com.huxq17.download.action;
 
+import com.huxq17.download.DownloadChain;
 import com.huxq17.download.TransferInfo;
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.db.DBService;
@@ -9,8 +10,9 @@ import java.io.File;
 
 public class CorrectDownloadInfoAction implements Action {
     @Override
-    public boolean proceed(DownloadTask t) {
-        TransferInfo downloadInfo = t.getDownloadInfo();
+    public boolean proceed(DownloadChain chain) {
+        DownloadTask downloadTask = chain.getDownloadTask();
+        TransferInfo downloadInfo = downloadTask.getDownloadInfo();
         long fileLength = downloadInfo.getContentLength();
 
         File tempDir = downloadInfo.getTempDir();
@@ -22,7 +24,7 @@ public class CorrectDownloadInfoAction implements Action {
         downloadInfo.setFinished(0);
         downloadInfo.setCompletedSize(0);
         downloadInfo.setContentLength(fileLength);
-        t.updateInfo(downloadInfo);
+        downloadTask.updateInfo(downloadInfo);
         int threadNum = downloadInfo.threadNum;
         String[] childList = tempDir.list();
         if (childList != null && childList.length != threadNum) {

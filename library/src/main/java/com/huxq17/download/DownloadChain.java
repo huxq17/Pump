@@ -14,6 +14,8 @@ import java.util.List;
 public class DownloadChain {
     private DownloadTask downloadTask;
     private List<Action> actions;
+    private int index;
+    private boolean isRetry;
 
     public DownloadChain(DownloadTask downloadTask) {
         List<Action> actions = new ArrayList<>();
@@ -23,20 +25,31 @@ public class DownloadChain {
         actions.add(new MergeFileAction());
         this.downloadTask = downloadTask;
         this.actions = actions;
+        index = 0;
+    }
+
+    public void retry() {
+        isRetry = true;
+    }
+
+    public DownloadTask getDownloadTask() {
+        return downloadTask;
     }
 
     public void proceed() {
-        for (Action action : actions) {
-            boolean result = action.proceed(downloadTask);
+        int actionSize = actions.size();
+        while (index != actionSize) {
+            Action action = actions.get(index);
+            boolean result = action.proceed(this);
             boolean shouldStop = downloadTask.shouldStop();
-            if (!result || shouldStop) {
-                //notify client if action failed.
-//                if (!result) {
-//                    downloadTask.notifyProgressChanged(downloadTask.getDownloadInfo());
-//                }
+            if (result && !shouldStop) {
+                index++;
+            } else if (isRetry) {
+                index = 0;
+            } else {
                 break;
             }
         }
-        new VerifyResultAction().proceed(downloadTask);
+        new VerifyResultAction().proceed(this);
     }
 }

@@ -1,5 +1,6 @@
 package com.huxq17.download.action;
 
+import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.TransferInfo;
 import com.huxq17.download.Utils.LogUtil;
@@ -10,8 +11,9 @@ import java.io.File;
 
 public class MergeFileAction implements Action {
     @Override
-    public boolean proceed(DownloadTask t) {
-        TransferInfo downloadInfo = t.getDownloadInfo();
+    public boolean proceed(DownloadChain chain) {
+        DownloadTask downloadTask = chain.getDownloadTask();
+        TransferInfo downloadInfo = downloadTask.getDownloadInfo();
         long fileLength = downloadInfo.getContentLength();
         File tempDir = downloadInfo.getTempDir();
         File file = downloadInfo.getDownloadFile();
@@ -29,7 +31,7 @@ public class MergeFileAction implements Action {
             LogUtil.i("merge" + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime));
             downloadInfo.setFinished(1);
             downloadInfo.setCompletedSize(completedSize);
-            t.updateInfo(downloadInfo);
+            downloadTask.updateInfo(downloadInfo);
             downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
         } else {
             downloadInfo.setStatus(DownloadInfo.Status.FAILED);

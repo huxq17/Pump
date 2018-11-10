@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.buyi.huxq17.serviceagency.ServiceAgency;
+import com.huxq17.download.OKHttpUtils;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.IMessageCenter;
@@ -24,6 +25,7 @@ public class DownloadProvider extends ContentProvider {
         DBService.init(context);
         ServiceAgency.getService(IMessageCenter.class).start(context);
         ServiceAgency.getService(IDownloadManager.class).start(context);
+        OKHttpUtils.init(context);
         //If DownloadService is running,pause it.
 //        Intent intent = new Intent(context, DownloadService.class);
 //        context.stopService(intent);

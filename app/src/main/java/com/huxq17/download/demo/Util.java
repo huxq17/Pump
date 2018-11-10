@@ -1,5 +1,6 @@
 package com.huxq17.download.demo;
 
+import java.io.Closeable;
 import java.text.DecimalFormat;
 
 public class Util {
@@ -23,5 +24,15 @@ public class Util {
             return "size: error";
         }
 
+    }
+    public static void closeQuietly(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (RuntimeException rethrown) {
+                throw rethrown;
+            } catch (Exception ignored) {
+            }
+        }
     }
 }

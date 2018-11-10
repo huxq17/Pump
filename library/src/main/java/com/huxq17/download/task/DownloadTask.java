@@ -3,6 +3,7 @@ package com.huxq17.download.task;
 import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadInfo;
+import com.huxq17.download.DownloadRequest;
 import com.huxq17.download.SpeedMonitor;
 import com.huxq17.download.TransferInfo;
 import com.huxq17.download.Utils.LogUtil;
@@ -23,6 +24,7 @@ public class DownloadTask implements Task {
     private SpeedMonitor speedMonitor;
     private Thread thread;
     private List<Task> downloadBlockTasks = new ArrayList<>();
+    private DownloadRequest request;
 
     public DownloadTask(TransferInfo downloadInfo, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         downloadInfo.setDownloadTask(this);
@@ -35,9 +37,14 @@ public class DownloadTask implements Task {
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
         downloadInfo.setStatus(DownloadInfo.Status.WAIT);
         notifyProgressChanged(downloadInfo);
+        request = DownloadRequest.obtain(downloadInfo);
     }
 
     private long start, end;
+
+    public DownloadRequest getRequest() {
+        return request;
+    }
 
     @Override
     public void run() {
