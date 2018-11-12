@@ -57,11 +57,11 @@ public class DownloadBlockTask implements Task {
                 response = call.execute();
                 int code = response.code();
                 if (!isCanceled) {
-                    if (code == 206 || (code == 200 && downloadTask.getDownloadInfo().threadNum == 1)) {
+                    TransferInfo downloadInfo = downloadTask.getDownloadInfo();
+                    if (code == 206 || (code == 200 && downloadInfo.threadNum == 1)) {
                         if (code != 206) {
                             tempFile.delete();
                             tempFile.createNewFile();
-                            TransferInfo downloadInfo = downloadTask.getDownloadInfo();
                             downloadInfo.setCompletedSize(0);
                         }
                         inputStream = response.body().byteStream();
