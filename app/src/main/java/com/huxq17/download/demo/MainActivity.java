@@ -79,6 +79,22 @@ public class MainActivity extends AppCompatActivity {
                 progressDialog.show();
                 File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
                 Pump.download(url4, pipixiaFile.getAbsolutePath());
+//                Downloader.getInstance().from(url4).into(pipixiaFile.getAbsolutePath()).listener(new Downloader.DownloadListener() {
+//                    @Override
+//                    public void downloading(int progress) {
+//                        progressDialog.setProgress(progress);
+//                    }
+//
+//                    @Override
+//                    public void success(File file) {
+//
+//                    }
+//
+//                    @Override
+//                    public void failed() {
+//
+//                    }
+//                });
             }
         });
 
@@ -87,16 +103,16 @@ public class MainActivity extends AppCompatActivity {
                 setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
-                        File file2 = new File(getExternalCacheDir().getAbsolutePath(), "download2.apk");
-                        File file3 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
-                        File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download4.apk");
-                        Pump.download(url, file1.getAbsolutePath());
-                        Pump.download(url2, file2.getAbsolutePath());
-                        Pump.download(url4, file3.getAbsolutePath());
-                        Pump.download(url5, file4.getAbsolutePath());
-//                        File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
-//                        Pump.download(url5, pipixiaFile.getAbsolutePath());
+//                        File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
+//                        File file2 = new File(getExternalCacheDir().getAbsolutePath(), "download2.apk");
+//                        File file3 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
+//                        File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download4.apk");
+//                        Pump.download(url, file1.getAbsolutePath());
+//                        Pump.download(url2, file2.getAbsolutePath());
+//                        Pump.download(url4, file3.getAbsolutePath());
+//                        Pump.download(url5, file4.getAbsolutePath());
+                        File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
+                        Pump.download(url4, pipixiaFile.getAbsolutePath());
                     }
                 });
 

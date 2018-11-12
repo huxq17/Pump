@@ -1,5 +1,6 @@
 package com.huxq17.download;
 
+import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.action.Action;
 import com.huxq17.download.action.CorrectDownloadInfoAction;
 import com.huxq17.download.action.GetContentLengthAction;
@@ -32,6 +33,10 @@ public class DownloadChain {
         isRetry = true;
     }
 
+    public boolean needRetry() {
+        return isRetry;
+    }
+
     public DownloadTask getDownloadTask() {
         return downloadTask;
     }
@@ -40,12 +45,17 @@ public class DownloadChain {
         int actionSize = actions.size();
         while (index != actionSize) {
             Action action = actions.get(index);
+            LogUtil.e("run action=" + action);
             boolean result = action.proceed(this);
             boolean shouldStop = downloadTask.shouldStop();
-            if (result && !shouldStop) {
-                index++;
+            if (shouldStop) {
+                break;
             } else if (isRetry) {
                 index = 0;
+                LogUtil.e("retry");
+                isRetry = false;
+            } else if (result) {
+                index++;
             } else {
                 break;
             }

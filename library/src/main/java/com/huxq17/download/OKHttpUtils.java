@@ -18,7 +18,7 @@ public class OKHttpUtils {
         long httpCacheSize = 50 * 1024 * 1024;
         Cache cache = new Cache(httpCacheDir,httpCacheSize);
         OK_HTTP_CLIENT = new OkHttpClient().newBuilder()
-//                .cache(cache)
+                .cache(cache)
                 .followRedirects(true)
                 .protocols(Collections.singletonList(Protocol.HTTP_1_1))
                 .writeTimeout(30,TimeUnit.SECONDS)

@@ -26,12 +26,13 @@ public class GetContentLengthAction implements Action {
                 .addHeader("Accept-Encoding", "identity")
                 .url(transferInfo.getUrl())
                 .build();
-        Response response = null;
+        Response response;
         try {
             response = okHttpClient.newCall(request).execute();
             if (response.cacheResponse() != null) {
                 //TODO start download by singleThreadTask
-                LogUtil.e("read from cache.");
+                transferInfo.setContentLength(response.body().contentLength());
+                LogUtil.e("read from cache.contentLength="+transferInfo.getContentLength());
             } else {
                 if (response.isSuccessful()) {
                     LogUtil.e("read from netWork response =" + response);

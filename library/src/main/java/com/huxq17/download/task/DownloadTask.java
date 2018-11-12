@@ -89,6 +89,22 @@ public class DownloadTask implements Task {
         return true;
     }
 
+    /**
+     * downgrade when server not support breakpoint download.
+     */
+    public void downgrade() {
+        synchronized (downloadInfo) {
+            if (downloadInfo.threadNum != 1) {
+                downloadInfo.threadNum = 1;
+                for (Task task : downloadBlockTasks) {
+                    task.cancel();
+                }
+                downloadBlockTasks.clear();
+                DBService.getInstance().updateInfo(downloadInfo);
+            }
+        }
+    }
+
     public void notifyProgressChanged(TransferInfo downloadInfo) {
         if (messageCenter != null)
             messageCenter.notifyProgressChanged(downloadInfo);

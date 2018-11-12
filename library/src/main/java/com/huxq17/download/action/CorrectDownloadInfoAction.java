@@ -16,6 +16,7 @@ public class CorrectDownloadInfoAction implements Action {
         long fileLength = downloadInfo.getContentLength();
 
         File tempDir = downloadInfo.getTempDir();
+        int oldThreadNum = downloadInfo.threadNum;
         long localLength = DBService.getInstance().queryLocalLength(downloadInfo);
         if (fileLength != localLength) {
             //If file's length have changed,we need to re-download it.
@@ -25,9 +26,9 @@ public class CorrectDownloadInfoAction implements Action {
         downloadInfo.setCompletedSize(0);
         downloadInfo.setContentLength(fileLength);
         downloadTask.updateInfo(downloadInfo);
-        int threadNum = downloadInfo.threadNum;
+//        downloadInfo.threadNum = tempDir.exists() ? downloadInfo.threadNum : oldThreadNum;
         String[] childList = tempDir.list();
-        if (childList != null && childList.length != threadNum) {
+        if (childList != null && childList.length != downloadInfo.threadNum) {
             Util.deleteDir(tempDir);
         }
         if (!tempDir.exists()) {
