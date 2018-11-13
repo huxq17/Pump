@@ -4,7 +4,6 @@ import com.huxq17.download.DownloadChain;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.OKHttpUtils;
 import com.huxq17.download.TransferInfo;
-import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.task.DownloadTask;
 
 import java.io.IOException;
@@ -32,10 +31,8 @@ public class GetContentLengthAction implements Action {
             if (response.cacheResponse() != null) {
                 //TODO start download by singleThreadTask
                 transferInfo.setContentLength(response.body().contentLength());
-                LogUtil.e("read from cache.contentLength="+transferInfo.getContentLength());
             } else {
                 if (response.isSuccessful()) {
-                    LogUtil.e("read from netWork response =" + response);
                     transferInfo.setContentLength(response.body().contentLength());
                 } else {
                     int responseCode = response.code();

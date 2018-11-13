@@ -9,14 +9,27 @@ import com.huxq17.download.message.IMessageCenter;
 import java.util.List;
 
 public class Pump {
+
     /**
+     * create a new download request.
+     *
+     * @param url      remote url
+     * @param filePath local file path
+     */
+    public static DownloadRequest.DownloadGenerator newRequest(String url, String filePath) {
+        return DownloadRequest.newRequest(url, filePath);
+    }
+
+    /**
+     * Use {@link Pump#newRequest(String, String)} instead.
      * Download file from remote url to local file path.
      *
      * @param url      remote url
      * @param filePath local file path
      */
+    @Deprecated
     public static void download(String url, String filePath) {
-        ServiceAgency.getService(IDownloadManager.class).submit(url, filePath);
+        DownloadRequest.newRequest(url, filePath).submit();
     }
 
     /**

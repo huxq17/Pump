@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private String url = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
     private String url2 = "https://file.izuiyou.com/download/package/zuiyou.apk?from=ixiaochuan";
     String url4 = "http://v.nq6.com/xinqu.apk";
-    String url5 = "https://www.bcuae.info/app/DBEX.apk";
+    String url5 = "http://wap.apk.anzhi.com/data4/apk/201810/24/e2cd3e0aded695c8fb7edcc508e3fd1b_37132000.apk";
     private ProgressDialog progressDialog;
     DownloadObserver downloadObserver = new DownloadObserver() {
         @Override
@@ -55,12 +55,8 @@ public class MainActivity extends AppCompatActivity {
         initProgressDialog();
         //只要在第一次提交下载任务之前设置就可以。建议在application的onCreate里做
         DownloadConfig.newBuilder()
-                //设置下载文件时分配的线程数量，默认是3个
-                .setThreadNum(3)
-                //设置最多允许同时运行几个下载任务，默认是3个
+                //Set the maximum number of tasks to run, default 3.
                 .setMaxRunningTaskNum(3)
-                //设置是否重复下载已经下载完成了的文件，默认不重复下载
-                .setForceReDownload(true)
                 .build();
         Pump.subscribe(downloadObserver);
         try {
@@ -78,46 +74,36 @@ public class MainActivity extends AppCompatActivity {
                 progressDialog.setProgress(0);
                 progressDialog.show();
                 File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
-                Pump.download(url4, pipixiaFile.getAbsolutePath());
-//                Downloader.getInstance().from(url4).into(pipixiaFile.getAbsolutePath()).listener(new Downloader.DownloadListener() {
-//                    @Override
-//                    public void downloading(int progress) {
-//                        progressDialog.setProgress(progress);
-//                    }
-//
-//                    @Override
-//                    public void success(File file) {
-//
-//                    }
-//
-//                    @Override
-//                    public void failed() {
-//
-//                    }
-//                });
+                Pump.newRequest(url5, pipixiaFile.getAbsolutePath())
+                        //Optionally,Set whether to repeatedly download the downloaded file,default false.
+                        .forceReDownload(true)
+                        //Optionally,Set how many threads are used when downloading,default 3.
+                        .threadNum(3)
+                        .submit();
             }
         });
 
-        findViewById(R.id.add_download_list).
-
-                setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-//                        File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
-//                        File file2 = new File(getExternalCacheDir().getAbsolutePath(), "download2.apk");
-//                        File file3 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
-//                        File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download4.apk");
-//                        Pump.download(url, file1.getAbsolutePath());
-//                        Pump.download(url2, file2.getAbsolutePath());
-//                        Pump.download(url4, file3.getAbsolutePath());
-//                        Pump.download(url5, file4.getAbsolutePath());
-                        File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
-                        Pump.download(url4, pipixiaFile.getAbsolutePath());
-                    }
-                });
+        findViewById(R.id.add_download_list).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
+                File file2 = new File(getExternalCacheDir().getAbsolutePath(), "download2.apk");
+                File file3 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
+                File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download4.apk");
+                Pump.newRequest(url, file1.getAbsolutePath())
+                        .forceReDownload(true).submit();
+                Pump.newRequest(url2, file2.getAbsolutePath())
+                        .forceReDownload(true).submit();
+                Pump.newRequest(url4, file3.getAbsolutePath())
+                        .forceReDownload(true).submit();
+                Pump.newRequest(url5, file4.getAbsolutePath())
+                        .forceReDownload(true).submit();
+//                        File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
+//                        Pump.download(url5, pipixiaFile.getAbsolutePath());
+            }
+        });
 
         findViewById(R.id.jump_download_list).
-
                 setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

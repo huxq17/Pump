@@ -8,6 +8,7 @@ import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.buyi.huxq17.serviceagency.annotation.ServiceAgent;
 import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.DownloadInfo;
+import com.huxq17.download.DownloadRequest;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.TransferInfo;
 import com.huxq17.download.Utils.LogUtil;
@@ -36,17 +37,9 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     private long maxCreateTime;
 
     /**
-     * 下载单个文件时开启的线程数量
-     */
-    private int downloadThreadNumber = 3;
-    /**
      * 允许同时下载的任务数量
      */
     private int maxRunningTaskNumber = 3;
-    /**
-     * 是否重复下载已经下载完成了的文件
-     */
-    private boolean forceReDownload = false;
 
     private DownloadManager() {
         List<TransferInfo> allDownloadInfo = DBService.getInstance().getDownloadList();
@@ -87,42 +80,42 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         return downloadInfo;
     }
 
-    public synchronized void submit(String url, String filePath) {
+    public synchronized void submit(DownloadRequest downloadRequest) {
+        String url = downloadRequest.getUrl();
+        String filePath = downloadRequest.getFilePath();
         TransferInfo downloadInfo = getDownloadInfo(url, filePath);
+        downloadRequest.setDownloadInfo(downloadInfo);
         DownloadTask downloadTask = downloadInfo.getDownloadTask();
         if (downloadTask != null && (readyTaskQueue.contains(downloadTask) || runningTaskQueue.contains(downloadTask))) {
             //The task is running,we need do nothing.
             LogUtil.e("task " + downloadInfo.getName() + " is running,we need do nothing.");
             return;
         }
-        if (!downloadInfo.isFinished() || forceReDownload) {
+        if (!downloadInfo.isFinished() || downloadRequest.isForceReDownload()) {
             if (downloadInfo.isFinished()) {
                 downloadInfo.setFinished(0);
                 downloadInfo.setCompletedSize(0);
             }
-            downloadInfo.calculateDownloadProgress();
+//            downloadInfo.calculateDownloadProgress();
 //            downloadInfo.setTag(null);
             downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
-            if (downloadInfo.getDownloadFile().exists()) {
-                downloadInfo.getDownloadFile().delete();
-            }
-            submit(downloadInfo);
+//            if (downloadInfo.getDownloadFile().exists()) {
+//                downloadInfo.getDownloadFile().delete();
+//            }
+            submitTask(downloadRequest);
         } else {
             downloadInfo.setErrorCode(ErrorCode.FILE_ALREADY_EXISTS);
             ServiceAgency.getService(IMessageCenter.class).notifyProgressChanged(downloadInfo);
         }
     }
 
-    private void submit(TransferInfo downloadInfo) {
-        downloadInfo.threadNum = downloadThreadNumber;
-        downloadInfo.forceReDownload = forceReDownload;
+    private void submitTask(DownloadRequest downloadRequest) {
         if (semaphore == null) {
             semaphore = new Semaphore(maxRunningTaskNumber);
         }
-        DownloadTask downloadTask = new DownloadTask(downloadInfo, this);
-
+        DownloadTask downloadTask = new DownloadTask(downloadRequest, this);
         readyTaskQueue.offer(downloadTask);
-        LogUtil.d("task " + downloadInfo.getName() + " is ready" + ",remaining " + semaphore.availablePermits() + " permits.");
+        LogUtil.d("task " + downloadRequest.getDownloadInfo().getName() + " is ready" + ",remaining " + semaphore.availablePermits() + " permits.");
         if (!isServiceRunning) {
             context.startService(new Intent(context, DownloadService.class));
             isServiceRunning = true;
@@ -171,7 +164,12 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public synchronized void resume(DownloadInfo downloadInfo) {
-        submit((TransferInfo) downloadInfo);
+        TransferInfo transferInfo = (TransferInfo) downloadInfo;
+        DownloadTask downloadTask = transferInfo.getDownloadTask();
+        if (downloadTask != null && downloadTask.getRequest() != null) {
+            DownloadRequest downloadRequest = downloadTask.getRequest();
+            submit(downloadRequest);
+        }
     }
 
     @Override
@@ -203,9 +201,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public void setDownloadConfig(DownloadConfig downloadConfig) {
-        downloadThreadNumber = downloadConfig.getDownloadThreadNumber();
         maxRunningTaskNumber = downloadConfig.getMaxRunningTaskNumber();
-        forceReDownload = downloadConfig.isForceReDownload();
     }
 
     @Override

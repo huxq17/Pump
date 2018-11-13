@@ -2,6 +2,7 @@ package com.huxq17.download.action;
 
 import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.DownloadChain;
+import com.huxq17.download.DownloadRequest;
 import com.huxq17.download.TaskManager;
 import com.huxq17.download.TransferInfo;
 import com.huxq17.download.task.DownloadBlockTask;
@@ -17,23 +18,26 @@ public class StartDownloadAction implements Action {
         boolean result = true;
         DownloadTask downloadTask = chain.getDownloadTask();
         TransferInfo downloadInfo = downloadTask.getDownloadInfo();
+        DownloadRequest downloadRequest = downloadTask.getRequest();
         String url = downloadInfo.getUrl();
         long fileLength = downloadInfo.getContentLength();
-        int threadNum = downloadInfo.threadNum;
+        int threadNum = downloadRequest.getThreadNum();
         File tempDir = downloadInfo.getTempDir();
         CountDownLatch countDownLatch;
         long completedSize = 0;
         countDownLatch = new CountDownLatch(threadNum);
-        for (int i = 0; i < threadNum; i++) {
-            DownloadBatch batch = new DownloadBatch();
-            batch.threadId = i;
-            batch.calculateStartPos(fileLength, threadNum);
-            batch.calculateEndPos(fileLength, threadNum);
-            completedSize += batch.calculateCompletedPartSize(tempDir);
-            batch.url = url;
-            DownloadBlockTask task = new DownloadBlockTask(batch, countDownLatch, chain);
-            downloadTask.addBlockTask(task);
-            TaskManager.execute(task);
+        synchronized (downloadInfo) {
+            for (int i = 0; i < threadNum; i++) {
+                DownloadBatch batch = new DownloadBatch();
+                batch.threadId = i;
+                batch.calculateStartPos(fileLength, threadNum);
+                batch.calculateEndPos(fileLength, threadNum);
+                completedSize += batch.calculateCompletedPartSize(tempDir);
+                batch.url = url;
+                DownloadBlockTask task = new DownloadBlockTask(batch, countDownLatch, chain);
+                downloadTask.addBlockTask(task);
+                TaskManager.execute(task);
+            }
         }
         downloadInfo.setCompletedSize(completedSize);
 //        downloadInfo.setStatus(DownloadInfo.Status.RUNNING);

@@ -7,6 +7,7 @@ import com.huxq17.download.DownloadRequest;
 import com.huxq17.download.SpeedMonitor;
 import com.huxq17.download.TransferInfo;
 import com.huxq17.download.Utils.LogUtil;
+import com.huxq17.download.Utils.Util;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownLoadLifeCycleObserver;
 import com.huxq17.download.message.IMessageCenter;
@@ -24,11 +25,16 @@ public class DownloadTask implements Task {
     private SpeedMonitor speedMonitor;
     private Thread thread;
     private List<Task> downloadBlockTasks = new ArrayList<>();
-    private DownloadRequest request;
+    /**
+     * True indicate that server not support breakpoint download.
+     */
+    private boolean isDowngrade = false;
+    private DownloadRequest downloadRequest;
 
-    public DownloadTask(TransferInfo downloadInfo, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
+    public DownloadTask(DownloadRequest downloadRequest, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
+        this.downloadRequest = downloadRequest;
+        this.downloadInfo = downloadRequest.getDownloadInfo();
         downloadInfo.setDownloadTask(this);
-        this.downloadInfo = downloadInfo;
         isDestroyed = false;
         dbService = DBService.getInstance();
         downloadInfo.setUsed(true);
@@ -37,13 +43,12 @@ public class DownloadTask implements Task {
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
         downloadInfo.setStatus(DownloadInfo.Status.WAIT);
         notifyProgressChanged(downloadInfo);
-        request = DownloadRequest.obtain(downloadInfo);
     }
 
     private long start, end;
 
     public DownloadRequest getRequest() {
-        return request;
+        return downloadRequest;
     }
 
     @Override
@@ -51,7 +56,7 @@ public class DownloadTask implements Task {
         thread = Thread.currentThread();
         if (!isDestroyed) {
             downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
-            notifyProgressChanged(downloadInfo);
+//            notifyProgressChanged(downloadInfo);
         }
         downLoadLifeCycleObserver.onDownloadStart(this);
         if (!shouldStop()) {
@@ -89,17 +94,26 @@ public class DownloadTask implements Task {
         return true;
     }
 
+
+    public boolean isDowngrade() {
+        synchronized (downloadInfo) {
+            return isDowngrade && downloadRequest.getThreadNum() == 1;
+        }
+    }
+
     /**
      * downgrade when server not support breakpoint download.
      */
     public void downgrade() {
         synchronized (downloadInfo) {
-            if (downloadInfo.threadNum != 1) {
-                downloadInfo.threadNum = 1;
+            isDowngrade = true;
+            if (downloadRequest.getThreadNum() != 1) {
+                downloadRequest.setThreadNum(1);
                 for (Task task : downloadBlockTasks) {
                     task.cancel();
                 }
                 downloadBlockTasks.clear();
+                Util.deleteDir(downloadInfo.getTempDir());
                 DBService.getInstance().updateInfo(downloadInfo);
             }
         }
@@ -109,7 +123,6 @@ public class DownloadTask implements Task {
         if (messageCenter != null)
             messageCenter.notifyProgressChanged(downloadInfo);
     }
-
 
     public TransferInfo getDownloadInfo() {
         return downloadInfo;

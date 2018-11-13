@@ -1,6 +1,7 @@
 package com.huxq17.download.action;
 
 import com.huxq17.download.DownloadChain;
+import com.huxq17.download.DownloadRequest;
 import com.huxq17.download.TransferInfo;
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.db.DBService;
@@ -13,10 +14,10 @@ public class CorrectDownloadInfoAction implements Action {
     public boolean proceed(DownloadChain chain) {
         DownloadTask downloadTask = chain.getDownloadTask();
         TransferInfo downloadInfo = downloadTask.getDownloadInfo();
+        DownloadRequest request = downloadTask.getRequest();
         long fileLength = downloadInfo.getContentLength();
 
         File tempDir = downloadInfo.getTempDir();
-        int oldThreadNum = downloadInfo.threadNum;
         long localLength = DBService.getInstance().queryLocalLength(downloadInfo);
         if (fileLength != localLength) {
             //If file's length have changed,we need to re-download it.
@@ -28,7 +29,7 @@ public class CorrectDownloadInfoAction implements Action {
         downloadTask.updateInfo(downloadInfo);
 //        downloadInfo.threadNum = tempDir.exists() ? downloadInfo.threadNum : oldThreadNum;
         String[] childList = tempDir.list();
-        if (childList != null && childList.length != downloadInfo.threadNum) {
+        if (childList != null && childList.length != request.getThreadNum()) {
             Util.deleteDir(tempDir);
         }
         if (!tempDir.exists()) {

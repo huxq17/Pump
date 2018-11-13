@@ -21,6 +21,10 @@ public abstract class DownloadObserver {
 
     public abstract void onProgress(int progress);
 
+    public DownloadInfo.Status getStatus() {
+        return DownloadInfo.Status.STOPPED;
+    }
+
     public void onSuccess() {
     }
 

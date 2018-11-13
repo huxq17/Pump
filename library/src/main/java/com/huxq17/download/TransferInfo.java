@@ -8,8 +8,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class TransferInfo extends DownloadInfo implements Cloneable {
-    public int threadNum = 3;
-    public boolean forceReDownload = true;
     private File tempDir;
     public long createTime;
     private ArrayList<File> downloadPartFiles = new ArrayList<>();
@@ -148,8 +146,6 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
     @Override
     public String toString() {
         return "TransferInfo{" +
-                "threadNum=" + threadNum +
-                ", forceReDownload=" + forceReDownload +
                 ", tempDir=" + tempDir +
                 ", downloadPartFiles=" + downloadPartFiles +
                 ", downloadFile=" + downloadFile +

@@ -5,7 +5,6 @@ import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.DownloadChain;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.OKHttpUtils;
-import com.huxq17.download.TransferInfo;
 import com.huxq17.download.Utils.Util;
 
 import java.io.File;
@@ -31,7 +30,7 @@ public class DownloadBlockTask implements Task {
         this.batch = batch;
         this.downloadChain = downloadChain;
         this.countDownLatch = countDownLatch;
-        isCanceled = downloadChain.needRetry();
+        isCanceled = false;
     }
 
     @Override
@@ -57,13 +56,7 @@ public class DownloadBlockTask implements Task {
                 response = call.execute();
                 int code = response.code();
                 if (!isCanceled) {
-                    TransferInfo downloadInfo = downloadTask.getDownloadInfo();
-                    if (code == 206 || (code == 200 && downloadInfo.threadNum == 1)) {
-                        if (code != 206) {
-                            tempFile.delete();
-                            tempFile.createNewFile();
-                            downloadInfo.setCompletedSize(0);
-                        }
+                    if (code == 206 || (code == 200 && downloadTask.isDowngrade())) {
                         inputStream = response.body().byteStream();
                         byte[] buffer = new byte[8092];
                         int len;

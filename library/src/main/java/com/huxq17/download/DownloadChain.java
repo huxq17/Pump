@@ -33,10 +33,6 @@ public class DownloadChain {
         isRetry = true;
     }
 
-    public boolean needRetry() {
-        return isRetry;
-    }
-
     public DownloadTask getDownloadTask() {
         return downloadTask;
     }
@@ -45,14 +41,13 @@ public class DownloadChain {
         int actionSize = actions.size();
         while (index != actionSize) {
             Action action = actions.get(index);
-            LogUtil.e("run action=" + action);
             boolean result = action.proceed(this);
             boolean shouldStop = downloadTask.shouldStop();
             if (shouldStop) {
                 break;
             } else if (isRetry) {
                 index = 0;
-                LogUtil.e("retry");
+                LogUtil.d("retry");
                 isRetry = false;
             } else if (result) {
                 index++;

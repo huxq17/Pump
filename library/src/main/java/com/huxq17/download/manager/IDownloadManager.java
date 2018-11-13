@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.DownloadInfo;
+import com.huxq17.download.DownloadRequest;
 import com.huxq17.download.TransferInfo;
 import com.huxq17.download.task.DownloadTask;
 
@@ -12,7 +13,7 @@ import java.util.List;
 public interface IDownloadManager {
     void start(Context context);
 
-    void submit(String url, String filePath);
+    void submit(DownloadRequest downloadRequest);
 
     void delete(DownloadInfo downloadInfo);
 

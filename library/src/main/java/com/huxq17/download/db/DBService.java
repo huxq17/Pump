@@ -41,7 +41,7 @@ public class DBService {
             ContentValues contentValues = new ContentValues();
             contentValues.put(Provider.DownloadTable.URL, downloadInfo.getUrl());
             contentValues.put(Provider.DownloadTable.PATH, downloadInfo.getFilePath());
-            contentValues.put(Provider.DownloadTable.THREAD_NUM, downloadInfo.threadNum);
+            contentValues.put(Provider.DownloadTable.THREAD_NUM, 0);
             contentValues.put(Provider.DownloadTable.FILE_LENGTH, downloadInfo.getContentLength());
             contentValues.put(Provider.DownloadTable.FINISHED, downloadInfo.getFinished());
             db.update(Provider.DownloadTable.TABLE_NAME, contentValues,
@@ -57,7 +57,7 @@ public class DBService {
                     + Provider.DownloadTable.CREATE_TIME +
                     ") values(?,?,?,?,?,?)";
             db.execSQL(sql, new Object[]{downloadInfo.getUrl(), downloadInfo.getFilePath(),
-                    downloadInfo.threadNum, downloadInfo.getContentLength(), downloadInfo.getFinished(), downloadInfo.createTime});
+                    0, downloadInfo.getContentLength(), downloadInfo.getFinished(), downloadInfo.createTime});
         }
         cursor.close();
     }
@@ -69,7 +69,7 @@ public class DBService {
                 + Provider.DownloadTable.PATH + " =?";
         Cursor cursor = db.rawQuery(sql, new String[]{info.getUrl(), info.getFilePath()});
         while (cursor.moveToNext()) {
-            info.threadNum = cursor.getInt(2);
+//            info.threadNum = cursor.getInt(2);
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));
             info.createTime = cursor.getLong(5);
@@ -87,7 +87,7 @@ public class DBService {
         Cursor cursor = db.rawQuery(sql, null);
         while (cursor.moveToNext()) {
             TransferInfo info = new TransferInfo(cursor.getString(0), cursor.getString(1));
-            info.threadNum = cursor.getInt(2);
+//            info.threadNum = cursor.getInt(2);
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));
             info.createTime = cursor.getLong(5);
@@ -104,6 +104,7 @@ public class DBService {
                 + Provider.DownloadTable.PATH + " =?", new String[]{url, filePath});
         Log.d("tag", "deleteInfo PATH=" + filePath + ";result=" + result);
     }
+
     public synchronized void close() {
         helper.close();
     }
