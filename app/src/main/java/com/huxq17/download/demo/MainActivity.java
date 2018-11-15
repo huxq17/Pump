@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initProgressDialog();
         //只要在第一次提交下载任务之前设置就可以。建议在application的onCreate里做
-        DownloadConfig.newBuilder()
+        DownloadConfig.newBuilder(getApplicationContext())
                 //Set the maximum number of tasks to run, default 3.
                 .setMaxRunningTaskNum(3)
                 .build();
@@ -127,5 +127,7 @@ public class MainActivity extends AppCompatActivity {
             progressDialog.dismiss();
         }
         Pump.unSubscribe(downloadObserver);
+        //shutdown will release some resource.
+        Pump.shutdown();
     }
 }

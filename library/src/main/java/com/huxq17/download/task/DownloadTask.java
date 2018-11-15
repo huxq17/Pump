@@ -106,8 +106,8 @@ public class DownloadTask implements Task {
      */
     public void downgrade() {
         synchronized (downloadInfo) {
-            isDowngrade = true;
-            if (downloadRequest.getThreadNum() != 1) {
+            if (!isDowngrade) {
+                isDowngrade = true;
                 downloadRequest.setThreadNum(1);
                 for (Task task : downloadBlockTasks) {
                     task.cancel();

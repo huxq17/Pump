@@ -53,10 +53,6 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
         completedSize += length;
     }
 
-    public void snapshotCompletedSize(long completedSize) {
-        this.completedSizeSnapshot = completedSize;
-    }
-
     public void setContentLength(long contentLength) {
         this.contentLength = contentLength;
     }
@@ -76,6 +72,10 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
     public void setErrorCode(int code) {
         this.errorCode = code;
         this.status = Status.FAILED;
+    }
+
+    public Status getStatus() {
+        return status;
     }
 
     public File getTempDir() {

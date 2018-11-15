@@ -15,8 +15,6 @@ public class DownloadInfo {
     protected String speed;
     protected int errorCode;
 
-    protected long completedSizeSnapshot;
-
 
     public void setTag(Object tag) {
         wfTag = new WeakReference<>(tag);
@@ -55,11 +53,6 @@ public class DownloadInfo {
     }
 
     public int getProgress() {
-        long completed = completedSizeSnapshot == 0 ? completedSize : completedSizeSnapshot;
-        return contentLength == 0 ? 0 : (int) (completed * 1f / contentLength * 100);
-    }
-
-    public int getRealTimeProgress() {
         return contentLength == 0 ? 0 : (int) (completedSize * 1f / contentLength * 100);
     }
 

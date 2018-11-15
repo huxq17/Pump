@@ -1,11 +1,14 @@
 package com.huxq17.download.listener;
 
 import com.huxq17.download.DownloadInfo;
-import com.huxq17.download.TransferInfo;
+import com.huxq17.download.DownloadInfoSnapshot;
 
 public abstract class DownloadObserver {
+    private DownloadInfo.Status status;
+
     public DownloadObserver() {
     }
+
 
     /**
      * Filter the download information to be received, all received by default.
@@ -22,7 +25,7 @@ public abstract class DownloadObserver {
     public abstract void onProgress(int progress);
 
     public DownloadInfo.Status getStatus() {
-        return DownloadInfo.Status.STOPPED;
+        return status;
     }
 
     public void onSuccess() {
@@ -35,14 +38,17 @@ public abstract class DownloadObserver {
         return downloadInfo;
     }
 
-    public final void downloading(DownloadInfo downloadInfo) {
+    public final void downloading(DownloadInfoSnapshot downloadInfoSnapshot) {
+        DownloadInfo downloadInfo = downloadInfoSnapshot.downloadInfo;
+        long completedSize = downloadInfoSnapshot.completedSize;
+        DownloadInfo.Status status = downloadInfoSnapshot.status;
         this.downloadInfo = downloadInfo;
-        int progress = downloadInfo.getProgress();
-        DownloadInfo.Status status = downloadInfo.getStatus();
+        this.status = status;
+        long contentLength = downloadInfo.getContentLength();
+        int progress = contentLength == 0 ? 0 : (int) (completedSize * 1f / contentLength * 100);
         onProgress(progress);
         if (progress == 100) {
             onSuccess();
-            ((TransferInfo) downloadInfo).snapshotCompletedSize(0);
         } else if (status == DownloadInfo.Status.FAILED) {
             onFailed();
         }

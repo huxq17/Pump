@@ -6,6 +6,7 @@ import android.os.Looper;
 import android.os.Message;
 
 import com.buyi.huxq17.serviceagency.annotation.ServiceAgent;
+import com.huxq17.download.DownloadInfoSnapshot;
 import com.huxq17.download.TransferInfo;
 import com.huxq17.download.listener.DownloadObserver;
 
@@ -19,17 +20,18 @@ public class MessageCenter implements IMessageCenter {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            TransferInfo downloadInfo = (TransferInfo) msg.obj;
-            long high32Bit = (msg.arg1 & 0x00000000ffffffffL) << 32;
-            int low32Bit = msg.arg2;
-            downloadInfo.snapshotCompletedSize(high32Bit + low32Bit);
+//            long high32Bit = (msg.arg1 & 0x00000000ffffffffL) << 32;
+//            int low32Bit = msg.arg2;
+//            downloadInfo.snapshotCompletedSize(high32Bit + low32Bit);
+            DownloadInfoSnapshot snapshot = (DownloadInfoSnapshot) msg.obj;
             int observerSize = observers.size();
             for (int i = 0; i < observerSize; i++) {
                 DownloadObserver observer = observers.get(i);
-                if (observer.filter(downloadInfo)) {
-                    observer.downloading(downloadInfo);
+                if (observer.filter(snapshot.downloadInfo)) {
+                    observer.downloading(snapshot);
                 }
             }
+            snapshot.recycle();
         }
     };
 
@@ -41,12 +43,16 @@ public class MessageCenter implements IMessageCenter {
     @Override
     public void notifyProgressChanged(TransferInfo downloadInfo) {
         Message message = Message.obtain();
-        message.obj = downloadInfo;
-        long completedSize = downloadInfo.getCompletedSize();
-        //用arg1存高32位的long值
-        message.arg1 = (int) ((completedSize & 0xffffffff00000000L) >> 32);
-        //用arg2存低32位的long值
-        message.arg2 = (int) (completedSize & 0x00000000ffffffffL);
+        DownloadInfoSnapshot snapshot = DownloadInfoSnapshot.obtain();
+        message.obj = snapshot;
+        snapshot.downloadInfo = downloadInfo;
+        snapshot.completedSize = downloadInfo.getCompletedSize();
+        snapshot.status = downloadInfo.getStatus();
+//        long completedSize = downloadInfo.getCompletedSize();
+//        //用arg1存高32位的long值
+//        message.arg1 = (int) ((completedSize & 0xffffffff00000000L) >> 32);
+//        //用arg2存低32位的long值
+//        message.arg2 = (int) (completedSize & 0x00000000ffffffffL);
         handler.sendMessage(message);
 //        context.getContentResolver().notifyChange(CONTENT_URI, null);
     }

@@ -30,7 +30,7 @@ public class DownloadListActivity extends AppCompatActivity {
             if (viewHolder != null) {
                 DownloadInfo tag = map.get(viewHolder);
                 if (tag != null && tag.getFilePath().equals(downloadInfo.getFilePath())) {
-                    viewHolder.bindData(downloadInfo);
+                    viewHolder.bindData(downloadInfo, getStatus());
                 }
             }
         }
@@ -82,7 +82,7 @@ public class DownloadListActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull DownloadViewHolder viewHolder, int i) {
             DownloadInfo downloadInfo = downloadInfoList.get(i);
-            viewHolder.bindData(downloadInfo);
+            viewHolder.bindData(downloadInfo, downloadInfo.getStatus());
 
             downloadInfo.setTag(viewHolder);
             map.put(viewHolder, downloadInfo);
@@ -108,6 +108,7 @@ public class DownloadListActivity extends AppCompatActivity {
         TextView tvSpeed;
         TextView tvDownload;
         DownloadInfo downloadInfo;
+        DownloadInfo.Status status;
         private String totalSizeString;
         long totalSize;
         AlertDialog dialog;
@@ -139,14 +140,14 @@ public class DownloadListActivity extends AppCompatActivity {
                     .create();
         }
 
-        public void bindData(DownloadInfo downloadInfo) {
+        public void bindData(DownloadInfo downloadInfo, DownloadInfo.Status status) {
             this.downloadInfo = downloadInfo;
-//            int progress = downloadInfo.getProgress();
+            this.status = status;
             tvName.setText(downloadInfo.getName());
             String speed = "";
             int progress = downloadInfo.getProgress();
             progressBar.setProgress(progress);
-            switch (downloadInfo.getStatus()) {
+            switch (status) {
                 case STOPPED:
                     tvStatus.setText("Start");
                     break;
@@ -181,7 +182,7 @@ public class DownloadListActivity extends AppCompatActivity {
 
         @Override
         public void onClick(View v) {
-            switch (downloadInfo.getStatus()) {
+            switch (status) {
                 case STOPPED:
                     Pump.download(downloadInfo.getUrl(), downloadInfo.getFilePath());
                     break;

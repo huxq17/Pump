@@ -8,6 +8,7 @@ import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.buyi.huxq17.serviceagency.annotation.ServiceAgent;
 import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.DownloadInfo;
+import com.huxq17.download.DownloadInfoSnapshot;
 import com.huxq17.download.DownloadRequest;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.TransferInfo;
@@ -71,7 +72,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 //                }
 //            }
         }
-        // create a new instance if not found.
+        //create a new instance if not found.
         downloadInfo = new TransferInfo(url, filePath);
         maxCreateTime++;
         downloadInfo.createTime = maxCreateTime;
@@ -215,6 +216,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         for (TransferInfo transferInfo : allDownloadInfo.values()) {
             stop(transferInfo);
         }
+        DownloadInfoSnapshot.release();
     }
 
     public DownloadTask acquireTask() throws InterruptedException {

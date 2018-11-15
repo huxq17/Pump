@@ -1,10 +1,18 @@
 package com.huxq17.download.provider;
 
+import android.content.Context;
 import android.net.Uri;
 
 public class Provider {
-    public static final String AUTHORITY = "com.huxq17.download.provider";
-    public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY);
+    public static final String AUTHORITY_URI = "content://%s.huxq17.download-provider";
+    public static Uri CONTENT_URI;
+
+    public static Uri getContentUri(Context context) {
+        if (CONTENT_URI == null) {
+            CONTENT_URI = Uri.parse(String.format(AUTHORITY_URI, context.getPackageName()));
+        }
+        return CONTENT_URI;
+    }
 
     public static final class DownloadTable {
         public static final String TABLE_NAME = "download_info";

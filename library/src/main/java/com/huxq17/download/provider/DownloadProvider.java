@@ -48,7 +48,7 @@ public class DownloadProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
-        throw new SQLException("Not support to insert.");
+        return null;
     }
 
     @Override

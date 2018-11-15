@@ -8,15 +8,16 @@ import com.huxq17.download.OKHttpUtils;
 import com.huxq17.download.Utils.Util;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.CountDownLatch;
 
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okio.BufferedSink;
+import okio.BufferedSource;
+import okio.Okio;
 
 
 public class DownloadBlockTask implements Task {
@@ -40,7 +41,6 @@ public class DownloadBlockTask implements Task {
         long endPosition = batch.endPos;
         File tempFile = batch.tempFile;
         DownloadTask downloadTask = downloadChain.getDownloadTask();
-        FileOutputStream fileOutputStream = null;
         if (startPosition != endPosition + 1) {
             OkHttpClient okHttpClient = OKHttpUtils.get();
             Request request = new Request.Builder()
@@ -50,25 +50,25 @@ public class DownloadBlockTask implements Task {
                     .url(batch.url)
                     .build();
             Response response = null;
-            InputStream inputStream = null;
+            BufferedSink bufferedSink = null;
+            BufferedSource bufferedSource = null;
             try {
                 call = okHttpClient.newCall(request);
                 response = call.execute();
                 int code = response.code();
                 if (!isCanceled) {
                     if (code == 206 || (code == 200 && downloadTask.isDowngrade())) {
-                        inputStream = response.body().byteStream();
-                        byte[] buffer = new byte[8092];
+                        bufferedSource = response.body().source();
                         int len;
-                        //TODO 写入文件的时候可以尝试用MappedByteBuffer共享内存优化。 用okio优化比较下
-                        fileOutputStream = new FileOutputStream(tempFile, true);
-                        while (!isCanceled && (len = inputStream.read(buffer)) != -1) {
-                            if (downloadTask.onDownload(len)) {
-                                fileOutputStream.write(buffer, 0, len);
-                            } else {
+                        bufferedSink = Okio.buffer(Okio.appendingSink(tempFile));
+                        byte[] buffer = new byte[8092];
+                        while (!isCanceled && (len = bufferedSource.read(buffer)) != -1) {
+                            if (!downloadTask.onDownload(len)) {
                                 break;
                             }
+                            bufferedSink.write(buffer, 0, len);
                         }
+                        bufferedSink.flush();
                     } else if (code == 200) {
                         downloadChain.retry();
                         //downgrade when server not support breakpoint download.
@@ -81,8 +81,8 @@ public class DownloadBlockTask implements Task {
                     downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
                 }
             } finally {
-                Util.closeQuietly(inputStream);
-                Util.closeQuietly(fileOutputStream);
+                Util.closeQuietly(bufferedSource);
+                Util.closeQuietly(bufferedSink);
                 Util.closeQuietly(response);
             }
         }
