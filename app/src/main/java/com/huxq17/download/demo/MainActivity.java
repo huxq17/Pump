@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
             progressDialog.dismiss();
         }
         Pump.unSubscribe(downloadObserver);
-        //shutdown will release some resource.
+        //shutdown will stop all tasks and release some resource.
         Pump.shutdown();
     }
 }

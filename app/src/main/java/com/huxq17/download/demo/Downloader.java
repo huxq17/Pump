@@ -12,7 +12,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import okhttp3.internal.Util;
 
 public class Downloader {
     private String url;
