@@ -1,8 +1,8 @@
 package com.huxq17.download.action;
 
 import com.huxq17.download.DownloadChain;
+import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadRequest;
-import com.huxq17.download.TransferInfo;
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.task.DownloadTask;
@@ -13,7 +13,7 @@ public class CorrectDownloadInfoAction implements Action {
     @Override
     public boolean proceed(DownloadChain chain) {
         DownloadTask downloadTask = chain.getDownloadTask();
-        TransferInfo downloadInfo = downloadTask.getDownloadInfo();
+        DownloadDetailsInfo downloadInfo = downloadTask.getDownloadInfo();
         DownloadRequest request = downloadTask.getRequest();
         long fileLength = downloadInfo.getContentLength();
 

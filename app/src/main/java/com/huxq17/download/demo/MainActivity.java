@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
                 File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
                 Pump.newRequest(url5, pipixiaFile.getAbsolutePath())
                         //Optionally,Set whether to repeatedly download the downloaded file,default false.
-                        .forceReDownload(true)
+                        .forceReDownload(false)
                         //Optionally,Set how many threads are used when downloading,default 3.
                         .threadNum(3)
                         .submit();
@@ -91,13 +91,13 @@ public class MainActivity extends AppCompatActivity {
                 File file3 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
                 File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download4.apk");
                 Pump.newRequest(url, file1.getAbsolutePath())
-                        .forceReDownload(true).submit();
+                        .submit();
                 Pump.newRequest(url2, file2.getAbsolutePath())
-                        .forceReDownload(true).submit();
+                        .submit();
                 Pump.newRequest(url4, file3.getAbsolutePath())
-                        .forceReDownload(true).submit();
+                        .submit();
                 Pump.newRequest(url5, file4.getAbsolutePath())
-                        .forceReDownload(true).submit();
+                        .submit();
 //                        File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
 //                        Pump.download(url5, pipixiaFile.getAbsolutePath());
             }

@@ -4,7 +4,7 @@ import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadRequest;
 import com.huxq17.download.TaskManager;
-import com.huxq17.download.TransferInfo;
+import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.task.DownloadBlockTask;
 import com.huxq17.download.task.DownloadTask;
 
@@ -17,7 +17,7 @@ public class StartDownloadAction implements Action {
     public boolean proceed(DownloadChain chain) {
         boolean result = true;
         DownloadTask downloadTask = chain.getDownloadTask();
-        TransferInfo downloadInfo = downloadTask.getDownloadInfo();
+        DownloadDetailsInfo downloadInfo = downloadTask.getDownloadInfo();
         DownloadRequest downloadRequest = downloadTask.getRequest();
         String url = downloadInfo.getUrl();
         long fileLength = downloadInfo.getContentLength();

@@ -11,9 +11,9 @@ public class SpeedMonitor {
     final String MIB_SUFFIX = "M/s";
     double speed = 0;
     String suffix = BYTE_SUFFIX;
-    private TransferInfo downloadInfo;
+    private DownloadDetailsInfo downloadInfo;
 
-    public SpeedMonitor(TransferInfo downloadInfo) {
+    public SpeedMonitor(DownloadDetailsInfo downloadInfo) {
         this.downloadInfo = downloadInfo;
         downloadInfo.setSpeed(0 + suffix);
     }

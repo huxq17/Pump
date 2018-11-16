@@ -8,7 +8,7 @@ import com.huxq17.download.provider.Provider;
 
 public class DBOpenHelper extends SQLiteOpenHelper {
     public DBOpenHelper(Context context) {
-        super(context, "pump.db", null, 1);
+        super(context, "pump.db", null, 2);
     }
 
     @Override
@@ -22,13 +22,18 @@ public class DBOpenHelper extends SQLiteOpenHelper {
                 + Provider.DownloadTable.CREATE_TIME + " INTEGER,"
                 + "primary key(" + Provider.DownloadTable.URL + "," + Provider.DownloadTable.PATH + ")"
                 + ");");
+        db.execSQL("CREATE TABLE IF NOT EXISTS " + Provider.CacheTable.TABLE_NAME + " ("
+                + Provider.CacheTable.URL + " CHAR primary key,"
+                + Provider.CacheTable.ETAG + " CHAR,"
+                + Provider.CacheTable.LAST_MODIFIED + " CHAR"
+                + ");");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        //TODO 当版本号发生改变时调用该方法,这里删除数据表,在实际业务中一般是要进行数据备份的
-        db.execSQL("DROP TABLE IF EXISTS " + Provider.DownloadTable.TABLE_NAME);
-        onCreate(db);
+        if (oldVersion == 1 && newVersion == 2) {
+            onCreate(db);
+        }
     }
 
 }

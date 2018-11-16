@@ -23,4 +23,23 @@ public class Provider {
         public static final String FINISHED = "finished";
         public static final String CREATE_TIME = "create_time";
     }
+
+    public static final class CacheTable {
+        public static final String TABLE_NAME = "download_cache";
+        public static final String URL = "url";
+        public static final String LAST_MODIFIED = "Last_modified";
+        public static final String ETAG = "eTag";
+    }
+
+    public static final class CacheBean {
+        public String lastModified;
+        public String eTag;
+        public String url;
+
+        public CacheBean(String url, String lastModified, String eTag) {
+            this.lastModified = lastModified;
+            this.eTag = eTag;
+            this.url = url;
+        }
+    }
 }

@@ -2,19 +2,29 @@ package com.huxq17.download;
 
 import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.huxq17.download.manager.IDownloadManager;
+import com.huxq17.download.provider.Provider;
 
 public class DownloadRequest {
     private String url;
     private String filePath;
     private int threadNum = 3;
     private boolean forceReDownload = false;
-    private TransferInfo downloadInfo;
+    private DownloadDetailsInfo downloadInfo;
+    private Provider.CacheBean cacheBean;
 
-    public void setDownloadInfo(TransferInfo downloadInfo) {
+    public void setCacheBean(Provider.CacheBean cacheBean) {
+        this.cacheBean = cacheBean;
+    }
+
+    public Provider.CacheBean getCacheBean() {
+        return cacheBean;
+    }
+
+    public void setDownloadInfo(DownloadDetailsInfo downloadInfo) {
         this.downloadInfo = downloadInfo;
     }
 
-    public TransferInfo getDownloadInfo() {
+    public DownloadDetailsInfo getDownloadInfo() {
         return downloadInfo;
     }
 
@@ -60,7 +70,7 @@ public class DownloadRequest {
         }
 
         /**
-         * Set whether to repeatedly download the downloaded file,default false.
+         * Set whether to repeatedly download the downloaded file,default true.
          *
          * @param force
          * @return

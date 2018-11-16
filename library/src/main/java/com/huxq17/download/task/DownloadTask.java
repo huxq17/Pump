@@ -2,10 +2,10 @@ package com.huxq17.download.task;
 
 import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.huxq17.download.DownloadChain;
+import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.DownloadRequest;
 import com.huxq17.download.SpeedMonitor;
-import com.huxq17.download.TransferInfo;
 import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.db.DBService;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DownloadTask implements Task {
-    private TransferInfo downloadInfo;
+    private DownloadDetailsInfo downloadInfo;
     private DBService dbService;
     private boolean isDestroyed;
     private boolean isNeedDelete;
@@ -94,7 +94,6 @@ public class DownloadTask implements Task {
         return true;
     }
 
-
     public boolean isDowngrade() {
         synchronized (downloadInfo) {
             return isDowngrade && downloadRequest.getThreadNum() == 1;
@@ -119,12 +118,12 @@ public class DownloadTask implements Task {
         }
     }
 
-    public void notifyProgressChanged(TransferInfo downloadInfo) {
+    public void notifyProgressChanged(DownloadDetailsInfo downloadInfo) {
         if (messageCenter != null)
             messageCenter.notifyProgressChanged(downloadInfo);
     }
 
-    public TransferInfo getDownloadInfo() {
+    public DownloadDetailsInfo getDownloadInfo() {
         return downloadInfo;
     }
 
@@ -181,7 +180,7 @@ public class DownloadTask implements Task {
         }
     }
 
-    public void updateInfo(TransferInfo transferInfo) {
+    public void updateInfo(DownloadDetailsInfo transferInfo) {
         synchronized (transferInfo) {
             if (!isNeedDelete) {
                 dbService.updateInfo(transferInfo);

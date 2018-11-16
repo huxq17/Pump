@@ -7,7 +7,7 @@ import com.huxq17.download.task.DownloadTask;
 import java.io.File;
 import java.util.ArrayList;
 
-public class TransferInfo extends DownloadInfo implements Cloneable {
+public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
     private File tempDir;
     public long createTime;
     private ArrayList<File> downloadPartFiles = new ArrayList<>();
@@ -15,8 +15,7 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
     private boolean isUsed = false;
     private DownloadTask downloadTask;
 
-
-    public TransferInfo(String url, String filePath) {
+    public DownloadDetailsInfo(String url, String filePath) {
         this.url = url;
         this.filePath = filePath;
         downloadFile = new File(filePath);
@@ -31,8 +30,8 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
     }
 
     @Override
-    public TransferInfo clone() throws CloneNotSupportedException {
-        TransferInfo transferInfo = (TransferInfo) super.clone();
+    public DownloadDetailsInfo clone() throws CloneNotSupportedException {
+        DownloadDetailsInfo transferInfo = (DownloadDetailsInfo) super.clone();
         transferInfo.downloadPartFiles = (ArrayList<File>) downloadPartFiles.clone();
         return transferInfo;
     }
@@ -143,20 +142,20 @@ public class TransferInfo extends DownloadInfo implements Cloneable {
         return downloadFile.getName();
     }
 
-    @Override
-    public String toString() {
-        return "TransferInfo{" +
-                ", tempDir=" + tempDir +
-                ", downloadPartFiles=" + downloadPartFiles +
-                ", downloadFile=" + downloadFile +
-                ", isUsed=" + isUsed +
-                ", url='" + url + '\'' +
-                ", filePath='" + filePath + '\'' +
-                ", completedSize=" + completedSize +
-                ", contentLength=" + contentLength +
-                ", finished=" + finished +
-                ", status=" + status +
-                ", speed='" + speed + '\'' +
-                '}';
-    }
+//    @Override
+//    public String toString() {
+//        return "DownloadDetailsInfo{" +
+//                ", tempDir=" + tempDir +
+//                ", downloadPartFiles=" + downloadPartFiles +
+//                ", downloadFile=" + downloadFile +
+//                ", isUsed=" + isUsed +
+//                ", url='" + url + '\'' +
+//                ", filePath='" + filePath + '\'' +
+//                ", completedSize=" + completedSize +
+//                ", contentLength=" + contentLength +
+//                ", finished=" + finished +
+//                ", status=" + status +
+//                ", speed='" + speed + '\'' +
+//                '}';
+//    }
 }

@@ -4,9 +4,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
+import android.text.TextUtils;
 
-import com.huxq17.download.TransferInfo;
+import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.provider.Provider;
 
 import java.util.ArrayList;
@@ -32,7 +32,34 @@ public class DBService {
         return helper.getWritableDatabase();
     }
 
-    public synchronized void updateInfo(TransferInfo downloadInfo) {
+    public synchronized void updateCache(Provider.CacheBean cacheBean) {
+        if (TextUtils.isEmpty(cacheBean.lastModified) && TextUtils.isEmpty(cacheBean.eTag)) {
+            return;
+        }
+        SQLiteDatabase db = helper.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(Provider.CacheTable.URL, cacheBean.url);
+        contentValues.put(Provider.CacheTable.LAST_MODIFIED, cacheBean.lastModified);
+        contentValues.put(Provider.CacheTable.ETAG, cacheBean.eTag);
+        db.replace(Provider.CacheTable.TABLE_NAME, null, contentValues);
+    }
+
+    public synchronized Provider.CacheBean queryCache(String url) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        String querySql = "select * from " + Provider.CacheTable.TABLE_NAME + " where " + Provider.CacheTable.URL + "=?";
+        Cursor cursor = db.rawQuery(querySql, new String[]{url});
+
+        if (cursor.moveToNext()) {
+            Provider.CacheBean cacheBean = new Provider.CacheBean(url, cursor.getString(2),
+                    cursor.getString(1));
+            cursor.close();
+            return cacheBean;
+        }
+        cursor.close();
+        return null;
+    }
+
+    public synchronized void updateInfo(DownloadDetailsInfo downloadInfo) {
         SQLiteDatabase db = helper.getWritableDatabase();
         String querySql = "select * from " + Provider.DownloadTable.TABLE_NAME + " where " + Provider.DownloadTable.URL + "=? and "
                 + Provider.DownloadTable.PATH + " =?";
@@ -62,7 +89,7 @@ public class DBService {
         cursor.close();
     }
 
-    public synchronized long queryLocalLength(TransferInfo info) {
+    public synchronized long queryLocalLength(DownloadDetailsInfo info) {
         long length = 0;
         SQLiteDatabase db = helper.getReadableDatabase();
         String sql = "select * from " + Provider.DownloadTable.TABLE_NAME + " where " + Provider.DownloadTable.URL + "=? and "
@@ -80,13 +107,13 @@ public class DBService {
         return length;
     }
 
-    public synchronized List<TransferInfo> getDownloadList() {
-        List<TransferInfo> tasks = new ArrayList<>();
+    public synchronized List<DownloadDetailsInfo> getDownloadList() {
+        List<DownloadDetailsInfo> tasks = new ArrayList<>();
         SQLiteDatabase db = helper.getReadableDatabase();
         String sql = "select * from " + Provider.DownloadTable.TABLE_NAME + " order by " + Provider.DownloadTable.CREATE_TIME;
         Cursor cursor = db.rawQuery(sql, null);
         while (cursor.moveToNext()) {
-            TransferInfo info = new TransferInfo(cursor.getString(0), cursor.getString(1));
+            DownloadDetailsInfo info = new DownloadDetailsInfo(cursor.getString(0), cursor.getString(1));
 //            info.threadNum = cursor.getInt(2);
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));
@@ -100,9 +127,9 @@ public class DBService {
 
     public synchronized void deleteInfo(String url, String filePath) {
         SQLiteDatabase db = helper.getWritableDatabase();
-        int result = db.delete(Provider.DownloadTable.TABLE_NAME, Provider.DownloadTable.URL + "=? and "
+        db.delete(Provider.DownloadTable.TABLE_NAME, Provider.DownloadTable.URL + "=? and "
                 + Provider.DownloadTable.PATH + " =?", new String[]{url, filePath});
-        Log.d("tag", "deleteInfo PATH=" + filePath + ";result=" + result);
+        db.delete(Provider.CacheTable.TABLE_NAME, Provider.CacheTable.URL + "=?", new String[]{url});
     }
 
     public synchronized void close() {

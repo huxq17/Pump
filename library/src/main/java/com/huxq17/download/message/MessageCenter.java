@@ -7,7 +7,7 @@ import android.os.Message;
 
 import com.buyi.huxq17.serviceagency.annotation.ServiceAgent;
 import com.huxq17.download.DownloadInfoSnapshot;
-import com.huxq17.download.TransferInfo;
+import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.listener.DownloadObserver;
 
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class MessageCenter implements IMessageCenter {
     }
 
     @Override
-    public void notifyProgressChanged(TransferInfo downloadInfo) {
+    public void notifyProgressChanged(DownloadDetailsInfo downloadInfo) {
         Message message = Message.obtain();
         DownloadInfoSnapshot snapshot = DownloadInfoSnapshot.obtain();
         message.obj = snapshot;
