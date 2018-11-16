@@ -83,7 +83,7 @@ def getBintrayUserProperty() {
 }
 
 def getBintrayApiKeyProperty() {
-    return hasProperty('BINTRAY_APIKEY') ? BINTRAY_APIKEY : "6f224964fa2cbe1b93bf407a346296ce838cfe3e"
+    return hasProperty('BINTRAY_APIKEY') ? BINTRAY_APIKEY : ""
 }
 
 def getGpgPassphraseProperty() {
