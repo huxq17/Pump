@@ -15,7 +15,7 @@ buildscript {
        }
    }
     dependencies {
-        classpath 'com.buyi.huxq17:agencyplugin:1.1.0'
+        classpath 'com.buyi.huxq17:agencyplugin:1.1.2'
     }
 }
 ```
