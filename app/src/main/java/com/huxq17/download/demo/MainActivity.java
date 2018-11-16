@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                 File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
                 Pump.newRequest(url5, pipixiaFile.getAbsolutePath())
                         //Optionally,Set whether to repeatedly download the downloaded file,default false.
-                        .forceReDownload(false)
+                        .forceReDownload(true)
                         //Optionally,Set how many threads are used when downloading,default 3.
                         .threadNum(3)
                         .submit();
