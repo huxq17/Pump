@@ -128,7 +128,8 @@ bintray {
                 passphrase = 'passphrase' //Optional. The passphrase for GPG signing'
             }
             mavenCentralSync {
-                sync = false //Optional (true by default). Determines whether to sync the version to Maven Central.
+                sync = false
+                //Optional (true by default). Determines whether to sync the version to Maven Central.
                 user = userToken //OSS user token
                 password = userPassword //OSS user password
                 close = '1'

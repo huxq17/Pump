@@ -3,7 +3,7 @@ package com.huxq17.download;
 import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.action.Action;
 import com.huxq17.download.action.CorrectDownloadInfoAction;
-import com.huxq17.download.action.GetContentLengthAction;
+import com.huxq17.download.action.CheckCacheAction;
 import com.huxq17.download.action.MergeFileAction;
 import com.huxq17.download.action.StartDownloadAction;
 import com.huxq17.download.action.VerifyResultAction;
@@ -20,7 +20,7 @@ public class DownloadChain {
 
     public DownloadChain(DownloadTask downloadTask) {
         List<Action> actions = new ArrayList<>();
-        actions.add(new GetContentLengthAction());
+        actions.add(new CheckCacheAction());
         actions.add(new CorrectDownloadInfoAction());
         actions.add(new StartDownloadAction());
         actions.add(new MergeFileAction());

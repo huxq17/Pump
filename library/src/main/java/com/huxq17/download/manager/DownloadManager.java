@@ -101,9 +101,9 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     public synchronized void delete(DownloadInfo downloadInfo) {
         if (downloadInfo == null) return;
-        String filePath = downloadInfo.getFilePath();
-        if (allDownloadInfo.containsKey(filePath)) {
-            allDownloadInfo.remove(filePath);
+        String url = downloadInfo.getUrl();
+        if (allDownloadInfo.containsKey(url)) {
+            allDownloadInfo.remove(url);
             if (readyTaskQueue.contains(downloadInfo)) {
                 readyTaskQueue.remove(downloadInfo);
             }

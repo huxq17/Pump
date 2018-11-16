@@ -41,5 +41,6 @@ public class Provider {
             this.eTag = eTag;
             this.url = url;
         }
+
     }
 }

@@ -31,9 +31,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public boolean filter(DownloadInfo downloadInfo) {
-            String filePath = downloadInfo.getFilePath();
             String url = downloadInfo.getUrl();
-            return filePath.endsWith("pipixia.apk");
+            return url.equals(url5);
         }
 
         @Override
@@ -59,15 +58,14 @@ public class MainActivity extends AppCompatActivity {
                 .setMaxRunningTaskNum(3)
                 .build();
         Pump.subscribe(downloadObserver);
-        try {
-            File httpCacheDir = new File(getCacheDir(), "http");
-            long httpCacheSize = 50 * 1024 * 1024;
-            Class.forName("android.net.http.HttpResponseCache")
-                    .getMethod("install", File.class, long.class)
-                    .invoke(null, httpCacheDir, httpCacheSize);
-        } catch (Exception httpResponseCacheNotAvailable) {
-        }
-
+//        try {
+//            File httpCacheDir = new File(getCacheDir(), "http");
+//            long httpCacheSize = 50 * 1024 * 1024;
+//            Class.forName("android.net.http.HttpResponseCache")
+//                    .getMethod("install", File.class, long.class)
+//                    .invoke(null, httpCacheDir, httpCacheSize);
+//        } catch (Exception httpResponseCacheNotAvailable) {
+//        }
         findViewById(R.id.add_task).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
