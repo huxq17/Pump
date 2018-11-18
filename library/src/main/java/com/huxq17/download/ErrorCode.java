@@ -2,10 +2,6 @@ package com.huxq17.download;
 
 public class ErrorCode {
     /**
-     * download file already exists,and {@link DownloadConfig#forceReDownload} is false.
-     */
-    public static final int FILE_ALREADY_EXISTS = 1000;
-    /**
      * Network unavailable
      */
     public static final int NETWORK_UNAVAILABLE = 1001;

@@ -10,6 +10,7 @@ import android.widget.Toast;
 import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.Pump;
+import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.listener.DownloadObserver;
 
 import java.io.File;
@@ -38,6 +39,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onSuccess() {
             progressDialog.dismiss();
+            String apkPath = getDownloadInfo().getFilePath();
+            APK.with(MainActivity.this)
+                    .from(apkPath)
+//                    .forceInstall();
+            .install();
             Toast.makeText(MainActivity.this, "Download Finished", Toast.LENGTH_SHORT).show();
         }
 

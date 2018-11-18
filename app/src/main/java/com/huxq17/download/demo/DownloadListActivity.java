@@ -12,10 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.Pump;
+import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.listener.DownloadObserver;
 
 import java.util.HashMap;
@@ -165,7 +165,7 @@ public class DownloadListActivity extends AppCompatActivity {
                     speed = downloadInfo.getSpeed();
                     break;
                 case FINISHED:
-                    tvStatus.setText("Finished");
+                    tvStatus.setText("Install");
                     break;
                 case FAILED:
                     tvStatus.setText("Retry");
@@ -182,26 +182,31 @@ public class DownloadListActivity extends AppCompatActivity {
 
         @Override
         public void onClick(View v) {
-            switch (status) {
-                case STOPPED:
-                    Pump.download(downloadInfo.getUrl(), downloadInfo.getFilePath());
-                    break;
-                case PAUSED:
-                    Pump.resume(downloadInfo);
-                    break;
-                case WAIT:
-                    //do nothing.
-                    break;
-                case RUNNING:
-                    Pump.pause(downloadInfo);
-                    break;
-                case FINISHED:
-                    Toast.makeText(v.getContext(), "Download Completed.", Toast.LENGTH_SHORT).show();
-                    break;
-                case FAILED:
-                    Pump.resume(downloadInfo);
-                    break;
+            if (v == tvStatus) {
+                switch (status) {
+                    case STOPPED:
+                        Pump.download(downloadInfo.getUrl(), downloadInfo.getFilePath());
+                        break;
+                    case PAUSED:
+                        Pump.resume(downloadInfo);
+                        break;
+                    case WAIT:
+                        //do nothing.
+                        break;
+                    case RUNNING:
+                        Pump.pause(downloadInfo);
+                        break;
+                    case FINISHED:
+                        APK.with(itemView.getContext())
+                                .from(downloadInfo.getFilePath())
+                                .install();
+                        break;
+                    case FAILED:
+                        Pump.resume(downloadInfo);
+                        break;
+                }
             }
+
         }
 
         @Override

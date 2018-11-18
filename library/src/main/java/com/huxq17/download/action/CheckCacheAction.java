@@ -28,7 +28,7 @@ public class CheckCacheAction implements Action {
         String url = downloadRequest.getUrl();
         Provider.CacheBean cacheBean = DBService.getInstance().queryCache(url);
         Request.Builder builder = new Request.Builder()
-                .get()
+                .head()
                 .addHeader("Accept-Encoding", "identity")
                 .url(url);
 
@@ -52,13 +52,22 @@ public class CheckCacheAction implements Action {
         try {
             response = okHttpClient.newCall(request).execute();
             Headers headers = response.headers();
+//            for (String name : headers.names()) {
+//                String value = headers.get(name);
+//                LogUtil.e("header name=" + name + ";value=" + value + ";responseCode=" + response.networkResponse().code());
+//            }
             String lastModified = headers.get("Last-Modified");
             String eTag = headers.get("ETag");
-            long contentLength = response.body().contentLength();
+            long contentLength = getContentLength(headers);
             int responseCode = response.code();
             if (response.isSuccessful()) {
-                detailsInfo.setContentLength(contentLength);
-                downloadRequest.setCacheBean(new Provider.CacheBean(downloadRequest.getUrl(), lastModified, eTag));
+                if (contentLength > 0) {
+                    detailsInfo.setContentLength(contentLength);
+                    downloadRequest.setCacheBean(new Provider.CacheBean(downloadRequest.getUrl(), lastModified, eTag));
+                }else{
+                    detailsInfo.setErrorCode(ErrorCode.CONTENT_LENGTH_NOT_FOUND);
+                    result = false;
+                }
             } else if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
                 if (detailsInfo.isFinished() && !downloadRequest.isForceReDownload()) {
                     detailsInfo.setCompletedSize(detailsInfo.getContentLength());
@@ -77,8 +86,22 @@ public class CheckCacheAction implements Action {
             e.printStackTrace();
             detailsInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
             result = false;
+        } catch (NumberFormatException e) {
+            detailsInfo.setErrorCode(ErrorCode.CONTENT_LENGTH_NOT_FOUND);
+            result = false;
         }
         return result;
+    }
+
+    private long getContentLength(Headers headers) {
+        long contentLength;
+        try {
+            contentLength = Long.parseLong(headers.get("Content-Length"));
+        } catch (NumberFormatException e) {
+            contentLength = -1;
+        }
+
+        return contentLength;
     }
 
     @Override
