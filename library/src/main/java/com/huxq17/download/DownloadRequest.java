@@ -70,7 +70,7 @@ public class DownloadRequest {
         }
 
         /**
-         * Set whether to repeatedly download the downloaded file,default true.
+         * Set whether to repeatedly download the downloaded file,default false.
          *
          * @param force
          * @return
