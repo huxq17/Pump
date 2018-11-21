@@ -10,6 +10,7 @@ public interface IMessageCenter {
 
     void register(DownloadObserver downloadObserver);
 
+    @Deprecated
     void unRegister(DownloadObserver downloadObserver);
 
     void notifyProgressChanged(DownloadDetailsInfo downloadInfo);

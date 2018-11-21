@@ -46,6 +46,7 @@ public class Pump {
      *
      * @param observer
      */
+    @Deprecated
     public static void unSubscribe(DownloadObserver observer) {
         ServiceAgency.getService(IMessageCenter.class).unRegister(observer);
     }

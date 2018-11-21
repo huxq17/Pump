@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
             APK.with(MainActivity.this)
                     .from(apkPath)
 //                    .forceInstall();
-            .install();
+                    .install();
             Toast.makeText(MainActivity.this, "Download Finished", Toast.LENGTH_SHORT).show();
         }
 
@@ -130,7 +130,6 @@ public class MainActivity extends AppCompatActivity {
         if (progressDialog != null) {
             progressDialog.dismiss();
         }
-        Pump.unSubscribe(downloadObserver);
         //shutdown will stop all tasks and release some resource.
         Pump.shutdown();
     }

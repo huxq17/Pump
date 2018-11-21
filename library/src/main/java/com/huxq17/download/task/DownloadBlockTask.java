@@ -87,6 +87,9 @@ public class DownloadBlockTask implements Task {
             }
         }
         countDownLatch.countDown();
+        this.batch = null;
+        this.downloadChain = null;
+        this.countDownLatch = null;
     }
 
     @Override

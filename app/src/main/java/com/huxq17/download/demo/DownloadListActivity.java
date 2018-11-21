@@ -57,7 +57,6 @@ public class DownloadListActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Pump.unSubscribe(downloadObserver);
         for (DownloadInfo downloadInfo : downloadInfoList) {
             Pump.stop(downloadInfo);
         }

@@ -120,12 +120,12 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
             if (downloadPartFiles.size() == 0) {
                 loadDownloadFiles();
             }
-            int completedSize = 0;
-            int size = downloadPartFiles.size();
-            for (int i = 0; i < size; i++) {
-                completedSize += downloadPartFiles.get(i).length();
-            }
-            this.completedSize = completedSize;
+//            int completedSize = 0;
+//            int size = downloadPartFiles.size();
+//            for (int i = 0; i < size; i++) {
+//                completedSize += downloadPartFiles.get(i).length();
+//            }
+//            this.completedSize = completedSize;
             if (status == null) {
                 setStatus(Status.STOPPED);
             }

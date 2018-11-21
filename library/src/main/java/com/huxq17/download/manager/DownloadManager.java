@@ -38,6 +38,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
      * 允许同时下载的任务数量
      */
     private int maxRunningTaskNumber = 3;
+    private boolean isShutdown=true;
 
     private DownloadManager() {
         List<DownloadDetailsInfo> allDownloadInfo = DBService.getInstance().getDownloadList();
@@ -74,9 +75,9 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
             LogUtil.e("task " + downloadInfo.getName() + " is running,we need do nothing.");
             return;
         }
-        if (downloadInfo.isFinished()) {
-            downloadInfo.setCompletedSize(0);
-        }
+//        if (downloadInfo.isFinished()) {
+//            downloadInfo.setCompletedSize(0);
+//        }
 //            downloadInfo.calculateDownloadProgress();
 //            downloadInfo.setTag(null);
         downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
@@ -87,6 +88,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     }
 
     private void submitTask(DownloadRequest downloadRequest) {
+        isShutdown = false;
         if (semaphore == null) {
             semaphore = new Semaphore(maxRunningTaskNumber);
         }
@@ -188,11 +190,16 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public synchronized void shutdown() {
+        isShutdown = true;
         context.stopService(new Intent(context, DownloadService.class));
         for (DownloadDetailsInfo transferInfo : allDownloadInfo.values()) {
             stop(transferInfo);
         }
         DownloadInfoSnapshot.release();
+    }
+
+    public boolean isShutdown() {
+        return isShutdown;
     }
 
     public DownloadTask acquireTask() throws InterruptedException {

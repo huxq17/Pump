@@ -37,4 +37,6 @@ public interface IDownloadManager {
     void onServiceDestroy();
 
     void shutdown();
+
+    boolean isShutdown();
 }

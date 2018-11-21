@@ -25,6 +25,7 @@ public class DownloadTask implements Task {
     private SpeedMonitor speedMonitor;
     private Thread thread;
     private List<Task> downloadBlockTasks = new ArrayList<>();
+    private int lastProgress = 0;
     /**
      * True indicate that server not support breakpoint download.
      */
@@ -68,14 +69,15 @@ public class DownloadTask implements Task {
         }
         thread = null;
         downLoadLifeCycleObserver.onDownloadEnd(this);
+        downloadBlockTasks.clear();
+        downloadRequest = null;
+        speedMonitor = null;
     }
 
     private void downloadWithDownloadChain() {
         DownloadChain chain = new DownloadChain(this);
         chain.proceed();
     }
-
-    private int lastProgress = 0;
 
     public boolean onDownload(int length) {
         synchronized (downloadInfo) {
