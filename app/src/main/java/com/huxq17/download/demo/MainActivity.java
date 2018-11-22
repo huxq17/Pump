@@ -116,6 +116,20 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        //Use after {@link DownloadObserver#disable()} if you want reuse this Observer.
+        downloadObserver.enable();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        //Optionally,disable this observer and Pump will remove this observer later.
+        downloadObserver.disable();
+    }
+
     private void initProgressDialog() {
         progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Downloading");

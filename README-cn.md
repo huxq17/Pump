@@ -25,7 +25,7 @@ App模块的build.gradle：
 apply plugin: 'service_agency'
 
 dependencies {
-   implementation'com.huxq17.pump:download:1.0.6'
+   implementation'com.huxq17.pump:download:1.0.7'
    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
 }
 

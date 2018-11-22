@@ -15,11 +15,13 @@ import com.huxq17.download.manager.IDownloadManager;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 
 @ServiceAgent
 public class MessageCenter implements IMessageCenter {
     private Context context;
     private ArrayList<WeakReference<DownloadObserver>> observers = new ArrayList<>();
+    LinkedHashSet<WeakReference<DownloadObserver>> observersWf = new LinkedHashSet<>();
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
@@ -36,7 +38,7 @@ public class MessageCenter implements IMessageCenter {
             for (int i = 0; i < observerSize; i++) {
                 WeakReference<DownloadObserver> weakReference = observers.get(i);
                 DownloadObserver observer = weakReference.get();
-                if (observer != null) {
+                if (observer != null && observer.isEnable()) {
                     if (observer.filter(snapshot.downloadInfo)) {
                         observer.downloading(snapshot);
                     }
