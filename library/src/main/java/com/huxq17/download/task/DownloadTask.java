@@ -70,7 +70,6 @@ public class DownloadTask implements Task {
         thread = null;
         downLoadLifeCycleObserver.onDownloadEnd(this);
         downloadBlockTasks.clear();
-        downloadRequest = null;
         speedMonitor = null;
     }
 
