@@ -9,19 +9,16 @@ import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.buyi.huxq17.serviceagency.annotation.ServiceAgent;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfoSnapshot;
-import com.huxq17.download.listener.DownloadObserver;
 import com.huxq17.download.manager.IDownloadManager;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 
 @ServiceAgent
 public class MessageCenter implements IMessageCenter {
     private Context context;
     private ArrayList<WeakReference<DownloadObserver>> observers = new ArrayList<>();
-    LinkedHashSet<WeakReference<DownloadObserver>> observersWf = new LinkedHashSet<>();
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
@@ -96,11 +93,13 @@ public class MessageCenter implements IMessageCenter {
 
     @Override
     public synchronized void register(DownloadObserver downloadObserver) {
+        downloadObserver.setEnable(true);
         observers.add(new WeakReference<>(downloadObserver));
     }
 
     @Override
     public synchronized void unRegister(DownloadObserver downloadObserver) {
 //        observers.remove(downloadObserver);
+        downloadObserver.setEnable(false);
     }
 }

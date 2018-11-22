@@ -16,7 +16,7 @@ import android.widget.TextView;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.Pump;
 import com.huxq17.download.demo.installapk.APK;
-import com.huxq17.download.listener.DownloadObserver;
+import com.huxq17.download.message.DownloadObserver;
 
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +44,7 @@ public class DownloadListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_download_list);
-        Pump.subscribe(downloadObserver);
+        downloadObserver.enable();
         recyclerView = findViewById(R.id.rvDownloadList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         //获取全部下载任务

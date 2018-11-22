@@ -2,7 +2,7 @@ package com.huxq17.download;
 
 
 import com.buyi.huxq17.serviceagency.ServiceAgency;
-import com.huxq17.download.listener.DownloadObserver;
+import com.huxq17.download.message.DownloadObserver;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.IMessageCenter;
 

@@ -11,7 +11,7 @@ import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.Pump;
 import com.huxq17.download.demo.installapk.APK;
-import com.huxq17.download.listener.DownloadObserver;
+import com.huxq17.download.message.DownloadObserver;
 
 import java.io.File;
 
@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
                 //Set the maximum number of tasks to run, default 3.
                 .setMaxRunningTaskNum(3)
                 .build();
-        Pump.subscribe(downloadObserver);
+//        Pump.subscribe(downloadObserver);
 //        try {
 //            File httpCacheDir = new File(getCacheDir(), "http");
 //            long httpCacheSize = 50 * 1024 * 1024;
@@ -117,9 +117,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onRestart() {
-        super.onRestart();
-        //Use after {@link DownloadObserver#disable()} if you want reuse this Observer.
+    protected void onStart() {
+        super.onStart();
+        //Enable this Observer.
         downloadObserver.enable();
     }
 

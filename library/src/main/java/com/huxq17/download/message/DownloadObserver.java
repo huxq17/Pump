@@ -1,4 +1,4 @@
-package com.huxq17.download.listener;
+package com.huxq17.download.message;
 
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.DownloadInfoSnapshot;
@@ -9,29 +9,29 @@ public abstract class DownloadObserver {
     private boolean enable;
 
     public DownloadObserver() {
-        enable = true;
     }
 
     /**
-     * Optionally,disable this observer and Pump will remove this observer later.
+     * Disable this observer and Pump will remove this observer later.
      */
-    public void disable() {
-        enable = false;
+    public final void disable() {
+        Pump.unSubscribe(this);
+    }
+
+    void setEnable(boolean enable) {
+        this.enable = enable;
     }
 
     /**
-     * Use after {@link DownloadObserver#disable()} if you want reuse this Observer.
-     *
-     * @param enable
+     * Enable this Observer.
      */
-    public void enable() {
+    public final void enable() {
         if (!enable) {
-            enable = true;
             Pump.subscribe(this);
         }
     }
 
-    public boolean isEnable() {
+    public final boolean isEnable() {
         return enable;
     }
 
@@ -49,7 +49,7 @@ public abstract class DownloadObserver {
 
     public abstract void onProgress(int progress);
 
-    public DownloadInfo.Status getStatus() {
+    public final DownloadInfo.Status getStatus() {
         return status;
     }
 
@@ -59,7 +59,7 @@ public abstract class DownloadObserver {
     public void onFailed() {
     }
 
-    public DownloadInfo getDownloadInfo() {
+    public final DownloadInfo getDownloadInfo() {
         return downloadInfo;
     }
 
