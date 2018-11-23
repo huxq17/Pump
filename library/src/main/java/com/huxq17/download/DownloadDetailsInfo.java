@@ -50,6 +50,7 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
 
     public void download(int length) {
         completedSize += length;
+        this.status = Status.RUNNING;
     }
 
     public void setContentLength(long contentLength) {

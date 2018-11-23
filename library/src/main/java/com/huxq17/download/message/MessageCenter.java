@@ -18,7 +18,7 @@ import java.util.Iterator;
 @ServiceAgent
 public class MessageCenter implements IMessageCenter {
     private Context context;
-    private ArrayList<WeakReference<DownloadObserver>> observers = new ArrayList<>();
+    private ArrayList<ObserverWeakReference> observers = new ArrayList<>();
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
@@ -94,12 +94,37 @@ public class MessageCenter implements IMessageCenter {
     @Override
     public synchronized void register(DownloadObserver downloadObserver) {
         downloadObserver.setEnable(true);
-        observers.add(new WeakReference<>(downloadObserver));
+        ObserverWeakReference newObserver = new ObserverWeakReference(downloadObserver);
+        if (!observers.contains(newObserver)) {
+            observers.add(newObserver);
+        }
     }
 
     @Override
     public synchronized void unRegister(DownloadObserver downloadObserver) {
 //        observers.remove(downloadObserver);
         downloadObserver.setEnable(false);
+    }
+
+    public static class ObserverWeakReference extends WeakReference<DownloadObserver> {
+        public ObserverWeakReference(DownloadObserver referent) {
+            super(referent);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            DownloadObserver thisObserver = get();
+            if (obj instanceof ObserverWeakReference) {
+                DownloadObserver targetObserver = ((ObserverWeakReference) obj).get();
+                return targetObserver != null && targetObserver.equals(thisObserver);
+            }
+            return super.equals(obj);
+        }
+
+        @Override
+        public int hashCode() {
+            DownloadObserver thisObserver = get();
+            return thisObserver == null ? super.hashCode() : thisObserver.hashCode();
+        }
     }
 }
