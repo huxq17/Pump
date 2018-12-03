@@ -38,7 +38,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
      * 允许同时下载的任务数量
      */
     private int maxRunningTaskNumber = 3;
-    private boolean isShutdown=true;
+    private boolean isShutdown = true;
 
     private DownloadManager() {
         List<DownloadDetailsInfo> allDownloadInfo = DBService.getInstance().getDownloadList();
@@ -103,16 +103,14 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     public synchronized void delete(DownloadInfo downloadInfo) {
         if (downloadInfo == null) return;
-        String url = downloadInfo.getUrl();
-        if (allDownloadInfo.containsKey(url)) {
-            allDownloadInfo.remove(url);
-            if (readyTaskQueue.contains(downloadInfo)) {
-                readyTaskQueue.remove(downloadInfo);
-            }
-            synchronized (downloadInfo) {
+        synchronized (downloadInfo) {
+            String url = downloadInfo.getUrl();
+            if (allDownloadInfo.containsKey(url)) {
+                allDownloadInfo.remove(url);
                 DownloadDetailsInfo transferInfo = (DownloadDetailsInfo) downloadInfo;
                 DownloadTask downloadTask = transferInfo.getDownloadTask();
                 if (downloadTask != null) {
+                    readyTaskQueue.remove(downloadTask);
                     downloadTask.delete();
                 }
                 transferInfo.getDownloadFile().delete();

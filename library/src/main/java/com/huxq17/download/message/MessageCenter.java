@@ -87,5 +87,4 @@ public class MessageCenter implements IMessageCenter {
             observers.remove(downloadObserver);
         }
     }
-
 }
