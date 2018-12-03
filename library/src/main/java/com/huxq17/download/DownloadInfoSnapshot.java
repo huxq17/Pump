@@ -41,4 +41,8 @@ public class DownloadInfoSnapshot {
             sPoolSize--;
         }
     }
+
+    public static int getPoolSize() {
+        return sPoolSize;
+    }
 }

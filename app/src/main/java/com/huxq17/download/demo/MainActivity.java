@@ -7,11 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
-import com.huxq17.download.DownloadConfig;
-import com.huxq17.download.DownloadInfo;
-import com.huxq17.download.Pump;
 import com.huxq17.download.demo.installapk.APK;
-import com.huxq17.download.message.DownloadObserver;
 
 import java.io.File;
 

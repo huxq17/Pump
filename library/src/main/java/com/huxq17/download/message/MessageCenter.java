@@ -11,14 +11,13 @@ import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfoSnapshot;
 import com.huxq17.download.manager.IDownloadManager;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 
 @ServiceAgent
 public class MessageCenter implements IMessageCenter {
     private Context context;
-    private ArrayList<WeakReference<DownloadObserver>> observers = new ArrayList<>();
+    private LinkedHashSet<DownloadObserver> observers = new LinkedHashSet<>();
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
@@ -30,37 +29,20 @@ public class MessageCenter implements IMessageCenter {
 //            int low32Bit = msg.arg2;
 //            downloadInfo.snapshotCompletedSize(high32Bit + low32Bit);
             DownloadInfoSnapshot snapshot = (DownloadInfoSnapshot) msg.obj;
-            ArrayList<WeakReference<DownloadObserver>> nullObserverList = null;
-            int observerSize = observers.size();
-            for (int i = 0; i < observerSize; i++) {
-                WeakReference<DownloadObserver> weakReference = observers.get(i);
-                DownloadObserver observer = weakReference.get();
+            Iterator<DownloadObserver> iterator = observers.iterator();
+            while (iterator.hasNext()) {
+                DownloadObserver observer = iterator.next();
                 if (observer != null && observer.isEnable()) {
                     if (observer.filter(snapshot.downloadInfo)) {
                         observer.downloading(snapshot);
                     }
                 } else {
-                    if (nullObserverList == null) {
-                        nullObserverList = new ArrayList<>();
-                    }
-                    nullObserverList.add(weakReference);
+                    iterator.remove();
                 }
             }
-            removeNullObserverIfNeed(nullObserverList);
             snapshot.recycle();
         }
     };
-
-    private void removeNullObserverIfNeed(ArrayList<WeakReference<DownloadObserver>> nullObserverList) {
-        if (nullObserverList != null) {
-            Iterator<WeakReference<DownloadObserver>> iterable = nullObserverList.iterator();
-            while (iterable.hasNext()) {
-                WeakReference<DownloadObserver> observerWf = iterable.next();
-                observers.remove(observerWf);
-                iterable.remove();
-            }
-        }
-    }
 
     @Override
     public void start(Context context) {
@@ -94,12 +76,16 @@ public class MessageCenter implements IMessageCenter {
     @Override
     public synchronized void register(DownloadObserver downloadObserver) {
         downloadObserver.setEnable(true);
-        observers.add(new WeakReference<>(downloadObserver));
+        observers.add(downloadObserver);
     }
 
     @Override
     public synchronized void unRegister(DownloadObserver downloadObserver) {
 //        observers.remove(downloadObserver);
         downloadObserver.setEnable(false);
+        if (DownloadInfoSnapshot.getPoolSize() == 0) {
+            observers.remove(downloadObserver);
+        }
     }
+
 }
