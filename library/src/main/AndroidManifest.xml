@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.huxq17.download">
 
-    <application>
+    <application android:networkSecurityConfig="@xml/network_security_config">
         <provider
             android:name=".provider.DownloadProvider"
             android:authorities="${applicationId}.huxq17.download-provider"

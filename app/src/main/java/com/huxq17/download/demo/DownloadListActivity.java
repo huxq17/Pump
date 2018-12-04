@@ -58,9 +58,9 @@ public class DownloadListActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         downloadObserver.disable();
-//        for (DownloadInfo downloadInfo : downloadInfoList) {
-//            Pump.stop(downloadInfo);
-//        }
+        for (DownloadInfo downloadInfo : downloadInfoList) {
+            Pump.stop(downloadInfo);
+        }
     }
 
     public static class DownloadAdapter extends RecyclerView.Adapter<DownloadViewHolder> {

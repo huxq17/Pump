@@ -10,7 +10,6 @@ import android.widget.Toast;
 import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.Pump;
-import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.message.DownloadObserver;
 
@@ -46,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
 //                    .forceInstall();
                     .install();
             Toast.makeText(MainActivity.this, "Download Finished", Toast.LENGTH_SHORT).show();
-            LogUtil.e("onSuccess");
         }
 
         @Override
