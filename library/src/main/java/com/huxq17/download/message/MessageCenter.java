@@ -17,7 +17,9 @@ import java.util.LinkedHashSet;
 @ServiceAgent
 public class MessageCenter implements IMessageCenter {
     private Context context;
+    private boolean isBusying = false;
     private LinkedHashSet<DownloadObserver> observers = new LinkedHashSet<>();
+    private LinkedHashSet<DownloadObserver> removedObservers = new LinkedHashSet<>();
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
@@ -30,6 +32,7 @@ public class MessageCenter implements IMessageCenter {
 //            downloadInfo.snapshotCompletedSize(high32Bit + low32Bit);
             DownloadInfoSnapshot snapshot = (DownloadInfoSnapshot) msg.obj;
             Iterator<DownloadObserver> iterator = observers.iterator();
+            isBusying = true;
             while (iterator.hasNext()) {
                 DownloadObserver observer = iterator.next();
                 if (observer != null && observer.isEnable()) {
@@ -39,6 +42,11 @@ public class MessageCenter implements IMessageCenter {
                 } else {
                     iterator.remove();
                 }
+            }
+            isBusying = false;
+            if (removedObservers.size() > 0) {
+                observers.removeAll(removedObservers);
+                removedObservers.clear();
             }
             snapshot.recycle();
         }
@@ -81,10 +89,11 @@ public class MessageCenter implements IMessageCenter {
 
     @Override
     public synchronized void unRegister(DownloadObserver downloadObserver) {
-//        observers.remove(downloadObserver);
         downloadObserver.setEnable(false);
-        if (DownloadInfoSnapshot.getPoolSize() == 0) {
+        if (!isBusying) {
             observers.remove(downloadObserver);
+        } else {
+            removedObservers.add(downloadObserver);
         }
     }
 }

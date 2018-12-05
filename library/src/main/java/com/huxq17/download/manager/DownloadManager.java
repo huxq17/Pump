@@ -146,6 +146,8 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         if (downloadTask != null && downloadTask.getRequest() != null) {
             DownloadRequest downloadRequest = downloadTask.getRequest();
             submit(downloadRequest);
+        } else {
+            DownloadRequest.newRequest(transferInfo.getUrl(), transferInfo.getFilePath()).submit();
         }
     }
 
