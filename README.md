@@ -38,8 +38,11 @@ dependencies {
 
 ### Proguard Rules
 
+```
 -ignorewarnings
 -keep class com.huxq17.download.** { *; }
+```
+
 
 ### About me
     Email：huxq17@gmail.com
