@@ -38,9 +38,10 @@ dependencies {
 
 ### 混淆规则
 
+```
 -ignorewarnings
 -keep class com.huxq17.download.** { *; }
-
+```
 
 ### 关于我
     邮箱：huxq17@163.com
