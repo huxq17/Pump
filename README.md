@@ -39,8 +39,9 @@ dependencies {
 ### Proguard Rules
 
 ```
--ignorewarnings
 -keep class com.huxq17.download.** { *; }
+-dontwarn okhttp3.**
+-dontwarn okio.**
 ```
 
 

@@ -39,8 +39,9 @@ dependencies {
 ### 混淆规则
 
 ```
--ignorewarnings
 -keep class com.huxq17.download.** { *; }
+-dontwarn okhttp3.**
+-dontwarn okio.**
 ```
 
 ### 关于我
