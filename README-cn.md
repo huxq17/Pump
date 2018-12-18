@@ -36,6 +36,14 @@ dependencies {
 |:-----|:-----|
 | <img src="art/download_file.gif" width="280" height="475" /> | <img src="art/download_files.gif" width="280" height="475" /> |
 
+### 混淆规则
+
+```
+-keep class com.huxq17.download.** { *; }
+-dontwarn okhttp3.**
+-dontwarn okio.**
+```
+
 ### 关于我
     邮箱：huxq17@163.com
 

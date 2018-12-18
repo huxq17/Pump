@@ -36,6 +36,15 @@ dependencies {
 |:-----|:-----|
 | <img src="art/download_file.gif" width="280" height="475" /> | <img src="art/download_files.gif" width="280" height="475" /> |
 
+### Proguard Rules
+
+```
+-keep class com.huxq17.download.** { *; }
+-dontwarn okhttp3.**
+-dontwarn okio.**
+```
+
+
 ### About me
     Email：huxq17@gmail.com
 
