@@ -27,7 +27,7 @@ public class DownloadTask implements Task {
     private List<Task> downloadBlockTasks = new ArrayList<>();
     private int lastProgress = 0;
     /**
-     * True indicate that server not support breakpoint download.
+     * True indicate that not support breakpoint download.
      */
     private boolean isDowngrade = false;
     private DownloadRequest downloadRequest;

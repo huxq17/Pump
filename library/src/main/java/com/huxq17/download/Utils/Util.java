@@ -44,7 +44,7 @@ public class Util {
         return source.renameTo(dest);
     }
 
-        public static void mergeFiles(File[] sources, File dest) {
+    public static void mergeFiles(File[] sources, File dest) {
         if (sources == null || sources.length <= 0) {
             return;
         }

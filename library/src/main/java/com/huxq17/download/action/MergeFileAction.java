@@ -34,7 +34,11 @@ public class MergeFileAction implements Action {
             downloadTask.updateInfo(downloadInfo);
             downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
         } else {
-            downloadInfo.setStatus(DownloadInfo.Status.FAILED);
+            if (chain.needRetry()) {
+
+            } else {
+                downloadInfo.setStatus(DownloadInfo.Status.FAILED);
+            }
         }
         return true;
     }

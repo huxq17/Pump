@@ -17,6 +17,7 @@ public class DownloadChain {
     private List<Action> actions;
     private int index;
     private boolean isRetry;
+    private int tryTimes;
 
     public DownloadChain(DownloadTask downloadTask) {
         List<Action> actions = new ArrayList<>();
@@ -27,10 +28,17 @@ public class DownloadChain {
         this.downloadTask = downloadTask;
         this.actions = actions;
         index = 0;
+        tryTimes = 0;
     }
 
     public void retry() {
         isRetry = true;
+        tryTimes++;
+    }
+
+    public boolean needRetry() {
+        int needRetryTimes = downloadTask.getRequest().getRetryTimes();
+        return needRetryTimes > tryTimes;
     }
 
     public DownloadTask getDownloadTask() {

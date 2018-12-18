@@ -11,6 +11,7 @@ public class DownloadRequest {
     private boolean forceReDownload = false;
     private DownloadDetailsInfo downloadInfo;
     private Provider.CacheBean cacheBean;
+    private int retryTimes = 0;
 
     public void setCacheBean(Provider.CacheBean cacheBean) {
         this.cacheBean = cacheBean;
@@ -31,6 +32,10 @@ public class DownloadRequest {
     private DownloadRequest(String url, String filePath) {
         this.url = url;
         this.filePath = filePath;
+    }
+
+    public int getRetryTimes() {
+        return retryTimes;
     }
 
     public String getUrl() {
@@ -77,6 +82,11 @@ public class DownloadRequest {
          */
         public DownloadGenerator forceReDownload(boolean force) {
             downloadRequest.forceReDownload = force;
+            return this;
+        }
+
+        public DownloadGenerator setRetryTimes(int retryTimes) {
+            downloadRequest.retryTimes = retryTimes;
             return this;
         }
 
