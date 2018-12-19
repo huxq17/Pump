@@ -42,6 +42,7 @@ public class StartDownloadAction implements Action {
         downloadInfo.setCompletedSize(completedSize);
 //        downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
 //        downloadTask.notifyProgressChanged(downloadInfo);
+        result = !downloadTask.isDowngrade();
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {

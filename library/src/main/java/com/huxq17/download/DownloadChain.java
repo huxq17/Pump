@@ -1,9 +1,10 @@
 package com.huxq17.download;
 
-import com.huxq17.download.Utils.LogUtil;
+import android.os.SystemClock;
+
 import com.huxq17.download.action.Action;
-import com.huxq17.download.action.CorrectDownloadInfoAction;
 import com.huxq17.download.action.CheckCacheAction;
+import com.huxq17.download.action.CorrectDownloadInfoAction;
 import com.huxq17.download.action.MergeFileAction;
 import com.huxq17.download.action.StartDownloadAction;
 import com.huxq17.download.action.VerifyResultAction;
@@ -16,8 +17,10 @@ public class DownloadChain {
     private DownloadTask downloadTask;
     private List<Action> actions;
     private int index;
-    private boolean isRetry;
-    private int tryTimes;
+    private int tryCount;
+    private int retryCount;
+    private int retryInterval;
+    private boolean retry;
 
     public DownloadChain(DownloadTask downloadTask) {
         List<Action> actions = new ArrayList<>();
@@ -28,17 +31,24 @@ public class DownloadChain {
         this.downloadTask = downloadTask;
         this.actions = actions;
         index = 0;
-        tryTimes = 0;
+        tryCount = 0;
+        DownloadRequest request = downloadTask.getRequest();
+        retryCount = request.getRetryCount();
+        retryInterval = request.getRetryInterval();
+    }
+
+    public void downgrade() {
+        retryCount++;
+        retry = true;
+        downloadTask.downgrade();
     }
 
     public void retry() {
-        isRetry = true;
-        tryTimes++;
+        retry = true;
     }
 
     public boolean needRetry() {
-        int needRetryTimes = downloadTask.getRequest().getRetryTimes();
-        return needRetryTimes > tryTimes;
+        return retry && retryCount > tryCount;
     }
 
     public DownloadTask getDownloadTask() {
@@ -53,10 +63,13 @@ public class DownloadChain {
             boolean shouldStop = downloadTask.shouldStop();
             if (shouldStop) {
                 break;
-            } else if (isRetry) {
+            } else if (needRetry()) {
+                tryCount++;
+                retry = false;
                 index = 0;
-                LogUtil.d("retry");
-                isRetry = false;
+                if (retryInterval > 0) {
+                    SystemClock.sleep(retryInterval);
+                }
             } else if (result) {
                 index++;
             } else {

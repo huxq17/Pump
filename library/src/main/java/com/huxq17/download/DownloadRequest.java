@@ -11,7 +11,9 @@ public class DownloadRequest {
     private boolean forceReDownload = false;
     private DownloadDetailsInfo downloadInfo;
     private Provider.CacheBean cacheBean;
-    private int retryTimes = 0;
+    private int retryCount = 0;
+    private static final int DEFAULT_RETRY_INTERVAL=200;
+    private int retryInterval = DEFAULT_RETRY_INTERVAL;
 
     public void setCacheBean(Provider.CacheBean cacheBean) {
         this.cacheBean = cacheBean;
@@ -25,6 +27,10 @@ public class DownloadRequest {
         this.downloadInfo = downloadInfo;
     }
 
+    public int getRetryInterval() {
+        return retryInterval;
+    }
+
     public DownloadDetailsInfo getDownloadInfo() {
         return downloadInfo;
     }
@@ -34,8 +40,8 @@ public class DownloadRequest {
         this.filePath = filePath;
     }
 
-    public int getRetryTimes() {
-        return retryTimes;
+    public int getRetryCount() {
+        return retryCount;
     }
 
     public String getUrl() {
@@ -85,8 +91,20 @@ public class DownloadRequest {
             return this;
         }
 
-        public DownloadGenerator setRetryTimes(int retryTimes) {
-            downloadRequest.retryTimes = retryTimes;
+        public DownloadGenerator setRetry(int retryCount, int retryInterval) {
+            if (retryCount < 0) {
+                retryCount = 0;
+            }
+            downloadRequest.retryCount = retryCount;
+            if (retryInterval < 0) {
+                retryInterval = DEFAULT_RETRY_INTERVAL;
+            }
+            downloadRequest.retryInterval = retryInterval;
+            return this;
+        }
+
+        public DownloadGenerator setRetry(int retryCount) {
+            setRetry(retryCount, -1);
             return this;
         }
 

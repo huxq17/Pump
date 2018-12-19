@@ -4,7 +4,7 @@ public class ErrorCode {
     /**
      * Network unavailable
      */
-    public static final int NETWORK_UNAVAILABLE = 1001;
+    public static final int NETWORK_UNAVAILABLE = 2001;
     /**
      * Website return 404.
      */

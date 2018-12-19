@@ -29,7 +29,7 @@ public class DownloadTask implements Task {
     /**
      * True indicate that not support breakpoint download.
      */
-    private boolean isDowngrade = false;
+    private boolean isDowngrade;
     private DownloadRequest downloadRequest;
 
     public DownloadTask(DownloadRequest downloadRequest, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
@@ -37,6 +37,7 @@ public class DownloadTask implements Task {
         this.downloadInfo = downloadRequest.getDownloadInfo();
         downloadInfo.setDownloadTask(this);
         isDestroyed = false;
+        isDowngrade = false;
         dbService = DBService.getInstance();
         downloadInfo.setUsed(true);
         speedMonitor = new SpeedMonitor(downloadInfo);

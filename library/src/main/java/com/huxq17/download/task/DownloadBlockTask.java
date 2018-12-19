@@ -70,9 +70,8 @@ public class DownloadBlockTask implements Task {
                         }
                         bufferedSink.flush();
                     } else if (code == 200) {
-                        downloadChain.retry();
                         //downgrade when server not support breakpoint download.
-                        downloadTask.downgrade();
+                        downloadChain.downgrade();
                     }
                 }
             } catch (IOException e) {
