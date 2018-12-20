@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
                         .forceReDownload(true)
                         //Optionally,Set how many threads are used when downloading,default 3.
                         .threadNum(3)
-                        .setRetry(1,300)
+                        .setRetry(3, 200)
                         .submit();
             }
         });

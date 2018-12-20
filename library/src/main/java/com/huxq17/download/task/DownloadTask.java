@@ -43,8 +43,9 @@ public class DownloadTask implements Task {
         speedMonitor = new SpeedMonitor(downloadInfo);
         messageCenter = ServiceAgency.getService(IMessageCenter.class);
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
-        downloadInfo.setStatus(DownloadInfo.Status.WAIT);
         downloadInfo.setCompletedSize(0);
+        downloadInfo.setErrorCode(0);
+        downloadInfo.setStatus(DownloadInfo.Status.WAIT);
         notifyProgressChanged(downloadInfo);
     }
 

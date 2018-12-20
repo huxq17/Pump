@@ -13,14 +13,15 @@ import com.huxq17.download.task.DownloadTask;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.huxq17.download.ErrorCode.NETWORK_UNAVAILABLE;
+
 public class DownloadChain {
     private DownloadTask downloadTask;
     private List<Action> actions;
     private int index;
     private int tryCount;
     private int retryCount;
-    private int retryInterval;
-    private boolean retry;
+    private int retryDelay;
 
     public DownloadChain(DownloadTask downloadTask) {
         List<Action> actions = new ArrayList<>();
@@ -34,21 +35,17 @@ public class DownloadChain {
         tryCount = 0;
         DownloadRequest request = downloadTask.getRequest();
         retryCount = request.getRetryCount();
-        retryInterval = request.getRetryInterval();
+        retryDelay = request.getRetryDelay();
     }
 
     public void downgrade() {
         retryCount++;
-        retry = true;
         downloadTask.downgrade();
     }
 
-    public void retry() {
-        retry = true;
-    }
 
-    public boolean needRetry() {
-        return retry && retryCount > tryCount;
+    public boolean isRetryable() {
+        return (downloadTask.isDowngrade() || downloadTask.getDownloadInfo().getErrorCode() == NETWORK_UNAVAILABLE) && retryCount > tryCount;
     }
 
     public DownloadTask getDownloadTask() {
@@ -63,17 +60,19 @@ public class DownloadChain {
             boolean shouldStop = downloadTask.shouldStop();
             if (shouldStop) {
                 break;
-            } else if (needRetry()) {
-                tryCount++;
-                retry = false;
-                index = 0;
-                if (retryInterval > 0) {
-                    SystemClock.sleep(retryInterval);
-                }
             } else if (result) {
                 index++;
             } else {
-                break;
+                if (isRetryable()) {
+                    tryCount++;
+                    index = 0;
+                    downloadTask.setErrorCode(0);
+                    if (retryDelay > 0) {
+                        SystemClock.sleep(retryDelay);
+                    }
+                } else {
+                    break;
+                }
             }
         }
         new VerifyResultAction().proceed(this);

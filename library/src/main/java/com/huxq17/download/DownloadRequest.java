@@ -12,8 +12,8 @@ public class DownloadRequest {
     private DownloadDetailsInfo downloadInfo;
     private Provider.CacheBean cacheBean;
     private int retryCount = 0;
-    private static final int DEFAULT_RETRY_INTERVAL=200;
-    private int retryInterval = DEFAULT_RETRY_INTERVAL;
+    private static final int DEFAULT_RETRY_DELAY = 200;
+    private int retryDelay = DEFAULT_RETRY_DELAY;
 
     public void setCacheBean(Provider.CacheBean cacheBean) {
         this.cacheBean = cacheBean;
@@ -27,8 +27,8 @@ public class DownloadRequest {
         this.downloadInfo = downloadInfo;
     }
 
-    public int getRetryInterval() {
-        return retryInterval;
+    public int getRetryDelay() {
+        return retryDelay;
     }
 
     public DownloadDetailsInfo getDownloadInfo() {
@@ -91,15 +91,24 @@ public class DownloadRequest {
             return this;
         }
 
-        public DownloadGenerator setRetry(int retryCount, int retryInterval) {
+        /**
+         * Set retry count and retry interval.
+         * Retry only if the network connection fails.
+         *
+         * @param retryCount  retry count
+         * @param delayMillis The delay (in milliseconds)  until the Retry
+         *                    will be executed.The default value is 200 milliseconds.
+         * @return
+         */
+        public DownloadGenerator setRetry(int retryCount, int delayMillis) {
             if (retryCount < 0) {
                 retryCount = 0;
             }
             downloadRequest.retryCount = retryCount;
-            if (retryInterval < 0) {
-                retryInterval = DEFAULT_RETRY_INTERVAL;
+            if (delayMillis < 0) {
+                delayMillis = DEFAULT_RETRY_DELAY;
             }
-            downloadRequest.retryInterval = retryInterval;
+            downloadRequest.retryDelay = delayMillis;
             return this;
         }
 
