@@ -22,7 +22,7 @@ public class MergeFileAction implements Action {
         }
         long completedSize = downloadInfo.getCompletedSize();
         long startTime = System.currentTimeMillis();
-        if (completedSize == fileLength) {
+        if (fileLength != 0 && completedSize == fileLength) {
             File[] downloadPartFiles = tempDir.listFiles();
             if (downloadPartFiles != null && downloadPartFiles.length > 0) {
                 Util.mergeFiles(downloadPartFiles, file);
@@ -34,9 +34,7 @@ public class MergeFileAction implements Action {
             downloadTask.updateInfo(downloadInfo);
             downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
         } else {
-            if (!chain.isRetryable()) {
-                downloadInfo.setStatus(DownloadInfo.Status.FAILED);
-            }
+            downloadInfo.setStatus(DownloadInfo.Status.FAILED);
         }
         return true;
     }
