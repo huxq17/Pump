@@ -23,8 +23,8 @@ public class MainActivity extends AppCompatActivity {
     //    private String url = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
     private String url2 = "https://file.izuiyou.com/download/package/zuiyou.apk?from=ixiaochuan";
     String url4 = "http://v.nq6.com/xinqu.apk";
-    String url5 = "https://www.google.com";
-    //    String url5 = "http://wap.apk.anzhi.com/data4/apk/201810/24/e2cd3e0aded695c8fb7edcc508e3fd1b_37132000.apk";
+//    String url5 = "http://t2.hddhhn.com/uploads/tu/201612/98/st93.png";
+        String url5 = "http://wap.apk.anzhi.com/data4/apk/201810/24/e2cd3e0aded695c8fb7edcc508e3fd1b_37132000.apk";
     private ProgressDialog progressDialog;
     DownloadObserver downloadObserver = new DownloadObserver() {
         @Override
