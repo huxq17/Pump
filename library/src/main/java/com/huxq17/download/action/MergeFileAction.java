@@ -22,7 +22,7 @@ public class MergeFileAction implements Action {
         }
         long completedSize = downloadInfo.getCompletedSize();
         long startTime = System.currentTimeMillis();
-        if (completedSize == fileLength) {
+        if (fileLength != 0 && completedSize == fileLength) {
             File[] downloadPartFiles = tempDir.listFiles();
             if (downloadPartFiles != null && downloadPartFiles.length > 0) {
                 Util.mergeFiles(downloadPartFiles, file);

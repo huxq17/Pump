@@ -1,9 +1,10 @@
 package com.huxq17.download;
 
-import com.huxq17.download.Utils.LogUtil;
+import android.os.SystemClock;
+
 import com.huxq17.download.action.Action;
-import com.huxq17.download.action.CorrectDownloadInfoAction;
 import com.huxq17.download.action.CheckCacheAction;
+import com.huxq17.download.action.CorrectDownloadInfoAction;
 import com.huxq17.download.action.MergeFileAction;
 import com.huxq17.download.action.StartDownloadAction;
 import com.huxq17.download.action.VerifyResultAction;
@@ -12,11 +13,15 @@ import com.huxq17.download.task.DownloadTask;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.huxq17.download.ErrorCode.NETWORK_UNAVAILABLE;
+
 public class DownloadChain {
     private DownloadTask downloadTask;
     private List<Action> actions;
     private int index;
-    private boolean isRetry;
+    private int tryCount;
+    private int retryCount;
+    private int retryDelay;
 
     public DownloadChain(DownloadTask downloadTask) {
         List<Action> actions = new ArrayList<>();
@@ -27,10 +32,20 @@ public class DownloadChain {
         this.downloadTask = downloadTask;
         this.actions = actions;
         index = 0;
+        tryCount = 0;
+        DownloadRequest request = downloadTask.getRequest();
+        retryCount = request.getRetryCount();
+        retryDelay = request.getRetryDelay();
     }
 
-    public void retry() {
-        isRetry = true;
+    public void downgrade() {
+        retryCount++;
+        downloadTask.downgrade();
+    }
+
+
+    public boolean isRetryable() {
+        return (downloadTask.isDowngrade() || downloadTask.getDownloadInfo().getErrorCode() == NETWORK_UNAVAILABLE) && retryCount > tryCount;
     }
 
     public DownloadTask getDownloadTask() {
@@ -45,14 +60,19 @@ public class DownloadChain {
             boolean shouldStop = downloadTask.shouldStop();
             if (shouldStop) {
                 break;
-            } else if (isRetry) {
-                index = 0;
-                LogUtil.d("retry");
-                isRetry = false;
             } else if (result) {
                 index++;
             } else {
-                break;
+                if (isRetryable()) {
+                    tryCount++;
+                    index = 0;
+                    downloadTask.setErrorCode(0);
+                    if (retryDelay > 0) {
+                        SystemClock.sleep(retryDelay);
+                    }
+                } else {
+                    break;
+                }
             }
         }
         new VerifyResultAction().proceed(this);

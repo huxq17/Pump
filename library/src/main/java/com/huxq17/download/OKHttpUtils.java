@@ -21,7 +21,7 @@ public class OKHttpUtils {
                 .protocols(Collections.singletonList(Protocol.HTTP_1_1))
                 .writeTimeout(30,TimeUnit.SECONDS)
                 .readTimeout(30,TimeUnit.SECONDS)
-                .connectTimeout(30,TimeUnit.SECONDS)
+                .connectTimeout(15,TimeUnit.SECONDS)
                 .build();
     }
 

@@ -58,13 +58,13 @@ public class CheckCacheAction implements Action {
 //            }
             String lastModified = headers.get("Last-Modified");
             String eTag = headers.get("ETag");
-            long contentLength = getContentLength(headers);
             int responseCode = response.code();
             if (response.isSuccessful()) {
+                long contentLength = getContentLength(headers);
                 if (contentLength > 0) {
                     detailsInfo.setContentLength(contentLength);
                     downloadRequest.setCacheBean(new Provider.CacheBean(downloadRequest.getUrl(), lastModified, eTag));
-                }else{
+                } else {
                     detailsInfo.setErrorCode(ErrorCode.CONTENT_LENGTH_NOT_FOUND);
                     result = false;
                 }
@@ -87,6 +87,7 @@ public class CheckCacheAction implements Action {
             detailsInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
             result = false;
         } catch (NumberFormatException e) {
+            e.printStackTrace();
             detailsInfo.setErrorCode(ErrorCode.CONTENT_LENGTH_NOT_FOUND);
             result = false;
         }
@@ -94,14 +95,15 @@ public class CheckCacheAction implements Action {
     }
 
     private long getContentLength(Headers headers) {
-        long contentLength;
         try {
-            contentLength = Long.parseLong(headers.get("Content-Length"));
+            String contentLength = headers.get("Content-Length");
+//            LogUtil.e("headers="+ headers.toString());
+            return Long.parseLong(contentLength);
         } catch (NumberFormatException e) {
-            contentLength = -1;
+            e.printStackTrace();
         }
 
-        return contentLength;
+        return -1;
     }
 
     @Override

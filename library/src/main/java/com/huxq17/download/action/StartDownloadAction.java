@@ -2,9 +2,10 @@ package com.huxq17.download.action;
 
 import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.DownloadChain;
-import com.huxq17.download.DownloadRequest;
-import com.huxq17.download.TaskManager;
 import com.huxq17.download.DownloadDetailsInfo;
+import com.huxq17.download.DownloadRequest;
+import com.huxq17.download.ErrorCode;
+import com.huxq17.download.TaskManager;
 import com.huxq17.download.task.DownloadBlockTask;
 import com.huxq17.download.task.DownloadTask;
 
@@ -46,6 +47,12 @@ public class StartDownloadAction implements Action {
             countDownLatch.await();
         } catch (InterruptedException e) {
             //ignore.
+            result = false;
+        }
+        if (downloadTask.isDowngrade()) {
+            result = false;
+        }
+        if (downloadInfo.getErrorCode() == ErrorCode.NETWORK_UNAVAILABLE) {
             result = false;
         }
         return result;

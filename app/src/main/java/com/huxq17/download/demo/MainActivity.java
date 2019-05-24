@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -18,11 +19,12 @@ import java.io.File;
 public class MainActivity extends AppCompatActivity {
     //        private String url = "http://dlied5.myapp.com/myapp/1104466820/sgame/2017_com.tencent.tmgp.sgame_h178_1.41.2.16_5a7ef8.apk";
 //    private String url = "http://down.youxifan.com/Q6ICeD";
-//    private String url = "http://www.anzhi.com/pkg/7083_com.sup.android.superb.html#";
-    private String url = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
+    private String url = "http://www.anzhi.com/dl_app.php?s=3080740&n=5";
+    //    private String url = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
     private String url2 = "https://file.izuiyou.com/download/package/zuiyou.apk?from=ixiaochuan";
     String url4 = "http://v.nq6.com/xinqu.apk";
-    String url5 = "http://wap.apk.anzhi.com/data4/apk/201810/24/e2cd3e0aded695c8fb7edcc508e3fd1b_37132000.apk";
+//    String url5 = "http://t2.hddhhn.com/uploads/tu/201612/98/st93.png";
+        String url5 = "http://wap.apk.anzhi.com/data4/apk/201810/24/e2cd3e0aded695c8fb7edcc508e3fd1b_37132000.apk";
     private ProgressDialog progressDialog;
     DownloadObserver downloadObserver = new DownloadObserver() {
         @Override
@@ -50,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onFailed() {
             progressDialog.dismiss();
+            Toast.makeText(MainActivity.this, "Download failed", Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -57,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.e("tag","Main onCreate");
         initProgressDialog();
         //只要在第一次提交下载任务之前设置就可以。建议在application的onCreate里做
         DownloadConfig.newBuilder(getApplicationContext())
@@ -83,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
                         .forceReDownload(true)
                         //Optionally,Set how many threads are used when downloading,default 3.
                         .threadNum(3)
+                        .setRetry(3, 200)
                         .submit();
             }
         });

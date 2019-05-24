@@ -27,9 +27,9 @@ public class DownloadTask implements Task {
     private List<Task> downloadBlockTasks = new ArrayList<>();
     private int lastProgress = 0;
     /**
-     * True indicate that server not support breakpoint download.
+     * True indicate that not support breakpoint download.
      */
-    private boolean isDowngrade = false;
+    private boolean isDowngrade;
     private DownloadRequest downloadRequest;
 
     public DownloadTask(DownloadRequest downloadRequest, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
@@ -37,13 +37,15 @@ public class DownloadTask implements Task {
         this.downloadInfo = downloadRequest.getDownloadInfo();
         downloadInfo.setDownloadTask(this);
         isDestroyed = false;
+        isDowngrade = false;
         dbService = DBService.getInstance();
         downloadInfo.setUsed(true);
         speedMonitor = new SpeedMonitor(downloadInfo);
         messageCenter = ServiceAgency.getService(IMessageCenter.class);
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
-        downloadInfo.setStatus(DownloadInfo.Status.WAIT);
         downloadInfo.setCompletedSize(0);
+        downloadInfo.setErrorCode(0);
+        downloadInfo.setStatus(DownloadInfo.Status.WAIT);
         notifyProgressChanged(downloadInfo);
     }
 

@@ -18,8 +18,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
 
-import com.huxq17.download.Utils.LogUtil;
-
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -140,6 +138,5 @@ public class RequestInstallPermissionActivity extends AppCompatActivity {
         intent.putExtra("forceInstall", forceInstall);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
         context.startActivity(intent);
-        LogUtil.e("RequestInstallPermissionActivity start");
     }
 }
