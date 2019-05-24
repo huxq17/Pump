@@ -6,18 +6,19 @@ import com.huxq17.download.DownloadChain;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.OKHttpUtils;
 import com.huxq17.download.Utils.LogUtil;
-import com.huxq17.download.Utils.Util;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.CountDownLatch;
 
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.internal.Util;
+import okio.BufferedSink;
+import okio.BufferedSource;
+import okio.Okio;
 
 
 public class SingleThreadDownloadTask implements Task {
@@ -41,7 +42,6 @@ public class SingleThreadDownloadTask implements Task {
         long endPosition = batch.endPos;
         File tempFile = batch.tempFile;
         DownloadTask downloadTask = downloadChain.getDownloadTask();
-        FileOutputStream fileOutputStream = null;
         if (startPosition != endPosition + 1) {
             OkHttpClient okHttpClient = OKHttpUtils.get();
             Request request = new Request.Builder()
@@ -49,25 +49,27 @@ public class SingleThreadDownloadTask implements Task {
                     .url(batch.url)
                     .build();
             Response response = null;
-            InputStream inputStream = null;
+            BufferedSink bufferedSink = null;
+            BufferedSource bufferedSource = null;
             try {
                 call = okHttpClient.newCall(request);
                 response = call.execute();
                 int code = response.code();
                 LogUtil.e("download block code=" + code);
                 if (code == 200) {
-                    inputStream = response.body().byteStream();
                     byte[] buffer = new byte[8092];
-                    int len;
                     //TODO 写入文件的时候可以尝试用MappedByteBuffer共享内存优化。 用okio优化比较下
-                    fileOutputStream = new FileOutputStream(tempFile, true);
-                    while (!isCanceled && (len = inputStream.read(buffer)) != -1) {
+                    bufferedSource = response.body().source();
+                    int len;
+                    bufferedSink = Okio.buffer(Okio.appendingSink(tempFile));
+                    while (!isCanceled && (len = bufferedSource.read(buffer)) != -1) {
                         if (downloadTask.onDownload(len)) {
-                            fileOutputStream.write(buffer, 0, len);
+                            bufferedSink.write(buffer, 0, len);
                         } else {
                             break;
                         }
                     }
+                    bufferedSink.flush();
                 }
             } catch (IOException e) {
                 if (!call.isCanceled()) {
@@ -75,8 +77,8 @@ public class SingleThreadDownloadTask implements Task {
                     downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
                 }
             } finally {
-                Util.closeQuietly(inputStream);
-                Util.closeQuietly(fileOutputStream);
+                Util.closeQuietly(bufferedSink);
+                Util.closeQuietly(bufferedSource);
                 Util.closeQuietly(response);
             }
         }

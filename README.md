@@ -15,7 +15,7 @@ buildscript {
        }
    }
     dependencies {
-        classpath 'com.buyi.huxq17:agencyplugin:1.1.2'
+        classpath 'com.buyi.huxq17:agencyplugin:1.1.3 '
     }
 }
 ```
@@ -25,7 +25,7 @@ App module build.gradle：
 apply plugin: 'service_agency'
 
 dependencies {
-   implementation'com.huxq17.pump:download:1.0.9'
+   implementation'com.huxq17.pump:download:1.1.0'
    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
 }
 
