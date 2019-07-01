@@ -4,7 +4,7 @@ package com.huxq17.download.manager;
 import android.content.Context;
 import android.content.Intent;
 
-import com.buyi.huxq17.serviceagency.annotation.ServiceAgent;
+
 import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
@@ -17,21 +17,20 @@ import com.huxq17.download.listener.DownLoadLifeCycleObserver;
 import com.huxq17.download.service.DownloadService;
 import com.huxq17.download.task.DownloadTask;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 
-@ServiceAgent
 public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObserver {
     private Context context;
     LinkedBlockingQueue<DownloadTask> readyTaskQueue;
     LinkedBlockingQueue<DownloadTask> runningTaskQueue;
+    HashMap<String,DownloadTask> taskMap;
     private Semaphore semaphore;
     private boolean isServiceRunning = false;
-    private HashMap<String, DownloadDetailsInfo> allDownloadInfo = new LinkedHashMap<>();
     private long maxCreateTime;
 
     /**
@@ -41,25 +40,18 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     private boolean isShutdown = true;
 
     private DownloadManager() {
-        List<DownloadDetailsInfo> allDownloadInfo = DBService.getInstance().getDownloadList();
-        for (DownloadDetailsInfo transferInfo : allDownloadInfo) {
-            if (transferInfo.createTime > maxCreateTime) {
-                maxCreateTime = transferInfo.createTime;
-            }
-            this.allDownloadInfo.put(transferInfo.getUrl(), transferInfo);
-        }
+        taskMap = new HashMap<>();
     }
 
-    private DownloadDetailsInfo getDownloadInfo(String url, String filePath) {
-        DownloadDetailsInfo downloadInfo = allDownloadInfo.get(url);
+    private DownloadDetailsInfo getDownloadInfo(String url, String filePath, String tag) {
+        DownloadDetailsInfo downloadInfo = DBService.getInstance().getDownloadInfo(url);
         if (downloadInfo != null) {
             return downloadInfo;
         }
         //create a new instance if not found.
-        downloadInfo = new DownloadDetailsInfo(url, filePath);
+        downloadInfo = new DownloadDetailsInfo(url, filePath, tag);
         maxCreateTime++;
         downloadInfo.createTime = maxCreateTime;
-        allDownloadInfo.put(url, downloadInfo);
         DBService.getInstance().updateInfo(downloadInfo);
         return downloadInfo;
     }
@@ -67,10 +59,10 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     public synchronized void submit(DownloadRequest downloadRequest) {
         String url = downloadRequest.getUrl();
         String filePath = downloadRequest.getFilePath();
-        DownloadDetailsInfo downloadInfo = getDownloadInfo(url, filePath);
+        String tag = downloadRequest.getTag();
+        DownloadDetailsInfo downloadInfo = getDownloadInfo(url, filePath, tag);
         downloadRequest.setDownloadInfo(downloadInfo);
-        DownloadTask downloadTask = downloadInfo.getDownloadTask();
-        if (downloadTask != null && (readyTaskQueue.contains(downloadTask) || runningTaskQueue.contains(downloadTask))) {
+        if (taskMap.get(url)!=null) {
             //The task is running,we need do nothing.
             LogUtil.e("task " + downloadInfo.getName() + " is running,we need do nothing.");
             return;
@@ -93,6 +85,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
             semaphore = new Semaphore(maxRunningTaskNumber);
         }
         DownloadTask downloadTask = new DownloadTask(downloadRequest, this);
+        taskMap.put(downloadRequest.getUrl(),downloadTask);
         readyTaskQueue.offer(downloadTask);
         LogUtil.d("task " + downloadRequest.getDownloadInfo().getName() + " is ready" + ",remaining " + semaphore.availablePermits() + " permits.");
         if (!isServiceRunning) {
@@ -104,19 +97,25 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     public synchronized void delete(DownloadInfo downloadInfo) {
         if (downloadInfo == null) return;
         synchronized (downloadInfo) {
-            String url = downloadInfo.getUrl();
-            if (allDownloadInfo.containsKey(url)) {
-                allDownloadInfo.remove(url);
-                DownloadDetailsInfo transferInfo = (DownloadDetailsInfo) downloadInfo;
-                DownloadTask downloadTask = transferInfo.getDownloadTask();
-                if (downloadTask != null) {
-                    readyTaskQueue.remove(downloadTask);
-                    downloadTask.delete();
-                }
-                transferInfo.getDownloadFile().delete();
-                Util.deleteDir(transferInfo.getTempDir());
-                DBService.getInstance().deleteInfo(downloadInfo.getUrl(), downloadInfo.getFilePath());
+            DownloadDetailsInfo transferInfo = (DownloadDetailsInfo) downloadInfo;
+            DownloadTask downloadTask = transferInfo.getDownloadTask();
+            if(downloadTask==null){
+                downloadTask = taskMap.get(downloadInfo.getUrl());
             }
+            if (downloadTask != null) {
+                readyTaskQueue.remove(downloadTask);
+                downloadTask.delete();
+            }
+            transferInfo.getDownloadFile().delete();
+            Util.deleteDir(transferInfo.getTempDir());
+            DBService.getInstance().deleteInfo(downloadInfo.getUrl(), downloadInfo.getFilePath());
+        }
+    }
+    public synchronized void delete(String tag) {
+        if (tag == null) return;
+        List<DownloadDetailsInfo> tasks = DBService.getInstance().getDownloadListByTag(tag);
+        for (DownloadDetailsInfo info : tasks) {
+            delete(info);
         }
     }
 
@@ -154,7 +153,8 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     @Override
     public List<DownloadDetailsInfo> getDownloadingList() {
         List<DownloadDetailsInfo> downloadList = new ArrayList<>();
-        for (DownloadDetailsInfo info : allDownloadInfo.values()) {
+        List<DownloadDetailsInfo> list = DBService.getInstance().getDownloadList();
+        for (DownloadDetailsInfo info : list) {
             if (!info.isFinished()) {
                 downloadList.add(info);
             }
@@ -165,7 +165,8 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     @Override
     public List<DownloadDetailsInfo> getDownloadedList() {
         List<DownloadDetailsInfo> downloadList = new ArrayList<>();
-        for (DownloadDetailsInfo info : allDownloadInfo.values()) {
+        List<DownloadDetailsInfo> list = DBService.getInstance().getDownloadList();
+        for (DownloadDetailsInfo info : list) {
             if (info.isFinished()) {
                 downloadList.add(info);
             }
@@ -175,7 +176,25 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public List<DownloadDetailsInfo> getAllDownloadList() {
-        return new ArrayList<>(allDownloadInfo.values());
+        return new ArrayList<>(DBService.getInstance().getDownloadList());
+    }
+
+    @Override
+    public boolean hasCached(String url) {
+        DownloadDetailsInfo info = DBService.getInstance().getDownloadInfo(url);
+        if (info != null && info.isFinished()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public File getFileFromCache(String url) {
+        if (hasCached(url)) {
+            DownloadDetailsInfo info = DBService.getInstance().getDownloadInfo(url);
+            return info.getDownloadFile();
+        }
+        return null;
     }
 
     @Override
@@ -192,7 +211,8 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     public synchronized void shutdown() {
         isShutdown = true;
         context.stopService(new Intent(context, DownloadService.class));
-        for (DownloadDetailsInfo transferInfo : allDownloadInfo.values()) {
+        List<DownloadDetailsInfo> downloadList = DBService.getInstance().getDownloadList();
+        for (DownloadDetailsInfo transferInfo : downloadList) {
             stop(transferInfo);
         }
         DownloadInfoSnapshot.release();
@@ -200,6 +220,11 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     public boolean isShutdown() {
         return isShutdown;
+    }
+
+    @Override
+    public Context getContext() {
+        return context;
     }
 
     public DownloadTask acquireTask() throws InterruptedException {
@@ -228,6 +253,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         DownloadDetailsInfo downloadInfo = downloadTask.getDownloadInfo();
         LogUtil.d("Task " + downloadInfo.getName() + " is stopped.");
         runningTaskQueue.remove(downloadTask);
+        taskMap.remove(downloadInfo.getUrl());
         semaphore.release();
     }
 }

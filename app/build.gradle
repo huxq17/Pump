@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'service_agency'
 android {
     compileSdkVersion 28
     defaultConfig {
@@ -9,19 +8,19 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        signingConfigs {
-            myConfig {
-                storeFile file('C:/Users/keystore.jks')
-                storePassword "tlu2144"
-                keyAlias "key0"
-                keyPassword "tlu2144"
-            }
-        }
+//        signingConfigs {
+//            myConfig {
+//                storeFile file('C:/Users/keystore.jks')
+//                storePassword "tlu2144"
+//                keyAlias "key0"
+//                keyPassword "tlu2144"
+//            }
+//        }
     }
     buildTypes {
         release {
-            minifyEnabled true
-            signingConfig signingConfigs.myConfig
+            minifyEnabled false
+//            signingConfig signingConfigs.myConfig
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }

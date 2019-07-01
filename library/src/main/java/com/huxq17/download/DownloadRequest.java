@@ -1,13 +1,16 @@
 package com.huxq17.download;
 
-import com.buyi.huxq17.serviceagency.ServiceAgency;
+
+import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.manager.IDownloadManager;
+import com.huxq17.download.message.DownloadListener;
 import com.huxq17.download.provider.Provider;
 
 public class DownloadRequest {
     private String url;
     private String filePath;
     private int threadNum = 3;
+    private String tag;
     private boolean forceReDownload = false;
     private DownloadDetailsInfo downloadInfo;
     private Provider.CacheBean cacheBean;
@@ -56,6 +59,10 @@ public class DownloadRequest {
         return threadNum;
     }
 
+    public String getTag() {
+        return tag == null ? "" : tag;
+    }
+
     public void setThreadNum(int threadNum) {
         this.threadNum = threadNum;
     }
@@ -77,6 +84,16 @@ public class DownloadRequest {
 
         public DownloadGenerator threadNum(int threadNum) {
             downloadRequest.threadNum = threadNum;
+            return this;
+        }
+
+        public DownloadGenerator listener(DownloadListener listener) {
+            listener.enable();
+            return this;
+        }
+
+        public DownloadGenerator tag(String tag) {
+            downloadRequest.tag = tag;
             return this;
         }
 
@@ -118,7 +135,7 @@ public class DownloadRequest {
         }
 
         public void submit() {
-            ServiceAgency.getService(IDownloadManager.class).submit(downloadRequest);
+            PumpFactory.getService(IDownloadManager.class).submit(downloadRequest);
         }
     }
 }

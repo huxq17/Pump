@@ -1,14 +1,22 @@
 package com.huxq17.download.message;
 
+import android.text.TextUtils;
+
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.DownloadInfoSnapshot;
 import com.huxq17.download.Pump;
 
-public abstract class DownloadObserver {
+public class DownloadListener {
+    private final String url;
     private DownloadInfo.Status status;
     private boolean enable;
 
-    public DownloadObserver() {
+    public DownloadListener() {
+        url = null;
+    }
+
+    public DownloadListener(String url) {
+        this.url = url;
     }
 
     /**
@@ -35,28 +43,11 @@ public abstract class DownloadObserver {
         return enable;
     }
 
-    /**
-     * Filter the download information to be received, all received by default.
-     *
-     * @param downloadInfo The download info.
-     * @return Receive if return true, or not receive.
-     */
-    public boolean filter(DownloadInfo downloadInfo) {
-        return true;
-    }
-
     private DownloadInfo downloadInfo;
 
-    public abstract void onProgress(int progress);
 
     public final DownloadInfo.Status getStatus() {
         return status;
-    }
-
-    public void onSuccess() {
-    }
-
-    public void onFailed() {
     }
 
     public final DownloadInfo getDownloadInfo() {
@@ -77,5 +68,52 @@ public abstract class DownloadObserver {
         } else if (status == DownloadInfo.Status.FAILED) {
             onFailed();
         }
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    /**
+     * Filter the download information to be received, all received by default.
+     *
+     * @param downloadInfo The download info.
+     * @return Receive if return true, or not receive.
+     */
+    public boolean filter(DownloadInfo downloadInfo) {
+        if (!TextUtils.isEmpty(url)) {
+            return url.contains(downloadInfo.getUrl());
+        }
+        return true;
+    }
+
+    public void onProgress(int progress) {
+    }
+
+
+    public void onSuccess() {
+    }
+
+    public void onFailed() {
+    }
+
+    @Override
+    public int hashCode() {
+        if (!TextUtils.isEmpty(url)) {
+            return url.hashCode();
+        }
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (DownloadListener.class.isAssignableFrom(obj.getClass())) {
+            DownloadListener that = (DownloadListener) obj;
+            String thatUrl = that.getUrl();
+            if (!TextUtils.isEmpty(thatUrl) && thatUrl.equals(getUrl())) {
+                return true;
+            }
+        }
+        return super.equals(obj);
     }
 }

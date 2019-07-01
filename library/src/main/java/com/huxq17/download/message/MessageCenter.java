@@ -5,21 +5,19 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-import com.buyi.huxq17.serviceagency.ServiceAgency;
-import com.buyi.huxq17.serviceagency.annotation.ServiceAgent;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfoSnapshot;
+import com.huxq17.download.PumpFactory;
 import com.huxq17.download.manager.IDownloadManager;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
-@ServiceAgent
 public class MessageCenter implements IMessageCenter {
     private Context context;
     private boolean isBusying = false;
-    private LinkedHashSet<DownloadObserver> observers = new LinkedHashSet<>();
-    private LinkedHashSet<DownloadObserver> removedObservers = new LinkedHashSet<>();
+    private LinkedHashSet<DownloadListener> observers = new LinkedHashSet<>();
+    private LinkedHashSet<DownloadListener> removedObservers = new LinkedHashSet<>();
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
@@ -31,13 +29,13 @@ public class MessageCenter implements IMessageCenter {
 //            int low32Bit = msg.arg2;
 //            downloadInfo.snapshotCompletedSize(high32Bit + low32Bit);
             DownloadInfoSnapshot snapshot = (DownloadInfoSnapshot) msg.obj;
-            Iterator<DownloadObserver> iterator = observers.iterator();
+            Iterator<DownloadListener> iterator = observers.iterator();
             isBusying = true;
             while (iterator.hasNext()) {
-                DownloadObserver observer = iterator.next();
-                if (observer != null && observer.isEnable()) {
-                    if (observer.filter(snapshot.downloadInfo)) {
-                        observer.downloading(snapshot);
+                DownloadListener downloadListener = iterator.next();
+                if (downloadListener != null && downloadListener.isEnable()) {
+                    if (downloadListener.filter(snapshot.downloadInfo)) {
+                        downloadListener.downloading(snapshot);
                     }
                 } else {
                     iterator.remove();
@@ -58,7 +56,7 @@ public class MessageCenter implements IMessageCenter {
     }
 
     private boolean isShutdown() {
-        return ServiceAgency.getService(IDownloadManager.class).isShutdown();
+        return PumpFactory.getService(IDownloadManager.class).isShutdown();
     }
 
     @Override
@@ -82,18 +80,24 @@ public class MessageCenter implements IMessageCenter {
     }
 
     @Override
-    public synchronized void register(DownloadObserver downloadObserver) {
-        downloadObserver.setEnable(true);
-        observers.add(downloadObserver);
+    public synchronized void register(DownloadListener downloadListener) {
+        downloadListener.setEnable(true);
+        observers.add(downloadListener);
     }
 
     @Override
-    public synchronized void unRegister(DownloadObserver downloadObserver) {
-        downloadObserver.setEnable(false);
+    public synchronized void unRegister(String url) {
+        DownloadListener downloadObserver = new DownloadListener(url);
+        unRegister(downloadObserver);
+    }
+
+    @Override
+    public synchronized void unRegister(DownloadListener downloadListener) {
+        downloadListener.setEnable(false);
         if (!isBusying) {
-            observers.remove(downloadObserver);
+            observers.remove(downloadListener);
         } else {
-            removedObservers.add(downloadObserver);
+            removedObservers.add(downloadListener);
         }
     }
 }

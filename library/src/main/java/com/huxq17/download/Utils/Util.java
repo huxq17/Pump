@@ -1,9 +1,14 @@
 package com.huxq17.download.Utils;
 
+import android.content.Context;
+import android.os.Environment;
+import android.text.TextUtils;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.UUID;
 
 import okio.BufferedSink;
 import okio.BufferedSource;
@@ -45,6 +50,38 @@ public class Util {
         return source.renameTo(dest);
     }
 
+    public static String getCachePathByUrl(Context context, String url) {
+        String apkName = getFileNameByUrl(url);
+        return getCachePath(context) + "/" + apkName;
+    }
+
+
+    public static String getCachePath(Context context) {
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+            return context.getExternalCacheDir().getAbsolutePath();
+        } else {
+            return context.getCacheDir().getAbsolutePath();
+        }
+    }
+
+    public static String getFileNameByUrl(String url) {
+        int index = url.indexOf("?");
+        String fileName = null;
+        try {
+            if (index != -1) {
+                fileName = url.substring(url.lastIndexOf("/") + 1, url.indexOf("?"));
+            } else {
+                fileName = url.substring(url.lastIndexOf("/") + 1);
+            }
+        } catch (IndexOutOfBoundsException e) {
+            e.printStackTrace();
+        }
+
+        if (TextUtils.isEmpty(fileName)) {
+            fileName = UUID.randomUUID().toString();
+        }
+        return fileName;
+    }
 //    public static void mergeFiles(File[] sources, File dest) {
 //        if (sources == null || sources.length <= 0) {
 //            return;

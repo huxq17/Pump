@@ -22,6 +22,7 @@ public class Provider {
         public static final String FILE_LENGTH = "file_length";
         public static final String FINISHED = "finished";
         public static final String CREATE_TIME = "create_time";
+        public static final String TAG = "tag";
     }
 
     public static final class CacheTable {

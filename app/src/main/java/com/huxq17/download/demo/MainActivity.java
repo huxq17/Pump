@@ -9,10 +9,10 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.huxq17.download.DownloadConfig;
-import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.Pump;
+import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.demo.installapk.APK;
-import com.huxq17.download.message.DownloadObserver;
+import com.huxq17.download.message.DownloadListener;
 
 import java.io.File;
 
@@ -23,44 +23,15 @@ public class MainActivity extends AppCompatActivity {
     //    private String url = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
     private String url2 = "https://file.izuiyou.com/download/package/zuiyou.apk?from=ixiaochuan";
     String url4 = "http://v.nq6.com/xinqu.apk";
-//    String url5 = "http://t2.hddhhn.com/uploads/tu/201612/98/st93.png";
-        String url5 = "http://wap.apk.anzhi.com/data4/apk/201810/24/e2cd3e0aded695c8fb7edcc508e3fd1b_37132000.apk";
+    //    String url5 = "http://t2.hddhhn.com/uploads/tu/201612/98/st93.png";
+    String url5 = "http://wap.apk.anzhi.com/data4/apk/201810/24/e2cd3e0aded695c8fb7edcc508e3fd1b_37132000.apk";
     private ProgressDialog progressDialog;
-    DownloadObserver downloadObserver = new DownloadObserver() {
-        @Override
-        public void onProgress(int progress) {
-            progressDialog.setProgress(progress);
-        }
-
-        @Override
-        public boolean filter(DownloadInfo downloadInfo) {
-            String url = downloadInfo.getUrl();
-            return url.equals(url5);
-        }
-
-        @Override
-        public void onSuccess() {
-            progressDialog.dismiss();
-            String apkPath = getDownloadInfo().getFilePath();
-            APK.with(MainActivity.this)
-                    .from(apkPath)
-//                    .forceInstall();
-                    .install();
-            Toast.makeText(MainActivity.this, "Download Finished", Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onFailed() {
-            progressDialog.dismiss();
-            Toast.makeText(MainActivity.this, "Download failed", Toast.LENGTH_SHORT).show();
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.e("tag","Main onCreate");
+        Log.e("tag", "Main onCreate");
         initProgressDialog();
         //只要在第一次提交下载任务之前设置就可以。建议在application的onCreate里做
         DownloadConfig.newBuilder(getApplicationContext())
@@ -83,6 +54,30 @@ public class MainActivity extends AppCompatActivity {
                 progressDialog.show();
                 File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
                 Pump.newRequest(url5, pipixiaFile.getAbsolutePath())
+                        .listener(new DownloadListener(url5) {
+
+                            @Override
+                            public void onProgress(int progress) {
+                                progressDialog.setProgress(progress);
+                            }
+
+                            @Override
+                            public void onSuccess() {
+                                progressDialog.dismiss();
+                                String apkPath = getDownloadInfo().getFilePath();
+                                APK.with(MainActivity.this)
+                                        .from(apkPath)
+//                                        .forceInstall();
+                                        .install();
+                                Toast.makeText(MainActivity.this, "Download Finished", Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onFailed() {
+                                progressDialog.dismiss();
+                                Toast.makeText(MainActivity.this, "Download failed", Toast.LENGTH_SHORT).show();
+                            }
+                        })
                         //Optionally,Set whether to repeatedly download the downloaded file,default false.
                         .forceReDownload(true)
                         //Optionally,Set how many threads are used when downloading,default 3.
@@ -123,14 +118,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         //Enable this Observer.
-        downloadObserver.enable();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        //Optionally,disable this observer and Pump will remove this observer later.
-        downloadObserver.disable();
+        LogUtil.e("unSubscribe");
+        Pump.unSubscribe(url5);
     }
 
     private void initProgressDialog() {

@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
+
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.provider.Provider;
 
@@ -71,6 +72,7 @@ public class DBService {
             contentValues.put(Provider.DownloadTable.THREAD_NUM, 0);
             contentValues.put(Provider.DownloadTable.FILE_LENGTH, downloadInfo.getContentLength());
             contentValues.put(Provider.DownloadTable.FINISHED, downloadInfo.getFinished());
+            contentValues.put(Provider.DownloadTable.TAG, downloadInfo.getTag());
             db.update(Provider.DownloadTable.TABLE_NAME, contentValues,
                     Provider.DownloadTable.URL + "=? and " + Provider.DownloadTable.PATH + "=?",
                     new String[]{downloadInfo.getUrl(), downloadInfo.getFilePath()});
@@ -81,10 +83,11 @@ public class DBService {
                     + Provider.DownloadTable.THREAD_NUM + ","
                     + Provider.DownloadTable.FILE_LENGTH + ","
                     + Provider.DownloadTable.FINISHED + ","
-                    + Provider.DownloadTable.CREATE_TIME +
-                    ") values(?,?,?,?,?,?)";
+                    + Provider.DownloadTable.CREATE_TIME + ","
+                    + Provider.DownloadTable.TAG +
+                    ") values(?,?,?,?,?,?,?)";
             db.execSQL(sql, new Object[]{downloadInfo.getUrl(), downloadInfo.getFilePath(),
-                    0, downloadInfo.getContentLength(), downloadInfo.getFinished(), downloadInfo.createTime});
+                    0, downloadInfo.getContentLength(), downloadInfo.getFinished(), downloadInfo.createTime, downloadInfo.getTag()});
         }
         cursor.close();
     }
@@ -108,12 +111,20 @@ public class DBService {
     }
 
     public synchronized List<DownloadDetailsInfo> getDownloadList() {
+        return getDownloadListByTag(null);
+    }
+
+    public synchronized List<DownloadDetailsInfo> getDownloadListByTag(String tag) {
         List<DownloadDetailsInfo> tasks = new ArrayList<>();
         SQLiteDatabase db = helper.getReadableDatabase();
-        String sql = "select * from " + Provider.DownloadTable.TABLE_NAME + " order by " + Provider.DownloadTable.CREATE_TIME;
-        Cursor cursor = db.rawQuery(sql, null);
+        Cursor cursor;
+        if (tag == null) {
+            cursor = db.query(Provider.DownloadTable.TABLE_NAME, null, null, null, null, null, Provider.DownloadTable.CREATE_TIME, null);
+        } else {
+            cursor = db.query(Provider.DownloadTable.TABLE_NAME, null, Provider.DownloadTable.TAG + " = ?", new String[]{tag}, null, null, Provider.DownloadTable.CREATE_TIME, null);
+        }
         while (cursor.moveToNext()) {
-            DownloadDetailsInfo info = new DownloadDetailsInfo(cursor.getString(0), cursor.getString(1));
+            DownloadDetailsInfo info = new DownloadDetailsInfo(cursor.getString(0), cursor.getString(1), cursor.getString(6));
 //            info.threadNum = cursor.getInt(2);
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));
@@ -123,6 +134,21 @@ public class DBService {
         }
         cursor.close();
         return tasks;
+    }
+
+    public synchronized DownloadDetailsInfo getDownloadInfo(String url) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor cursor = db.query(Provider.DownloadTable.TABLE_NAME, null,
+                Provider.DownloadTable.URL + "=?", new String[]{url}, null, null, null, null);
+        DownloadDetailsInfo info = null;
+        while (cursor.moveToNext()) {
+            info = new DownloadDetailsInfo(cursor.getString(0), cursor.getString(1), cursor.getString(6));
+            info.setContentLength(cursor.getLong(3));
+            info.setFinished(cursor.getShort(4));
+            info.createTime = cursor.getLong(5);
+            info.calculateDownloadProgress();
+        }
+        return info;
     }
 
     public synchronized void deleteInfo(String url, String filePath) {

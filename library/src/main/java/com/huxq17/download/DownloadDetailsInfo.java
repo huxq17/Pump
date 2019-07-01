@@ -1,6 +1,5 @@
 package com.huxq17.download;
 
-
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.task.DownloadTask;
 
@@ -16,8 +15,13 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
     private DownloadTask downloadTask;
 
     public DownloadDetailsInfo(String url, String filePath) {
+        this(url, filePath, null);
+    }
+
+    public DownloadDetailsInfo(String url, String filePath, String tag) {
         this.url = url;
         this.filePath = filePath;
+        this.tag = tag;
         downloadFile = new File(filePath);
     }
 

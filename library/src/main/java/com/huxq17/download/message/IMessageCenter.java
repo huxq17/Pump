@@ -4,13 +4,16 @@ import android.content.Context;
 
 import com.huxq17.download.DownloadDetailsInfo;
 
+
 public interface IMessageCenter {
     void start(Context context);
 
-    void register(DownloadObserver downloadObserver);
+    void register(DownloadListener downloadListener);
+
+    void unRegister(String url);
 
     @Deprecated
-    void unRegister(DownloadObserver downloadObserver);
+    void unRegister(DownloadListener downloadListener);
 
     void notifyProgressChanged(DownloadDetailsInfo downloadInfo);
 

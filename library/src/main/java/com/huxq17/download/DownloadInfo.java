@@ -4,7 +4,7 @@ package com.huxq17.download;
 import java.lang.ref.WeakReference;
 
 public class DownloadInfo {
-    private WeakReference wfTag;
+    private WeakReference wfExtraData;
     protected String url;
     protected String filePath;
 
@@ -14,18 +14,23 @@ public class DownloadInfo {
     protected Status status;
     protected String speed;
     protected int errorCode;
+    protected String tag;
 
 
-    public void setTag(Object tag) {
-        wfTag = new WeakReference<>(tag);
+    public void setExtraData(Object tag) {
+        wfExtraData = new WeakReference<>(tag);
     }
 
-    public Object getTag() {
-        return wfTag == null ? null : wfTag.get();
+    public Object getExtraData() {
+        return wfExtraData == null ? null : wfExtraData.get();
     }
 
     public String getSpeed() {
         return speed;
+    }
+
+    public String getTag() {
+        return tag == null ? "" : tag;
     }
 
     public int getErrorCode() {

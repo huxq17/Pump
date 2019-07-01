@@ -5,6 +5,7 @@ import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.DownloadRequest;
+import com.huxq17.download.PumpFactory;
 import com.huxq17.download.SpeedMonitor;
 import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.Utils.Util;
@@ -41,7 +42,7 @@ public class DownloadTask implements Task {
         dbService = DBService.getInstance();
         downloadInfo.setUsed(true);
         speedMonitor = new SpeedMonitor(downloadInfo);
-        messageCenter = ServiceAgency.getService(IMessageCenter.class);
+        messageCenter = PumpFactory.getService(IMessageCenter.class);
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
         downloadInfo.setCompletedSize(0);
         downloadInfo.setErrorCode(0);

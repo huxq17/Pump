@@ -6,6 +6,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 
 import com.buyi.huxq17.serviceagency.ServiceAgency;
+import com.huxq17.download.PumpFactory;
 import com.huxq17.download.TaskManager;
 import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.manager.IDownloadManager;
@@ -20,7 +21,7 @@ public class DownloadService extends Service implements Task {
     public void onCreate() {
         super.onCreate();
         isRunning = true;
-        downloadManager = ServiceAgency.getService(IDownloadManager.class);
+        downloadManager = PumpFactory.getService(IDownloadManager.class);
         TaskManager.execute(this);
     }
 

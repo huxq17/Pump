@@ -72,7 +72,7 @@ public class DownloadConfig {
 
         public void build() {
             DownloadConfig config = new DownloadConfig(maxRunningTaskNumber);
-            ServiceAgency.getService(IDownloadManager.class).setDownloadConfig(config);
+            PumpFactory.getService(IDownloadManager.class).setDownloadConfig(config);
         }
     }
 }

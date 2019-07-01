@@ -16,17 +16,18 @@ import android.widget.TextView;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.Pump;
 import com.huxq17.download.demo.installapk.APK;
-import com.huxq17.download.message.DownloadObserver;
+import com.huxq17.download.message.DownloadListener;
+import com.huxq17.download.message.DownloadListener;
 
 import java.util.HashMap;
 import java.util.List;
 
 public class DownloadListActivity extends AppCompatActivity {
-    DownloadObserver downloadObserver = new DownloadObserver() {
+    DownloadListener downloadObserver = new DownloadListener() {
         @Override
         public void onProgress(int progress) {
             DownloadInfo downloadInfo = getDownloadInfo();
-            DownloadViewHolder viewHolder = (DownloadViewHolder) downloadInfo.getTag();
+            DownloadViewHolder viewHolder = (DownloadViewHolder) downloadInfo.getExtraData();
             if (viewHolder != null) {
                 DownloadInfo tag = map.get(viewHolder);
                 if (tag != null && tag.getFilePath().equals(downloadInfo.getFilePath())) {
@@ -84,7 +85,7 @@ public class DownloadListActivity extends AppCompatActivity {
             DownloadInfo downloadInfo = downloadInfoList.get(i);
             viewHolder.bindData(downloadInfo, downloadInfo.getStatus());
 
-            downloadInfo.setTag(viewHolder);
+            downloadInfo.setExtraData(viewHolder);
             map.put(viewHolder, downloadInfo);
         }
 
