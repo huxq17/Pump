@@ -4,7 +4,6 @@ package com.huxq17.download.manager;
 import android.content.Context;
 import android.content.Intent;
 
-
 import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
@@ -19,8 +18,8 @@ import com.huxq17.download.task.DownloadTask;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 
@@ -28,8 +27,8 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     private Context context;
     private LinkedBlockingQueue<DownloadTask> readyTaskQueue;
     private LinkedBlockingQueue<DownloadTask> runningTaskQueue;
-    private HashMap<String, DownloadTask> taskMap;
-    private HashMap<String, DownloadDetailsInfo> downloadMap;
+    private ConcurrentHashMap<String, DownloadTask> taskMap;
+    private ConcurrentHashMap<String, DownloadDetailsInfo> downloadMap;
     private Semaphore semaphore;
     private boolean isServiceRunning = false;
 
@@ -40,10 +39,10 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     private boolean isShutdown = true;
 
     private DownloadManager() {
-        taskMap = new HashMap<>();
+        taskMap = new ConcurrentHashMap<>();
     }
 
-    private DownloadDetailsInfo getDownloadInfo(String url, String filePath, String tag) {
+    private DownloadDetailsInfo createDownloadInfo(String url, String filePath, String tag) {
         DownloadDetailsInfo downloadInfo = null;
         if (downloadMap != null) {
             downloadInfo = downloadMap.get(url);
@@ -58,11 +57,6 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         downloadInfo = new DownloadDetailsInfo(url, filePath, tag);
         downloadInfo.createTime = System.currentTimeMillis();
         DBService.getInstance().updateInfo(downloadInfo);
-        if (downloadMap != null) {
-            synchronized (downloadMap){
-                downloadMap.put(url, downloadInfo);
-            }
-        }
         return downloadInfo;
     }
 
@@ -70,7 +64,10 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         String url = downloadRequest.getUrl();
         String filePath = downloadRequest.getFilePath();
         String tag = downloadRequest.getTag();
-        DownloadDetailsInfo downloadInfo = getDownloadInfo(url, filePath, tag);
+        DownloadDetailsInfo downloadInfo = createDownloadInfo(url, filePath, tag);
+        if (downloadMap != null) {
+            downloadMap.put(url, downloadInfo);
+        }
         downloadRequest.setDownloadInfo(downloadInfo);
         if (taskMap.get(url) != null) {
             //The task is running,we need do nothing.
@@ -107,11 +104,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     public synchronized void delete(DownloadInfo downloadInfo) {
         if (downloadInfo == null) return;
         if (downloadMap != null) {
-            synchronized (downloadMap) {
-                if (downloadMap.containsKey(downloadInfo.getUrl())) {
-                    downloadMap.remove(downloadInfo.getUrl());
-                }
-            }
+            downloadMap.remove(downloadInfo.getUrl());
         }
         synchronized (downloadInfo) {
             DownloadDetailsInfo transferInfo = (DownloadDetailsInfo) downloadInfo;
@@ -194,27 +187,20 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public List<DownloadDetailsInfo> getAllDownloadList() {
-        List<DownloadDetailsInfo> list;
         if (downloadMap == null) {
-            downloadMap = new HashMap<>();
-            synchronized (downloadMap) {
-                list = DBService.getInstance().getDownloadList();
-                for (DownloadDetailsInfo transferInfo : list) {
-                    String url = transferInfo.getUrl();
-                    DownloadTask downloadTask = taskMap.get(url);
-                    if (downloadTask != null) {
-                        downloadMap.put(url, downloadTask.getDownloadInfo());
-                    } else {
-                        downloadMap.put(url, transferInfo);
-                    }
+            downloadMap = new ConcurrentHashMap<>();
+            List<DownloadDetailsInfo> list = DBService.getInstance().getDownloadList();
+            for (DownloadDetailsInfo transferInfo : list) {
+                String url = transferInfo.getUrl();
+                DownloadTask downloadTask = taskMap.get(url);
+                if (downloadTask != null) {
+                    downloadMap.put(url, downloadTask.getDownloadInfo());
+                } else {
+                    downloadMap.put(url, transferInfo);
                 }
             }
-        } else {
-            synchronized (downloadMap) {
-                list = new ArrayList<>(downloadMap.values());
-            }
         }
-        return list;
+        return new ArrayList<>(downloadMap.values());
     }
 
     @Override

@@ -29,7 +29,6 @@ public class DownloadListActivity extends AppCompatActivity {
         public void onProgress(int progress) {
             DownloadInfo downloadInfo = getDownloadInfo();
             DownloadViewHolder viewHolder = (DownloadViewHolder) downloadInfo.getExtraData();
-            LogUtil.e("onProgress viewHolder="+viewHolder);
             if (viewHolder != null) {
                 DownloadInfo tag = map.get(viewHolder);
                 if (tag != null && tag.getFilePath().equals(downloadInfo.getFilePath())) {

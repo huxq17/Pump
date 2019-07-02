@@ -1,6 +1,5 @@
 package com.huxq17.download.task;
 
-import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
@@ -17,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DownloadTask implements Task {
-    private DownloadDetailsInfo downloadInfo;
+    private final DownloadDetailsInfo downloadInfo;
     private DBService dbService;
     private boolean isDestroyed;
     private boolean isNeedDelete;
