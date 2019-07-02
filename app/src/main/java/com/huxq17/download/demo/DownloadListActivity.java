@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.Pump;
+import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.message.DownloadListener;
 import com.huxq17.download.message.DownloadListener;
@@ -28,12 +29,19 @@ public class DownloadListActivity extends AppCompatActivity {
         public void onProgress(int progress) {
             DownloadInfo downloadInfo = getDownloadInfo();
             DownloadViewHolder viewHolder = (DownloadViewHolder) downloadInfo.getExtraData();
+            LogUtil.e("onProgress viewHolder="+viewHolder);
             if (viewHolder != null) {
                 DownloadInfo tag = map.get(viewHolder);
                 if (tag != null && tag.getFilePath().equals(downloadInfo.getFilePath())) {
                     viewHolder.bindData(downloadInfo, getStatus());
                 }
             }
+        }
+
+        @Override
+        public void onFailed() {
+            super.onFailed();
+            LogUtil.e("onFailed code="+getDownloadInfo().getErrorCode());
         }
     };
     private HashMap<DownloadViewHolder, DownloadInfo> map = new HashMap<>();

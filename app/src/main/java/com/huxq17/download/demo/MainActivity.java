@@ -123,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        LogUtil.e("unSubscribe");
         Pump.unSubscribe(url5);
     }
 
