@@ -16,6 +16,7 @@ buildscript {
 }
 
 allprojects {
+    apply from: "${project.rootProject.file('common.gradle')}"
     repositories {
         mavenLocal()
         google()

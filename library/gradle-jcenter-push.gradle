@@ -79,11 +79,11 @@ publishing {
 }
 
 def getBintrayUserProperty() {
-    return hasProperty('BINTRAY_USER') ? BINTRAY_USER : "huxq17"
+    return hasProperty('BINTRAY_USER') ? BINTRAY_USER : getLocalProperty("BINTRAY_USER")
 }
 
 def getBintrayApiKeyProperty() {
-    return hasProperty('BINTRAY_APIKEY') ? BINTRAY_APIKEY : ""
+    return hasProperty('BINTRAY_APIKEY') ? BINTRAY_APIKEY : getLocalProperty("BINTRAY_APIKEY")
 }
 
 def getGpgPassphraseProperty() {

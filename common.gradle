@@ -1,0 +1,27 @@
+def getLocalProperty(String key) {
+    try {
+        return getLocalProperties().getProperty(key)
+    } catch (Exception e) {
+        e.printStackTrace()
+        return ""
+    }
+}
+
+def getLocalProperties() {
+    def properties = new Properties()
+    try {
+        def localPropertiesFile
+        localPropertiesFile = project.rootProject.file('local.properties')
+        properties.load(new FileInputStream(localPropertiesFile))
+        return properties
+    } catch (Exception e) {
+        e.printStackTrace()
+        return properties
+    }
+}
+
+
+ext {
+    getLocalProperty = this.&getLocalProperty
+    getLocalProperties = this.&getLocalProperties
+}

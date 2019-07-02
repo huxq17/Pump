@@ -6,26 +6,11 @@ Pump is a fast, easy-to-use android download library that supports multitask, mu
 See the [中文文档](https://github.com/huxq17/Pump/blob/master/README-cn.md) for Chinese readme.
 
 ## Download
-Root project build.gradle：
-```
-buildscript {
-   allprojects {
-       repositories {
-           jcenter()
-       }
-   }
-    dependencies {
-        classpath 'com.buyi.huxq17:agencyplugin:1.1.3 '
-    }
-}
-```
 App module build.gradle：
 
 ```
-apply plugin: 'service_agency'
-
 dependencies {
-   implementation'com.huxq17.pump:download:1.1.0'
+   implementation'com.huxq17.pump:download:1.2.0'
    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
 }
 
