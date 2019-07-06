@@ -26,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     //    String url5 = "http://t2.hddhhn.com/uploads/tu/201612/98/st93.png";
     String url5 = "http://wap.apk.anzhi.com/data4/apk/201810/24/e2cd3e0aded695c8fb7edcc508e3fd1b_37132000.apk";
     private ProgressDialog progressDialog;
+    private final static String TAG = "groupA";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,10 +96,13 @@ public class MainActivity extends AppCompatActivity {
                 File file3 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
                 File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download4.apk");
                 Pump.newRequest(url, file1.getAbsolutePath())
+                        .tag(TAG)
                         .submit();
                 Pump.newRequest(url2, file2.getAbsolutePath())
+                        .tag(TAG)
                         .submit();
                 Pump.newRequest(url4, file3.getAbsolutePath())
+                        .tag(TAG)
                         .submit();
                 Pump.newRequest(url5, file4.getAbsolutePath())
                         .submit();
@@ -109,7 +113,8 @@ public class MainActivity extends AppCompatActivity {
                 setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        startActivity(new Intent(MainActivity.this, DownloadListActivity.class));
+                        boolean groupByTag = System.currentTimeMillis() % 2 == 0;
+                        DownloadListActivity.start(v.getContext(), groupByTag ? TAG : "");
                     }
                 });
     }

@@ -8,7 +8,6 @@ import java.util.ArrayList;
 
 public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
     private File tempDir;
-    public long createTime;
     private ArrayList<File> downloadPartFiles = new ArrayList<>();
     private File downloadFile;
     private boolean isUsed = false;

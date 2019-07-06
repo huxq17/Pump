@@ -15,6 +15,7 @@ public class DownloadInfo {
     protected String speed;
     protected int errorCode;
     protected String tag;
+    private long createTime;
 
 
     public void setExtraData(Object tag) {
@@ -31,6 +32,14 @@ public class DownloadInfo {
 
     public String getTag() {
         return tag == null ? "" : tag;
+    }
+
+    public long getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(long createTime) {
+        this.createTime = createTime;
     }
 
     public int getErrorCode() {

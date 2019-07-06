@@ -1,7 +1,6 @@
 package com.huxq17.download;
 
 
-import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.DownloadListener;
 import com.huxq17.download.provider.Provider;
@@ -92,6 +91,11 @@ public class DownloadRequest {
             return this;
         }
 
+        /**
+         * Tag download task, can use {@link Pump#getDownloadListByTag(String)} to get download list filter by tag,and use {@link DownloadInfo#getTag()} to get tag.
+         * @param tag tag
+         * @return
+         */
         public DownloadGenerator tag(String tag) {
             downloadRequest.tag = tag;
             return this;

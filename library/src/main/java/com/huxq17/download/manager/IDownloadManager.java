@@ -33,6 +33,8 @@ public interface IDownloadManager {
 
     List<DownloadDetailsInfo> getDownloadedList();
 
+    List<DownloadDetailsInfo> getDownloadListByTag(String tag);
+
     List<DownloadDetailsInfo> getAllDownloadList();
 
     boolean hasCached(String url);

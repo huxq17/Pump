@@ -87,7 +87,7 @@ public class DBService {
                     + Provider.DownloadTable.TAG +
                     ") values(?,?,?,?,?,?,?)";
             db.execSQL(sql, new Object[]{downloadInfo.getUrl(), downloadInfo.getFilePath(),
-                    0, downloadInfo.getContentLength(), downloadInfo.getFinished(), downloadInfo.createTime, downloadInfo.getTag()});
+                    0, downloadInfo.getContentLength(), downloadInfo.getFinished(), downloadInfo.getCreateTime(), downloadInfo.getTag()});
         }
         cursor.close();
     }
@@ -102,7 +102,7 @@ public class DBService {
 //            info.threadNum = cursor.getInt(2);
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));
-            info.createTime = cursor.getLong(5);
+            info.setCreateTime(cursor.getLong(5));
             length = info.getContentLength();
             break;
         }
@@ -128,7 +128,7 @@ public class DBService {
 //            info.threadNum = cursor.getInt(2);
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));
-            info.createTime = cursor.getLong(5);
+            info.setCreateTime(cursor.getLong(5));
             info.calculateDownloadProgress();
             tasks.add(info);
         }
@@ -145,7 +145,7 @@ public class DBService {
             info = new DownloadDetailsInfo(cursor.getString(0), cursor.getString(1), cursor.getString(6));
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));
-            info.createTime = cursor.getLong(5);
+            info.setCreateTime(cursor.getLong(5));
             info.calculateDownloadProgress();
         }
         return info;

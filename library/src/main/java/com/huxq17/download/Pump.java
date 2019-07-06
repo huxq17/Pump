@@ -100,7 +100,7 @@ public class Pump {
     /**
      * Delete a download info by Tag
      *
-     * @param tag
+     * @param tag tag
      */
     public static void delete(String tag) {
         PumpFactory.getService(IDownloadManager.class).delete(tag);
@@ -130,7 +130,7 @@ public class Pump {
     }
 
     /**
-     * Get a list of all download tasks.
+     * Get a list of all download list.
      *
      * @return
      */
@@ -142,28 +142,37 @@ public class Pump {
         return PumpFactory.getService(IDownloadManager.class).getDownloadingList();
     }
 
+    public static List<? extends DownloadInfo> getDownloadedList() {
+        return PumpFactory.getService(IDownloadManager.class).getDownloadedList();
+    }
+
+    /**
+     * Get download list filter by tag.
+     * @param tag tag
+     * @return
+     */
+    public static List<DownloadDetailsInfo> getDownloadListByTag(String tag) {
+        return PumpFactory.getService(IDownloadManager.class).getDownloadListByTag(tag);
+    }
+
     /**
      * Check url whether download success
      *
      * @param url download url
      * @return true If Pump has downloaded
      */
-    public static boolean hasCached(String url) {
+    public static boolean hasDownloadSucceed(String url) {
         return PumpFactory.getService(IDownloadManager.class).hasCached(url);
     }
 
     /**
-     * If url has downloaded successful,return the local file
+     * If url had download successful,return the local file
      *
      * @param url download url
      * @return the file has downloaded.
      */
-    public static File getFileFromCache(String url) {
+    public static File getFileIfSucceed(String url) {
         return PumpFactory.getService(IDownloadManager.class).getFileFromCache(url);
-    }
-
-    public static List<? extends DownloadInfo> getDownloadedList() {
-        return PumpFactory.getService(IDownloadManager.class).getDownloadedList();
     }
 
 }

@@ -1,18 +1,22 @@
 package com.huxq17.download.demo;
 
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.Pump;
 import com.huxq17.download.Utils.LogUtil;
@@ -20,10 +24,20 @@ import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.message.DownloadListener;
 import com.huxq17.download.message.DownloadListener;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
 public class DownloadListActivity extends AppCompatActivity {
+    public static void start(Context context, String tag) {
+        Intent intent = new Intent(context, DownloadListActivity.class);
+        intent.putExtra("tag", tag);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        context.startActivity(intent);
+    }
+
     DownloadListener downloadObserver = new DownloadListener() {
         @Override
         public void onProgress(int progress) {
@@ -40,23 +54,33 @@ public class DownloadListActivity extends AppCompatActivity {
         @Override
         public void onFailed() {
             super.onFailed();
-            LogUtil.e("onFailed code="+getDownloadInfo().getErrorCode());
+            LogUtil.e("onFailed code=" + getDownloadInfo().getErrorCode());
         }
     };
     private HashMap<DownloadViewHolder, DownloadInfo> map = new HashMap<>();
     private RecyclerView recyclerView;
     private DownloadAdapter downloadAdapter;
     private List<? extends DownloadInfo> downloadInfoList;
+    private String tag;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        tag = getIntent().getStringExtra("tag");
         setContentView(R.layout.activity_download_list);
         downloadObserver.enable();
         recyclerView = findViewById(R.id.rvDownloadList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        //获取全部下载任务
-        downloadInfoList = Pump.getAllDownloadList();
+        //Get all download list.
+        downloadInfoList = TextUtils.isEmpty(tag) ? Pump.getAllDownloadList() : Pump.getDownloadListByTag(tag);
+
+        //Sort download list if need.
+        Collections.sort(downloadInfoList, new Comparator<DownloadInfo>() {
+            @Override
+            public int compare(DownloadInfo o1, DownloadInfo o2) {
+                return (int) (o1.getCreateTime() - o2.getCreateTime());
+            }
+        });
         recyclerView.setLayoutManager(linearLayoutManager);
         downloadAdapter = new DownloadAdapter(map, downloadInfoList);
         recyclerView.setAdapter(downloadAdapter);
@@ -89,7 +113,7 @@ public class DownloadListActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull DownloadViewHolder viewHolder, int i) {
-            DownloadInfo downloadInfo = downloadInfoList.get(i);
+            DownloadDetailsInfo downloadInfo = (DownloadDetailsInfo) downloadInfoList.get(i);
             viewHolder.bindData(downloadInfo, downloadInfo.getStatus());
 
             downloadInfo.setExtraData(viewHolder);

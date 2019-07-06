@@ -18,6 +18,9 @@ import com.huxq17.download.task.DownloadTask;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -55,7 +58,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         }
         //create a new instance if not found.
         downloadInfo = new DownloadDetailsInfo(url, filePath, tag);
-        downloadInfo.createTime = System.currentTimeMillis();
+        downloadInfo.setCreateTime(System.currentTimeMillis());
         DBService.getInstance().updateInfo(downloadInfo);
         return downloadInfo;
     }
@@ -179,6 +182,18 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         List<DownloadDetailsInfo> list = getAllDownloadList();
         for (DownloadDetailsInfo info : list) {
             if (info.isFinished()) {
+                downloadList.add(info);
+            }
+        }
+        return downloadList;
+    }
+
+    @Override
+    public List<DownloadDetailsInfo> getDownloadListByTag(String tag) {
+        List<DownloadDetailsInfo> downloadList = new ArrayList<>();
+        List<DownloadDetailsInfo> list = getAllDownloadList();
+        for (DownloadDetailsInfo info : list) {
+            if (info.getTag().equals(tag)) {
                 downloadList.add(info);
             }
         }
