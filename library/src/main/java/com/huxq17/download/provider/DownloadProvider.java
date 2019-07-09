@@ -13,7 +13,6 @@ import android.support.annotation.Nullable;
 import com.buyi.huxq17.serviceagency.utils.ReflectUtil;
 import com.huxq17.download.OKHttpUtils;
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.manager.DownloadManager;
 import com.huxq17.download.manager.IDownloadManager;
@@ -31,7 +30,7 @@ public class DownloadProvider extends ContentProvider {
         PumpFactory.addService(IDownloadManager.class, downloadManager);
         MessageCenter messageCenter = ReflectUtil.newInstance(MessageCenter.class);
         messageCenter.start(context);
-        PumpFactory.addService(IMessageCenter.class,messageCenter);
+        PumpFactory.addService(IMessageCenter.class, messageCenter);
 //        PumpFactory.getService(IMessageCenter.class).start(context);
 //        PumpFactory.getService(IDownloadManager.class).start(context);
         OKHttpUtils.init(context);

@@ -33,8 +33,11 @@ public class Util {
         if (dirFile.isFile()) {
             return dirFile.delete();
         } else {
-            for (File file : dirFile.listFiles()) {
-                deleteDir(file);
+            File[] subFiles = dirFile.listFiles();
+            if (subFiles != null) {
+                for (File file : subFiles) {
+                    deleteDir(file);
+                }
             }
         }
         return dirFile.delete();
