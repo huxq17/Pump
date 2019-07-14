@@ -60,11 +60,13 @@ public class Util {
 
 
     public static String getCachePath(Context context) {
-        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            return context.getExternalCacheDir().getAbsolutePath();
+        File externalCacheDir = context.getExternalCacheDir();
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) && externalCacheDir != null) {
+            return externalCacheDir.getAbsolutePath();
         } else {
             return context.getCacheDir().getAbsolutePath();
         }
+
     }
 
     public static String getFileNameByUrl(String url) {
