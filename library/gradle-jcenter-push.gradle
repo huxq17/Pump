@@ -1,3 +1,5 @@
+import org.w3c.dom.Node
+
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
@@ -34,7 +36,7 @@ publishing {
             groupId GROUP
             version VERSION_NAME
             artifactId POM_ARTIFACT_ID
-            artifact "${project.buildDir}/outputs/aar/${project.name}-debug.aar"
+            artifact "${project.buildDir}/outputs/aar/${project.name}-release.aar"
             artifact androidJavadocsJar
             artifact androidSourcesJar
 
