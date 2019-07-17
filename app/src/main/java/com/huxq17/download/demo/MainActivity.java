@@ -53,8 +53,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 progressDialog.setProgress(0);
                 progressDialog.show();
-                File pipixiaFile = new File(getExternalCacheDir().getAbsolutePath(), "pipixia.apk");
-                Pump.newRequest(url5, pipixiaFile.getAbsolutePath())
+                Pump.newRequest(url5)
                         .listener(new DownloadListener(url5) {
 
                             @Override

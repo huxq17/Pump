@@ -1,7 +1,10 @@
 package com.huxq17.download.Utils;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Environment;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 
 import java.io.Closeable;
@@ -33,9 +36,8 @@ public class Util {
         if (dirFile.isFile()) {
             return dirFile.delete();
         } else {
-            File[] subFiles = dirFile.listFiles();
-            if (subFiles != null) {
-                for (File file : subFiles) {
+            if (dirFile.listFiles() != null) {
+                for (File file : dirFile.listFiles()) {
                     deleteDir(file);
                 }
             }
@@ -53,15 +55,31 @@ public class Util {
         return source.renameTo(dest);
     }
 
+    public static boolean hasStoragePermission(Context context) {
+        return ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+
     public static String getCachePathByUrl(Context context, String url) {
         String apkName = getFileNameByUrl(url);
         return getCachePath(context) + "/" + apkName;
     }
 
-
     public static String getCachePath(Context context) {
+        File externalCacheDir = context.getExternalCacheDir();
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            return context.getExternalCacheDir().getAbsolutePath();
+            if (externalCacheDir != null) {
+                return externalCacheDir.getAbsolutePath();
+            } else {
+                if (hasStoragePermission(context)) {
+                    File cacheFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + context.getPackageName() + "/cache/");
+                    if(!cacheFile.exists()){
+                        cacheFile.mkdirs();
+                    }
+                    return cacheFile.getAbsolutePath();
+                } else {
+                    return context.getCacheDir().getAbsolutePath();
+                }
+            }
         } else {
             return context.getCacheDir().getAbsolutePath();
         }
@@ -85,6 +103,7 @@ public class Util {
         }
         return fileName;
     }
+
 //    public static void mergeFiles(File[] sources, File dest) {
 //        if (sources == null || sources.length <= 0) {
 //            return;
