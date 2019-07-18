@@ -86,7 +86,7 @@ public class DownloadRequest {
             return this;
         }
 
-        public DownloadGenerator listener(DownloadListener listener) {
+        public DownloadGenerator listener(final DownloadListener listener) {
             listener.enable();
             return this;
         }

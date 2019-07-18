@@ -83,7 +83,6 @@ public class Util {
         } else {
             return context.getCacheDir().getAbsolutePath();
         }
-
     }
 
     public static String getFileNameByUrl(String url) {
@@ -179,7 +178,6 @@ public class Util {
     public static File getTempDir(String filePath) {
         File file = new File(filePath);
         File parentFile = file.getParentFile();
-        File tempDir = new File(parentFile, "." + file.getName() + ".temp" + File.separatorChar);
-        return tempDir;
+        return new File(parentFile, "." + file.getName() + ".temp" + File.separatorChar);
     }
 }

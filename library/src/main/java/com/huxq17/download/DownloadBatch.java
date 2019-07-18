@@ -11,9 +11,10 @@ public class DownloadBatch {
     public long startPos;
     public long endPos;
     public File tempFile;
+    public static final String DOWNLOAD_PART = "DOWNLOAD_PART-";
 
     public long calculateCompletedPartSize(File tempDir) {
-        tempFile = new File(tempDir, "DOWNLOAD_PART-" + threadId);
+        tempFile = new File(tempDir, DOWNLOAD_PART + threadId);
         if (tempFile.exists()) {
             downloadedSize = tempFile.length();
         } else {

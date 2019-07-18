@@ -93,6 +93,7 @@ public class DownloadListActivity extends AppCompatActivity {
         for (DownloadInfo downloadInfo : downloadInfoList) {
             Pump.stop(downloadInfo);
         }
+        Pump.shutdown();
     }
 
     public static class DownloadAdapter extends RecyclerView.Adapter<DownloadViewHolder> {

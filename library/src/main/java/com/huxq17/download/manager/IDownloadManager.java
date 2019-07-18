@@ -37,13 +37,11 @@ public interface IDownloadManager {
 
     List<DownloadDetailsInfo> getAllDownloadList();
 
-    boolean hasCached(String url);
+    boolean hasDownloadSucceed(String url);
 
-    File getFileFromCache(String url);
+    File getFileIfSucceed(String url);
 
     void setDownloadConfig(DownloadConfig downloadConfig);
-
-    void onServiceDestroy();
 
     void shutdown();
 

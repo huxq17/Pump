@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         //只要在第一次提交下载任务之前设置就可以。建议在application的onCreate里做
         DownloadConfig.newBuilder(getApplicationContext())
                 //Set the maximum number of tasks to run, default 3.
-                .setMaxRunningTaskNum(3)
+                .setMaxRunningTaskNum(2)
                 .build();
 //        Pump.subscribe(downloadObserver);
 //        try {
@@ -52,8 +52,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 progressDialog.setProgress(0);
                 progressDialog.show();
-                Pump.newRequest(url5)
-                        .listener(new DownloadListener(url5) {
+                Pump.newRequest(url2)
+                        .listener(new DownloadListener(url2) {
 
                             @Override
                             public void onProgress(int progress) {
@@ -90,19 +90,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
-                File file2 = new File(getExternalCacheDir().getAbsolutePath(), "download2.apk");
-                File file3 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
-                File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download4.apk");
+                File file3 = new File(getExternalCacheDir().getAbsolutePath(), "download2.apk");
+                File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
                 Pump.newRequest(url, file1.getAbsolutePath())
-                        .tag(TAG)
-                        .submit();
-                Pump.newRequest(url2, file2.getAbsolutePath())
                         .tag(TAG)
                         .submit();
                 Pump.newRequest(url4, file3.getAbsolutePath())
                         .tag(TAG)
                         .submit();
                 Pump.newRequest(url5, file4.getAbsolutePath())
+                        .tag(TAG)
                         .submit();
             }
         });

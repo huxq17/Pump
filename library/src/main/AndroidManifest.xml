@@ -7,6 +7,5 @@
             android:authorities="${applicationId}.huxq17.download-provider"
             android:exported="false"
             android:multiprocess="true" />
-        <service android:name=".service.DownloadService" />
     </application>
 </manifest>

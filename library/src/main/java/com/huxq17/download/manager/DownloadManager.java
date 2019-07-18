@@ -2,7 +2,6 @@ package com.huxq17.download.manager;
 
 
 import android.content.Context;
-import android.content.Intent;
 
 import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.DownloadDetailsInfo;
@@ -13,14 +12,11 @@ import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownLoadLifeCycleObserver;
-import com.huxq17.download.service.DownloadService;
+import com.huxq17.download.DownloadService;
 import com.huxq17.download.task.DownloadTask;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -33,16 +29,17 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     private ConcurrentHashMap<String, DownloadTask> taskMap;
     private ConcurrentHashMap<String, DownloadDetailsInfo> downloadMap;
     private Semaphore semaphore;
-    private boolean isServiceRunning = false;
 
     /**
      * 允许同时下载的任务数量
      */
     private int maxRunningTaskNumber = 3;
     private boolean isShutdown = true;
+    DownloadService downloadService;
 
     private DownloadManager() {
         taskMap = new ConcurrentHashMap<>();
+        downloadService = new DownloadService(this);
     }
 
     private DownloadDetailsInfo createDownloadInfo(String url, String filePath, String tag) {
@@ -98,9 +95,8 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         taskMap.put(downloadRequest.getUrl(), downloadTask);
         readyTaskQueue.offer(downloadTask);
         LogUtil.d("task " + downloadRequest.getDownloadInfo().getName() + " is ready" + ",remaining " + semaphore.availablePermits() + " permits.");
-        if (!isServiceRunning) {
-            context.startService(new Intent(context, DownloadService.class));
-            isServiceRunning = true;
+        if (!downloadService.isRunning()) {
+            downloadService.start();
         }
     }
 
@@ -140,7 +136,6 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         if (downloadTask != null) {
             downloadTask.stop();
         }
-        DBService.getInstance().close();
     }
 
     @Override
@@ -219,7 +214,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     }
 
     @Override
-    public boolean hasCached(String url) {
+    public boolean hasDownloadSucceed(String url) {
         DownloadDetailsInfo info = DBService.getInstance().getDownloadInfo(url);
         if (info != null && info.isFinished()) {
             return true;
@@ -228,8 +223,8 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     }
 
     @Override
-    public File getFileFromCache(String url) {
-        if (hasCached(url)) {
+    public File getFileIfSucceed(String url) {
+        if (hasDownloadSucceed(url)) {
             DownloadDetailsInfo info = DBService.getInstance().getDownloadInfo(url);
             return info.getDownloadFile();
         }
@@ -242,19 +237,17 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     }
 
     @Override
-    public void onServiceDestroy() {
-        isServiceRunning = false;
-    }
-
-    @Override
     public synchronized void shutdown() {
         isShutdown = true;
-        context.stopService(new Intent(context, DownloadService.class));
-        List<DownloadDetailsInfo> downloadList = DBService.getInstance().getDownloadList();
-        for (DownloadDetailsInfo transferInfo : downloadList) {
-            stop(transferInfo);
+        downloadService.cancel();
+        for (DownloadTask downloadTask : runningTaskQueue) {
+            if (downloadTask != null) {
+                downloadTask.stop();
+            }
         }
+        readyTaskQueue.clear();
         DownloadInfoSnapshot.release();
+        DBService.getInstance().close();
     }
 
     public boolean isShutdown() {
@@ -267,17 +260,16 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     }
 
     public DownloadTask acquireTask() throws InterruptedException {
-        DownloadTask task = readyTaskQueue.take();
         if (semaphore != null) {
             semaphore.acquire();
         }
+        DownloadTask task = readyTaskQueue.take();
         return task;
     }
 
     @Override
     public void start(Context context) {
         this.context = context;
-        isServiceRunning = false;
         readyTaskQueue = new LinkedBlockingQueue<>();
         runningTaskQueue = new LinkedBlockingQueue<>();
     }

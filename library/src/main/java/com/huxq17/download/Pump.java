@@ -162,7 +162,7 @@ public class Pump {
      * @return true If Pump has downloaded
      */
     public static boolean hasDownloadSucceed(String url) {
-        return PumpFactory.getService(IDownloadManager.class).hasCached(url);
+        return PumpFactory.getService(IDownloadManager.class).hasDownloadSucceed(url);
     }
 
     /**
@@ -172,7 +172,7 @@ public class Pump {
      * @return the file has downloaded.
      */
     public static File getFileIfSucceed(String url) {
-        return PumpFactory.getService(IDownloadManager.class).getFileFromCache(url);
+        return PumpFactory.getService(IDownloadManager.class).getFileIfSucceed(url);
     }
 
 }
