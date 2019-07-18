@@ -2,7 +2,6 @@ package com.huxq17.download.provider;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,34 +9,13 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.buyi.huxq17.serviceagency.utils.ReflectUtil;
-import com.huxq17.download.OKHttpUtils;
-import com.huxq17.download.PumpFactory;
 import com.huxq17.download.db.DBService;
-import com.huxq17.download.manager.DownloadManager;
-import com.huxq17.download.manager.IDownloadManager;
-import com.huxq17.download.message.IMessageCenter;
-import com.huxq17.download.message.MessageCenter;
 
 public class DownloadProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        Context context = getContext();
-        DBService.init(context);
-        DownloadManager downloadManager = ReflectUtil.newInstance(DownloadManager.class);
-        downloadManager.start(context);
-        PumpFactory.addService(IDownloadManager.class, downloadManager);
-        MessageCenter messageCenter = ReflectUtil.newInstance(MessageCenter.class);
-        messageCenter.start(context);
-        PumpFactory.addService(IMessageCenter.class, messageCenter);
-//        PumpFactory.getService(IMessageCenter.class).start(context);
-//        PumpFactory.getService(IDownloadManager.class).start(context);
-        OKHttpUtils.init(context);
-        //If DownloadService is running,pause it.
-//        Intent intent = new Intent(context, DownloadService.class);
-//        context.stopService(intent);
-        return true;
+        return Provider.init(getContext());
     }
 
     @Nullable

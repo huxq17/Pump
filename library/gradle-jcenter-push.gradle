@@ -1,4 +1,6 @@
-import org.w3c.dom.Node
+import groovy.util.Node
+
+
 
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
@@ -36,7 +38,7 @@ publishing {
             groupId GROUP
             version VERSION_NAME
             artifactId POM_ARTIFACT_ID
-            artifact "${project.buildDir}/outputs/aar/${project.name}-release.aar"
+            artifact "${project.buildDir}/outputs/aar/${project.name}-debug.aar"
             artifact androidJavadocsJar
             artifact androidSourcesJar
 
@@ -130,8 +132,7 @@ bintray {
                 passphrase = 'passphrase' //Optional. The passphrase for GPG signing'
             }
             mavenCentralSync {
-                sync = false
-                //Optional (true by default). Determines whether to sync the version to Maven Central.
+                sync = false//Optional (true by default). Determines whether to sync the version to Maven Central.
                 user = userToken //OSS user token
                 password = userPassword //OSS user password
                 close = '1'

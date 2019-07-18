@@ -2,7 +2,6 @@ package com.huxq17.download;
 
 import android.content.Context;
 
-import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.provider.Provider;
 
@@ -21,16 +20,9 @@ public class DownloadConfig {
         return maxRunningTaskNumber;
     }
 
-    /**
-     * Use {@link DownloadConfig#newBuilder(Context)} instead.
-     */
-    @Deprecated
-    public static Builder newBuilder() {
-        return new Builder();
-    }
 
     public static Builder newBuilder(Context context) {
-        context.getContentResolver().insert(Provider.getContentUri(context),null);
+        Provider.init(context);
         return new Builder();
     }
 

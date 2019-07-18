@@ -32,7 +32,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.e("tag", "Main onCreate");
         initProgressDialog();
         //只要在第一次提交下载任务之前设置就可以。建议在application的onCreate里做
         DownloadConfig.newBuilder(getApplicationContext())
