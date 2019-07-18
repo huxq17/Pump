@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.TaskManager;
 import com.huxq17.download.Utils.LogUtil;

@@ -10,9 +10,9 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.buyi.huxq17.serviceagency.utils.ReflectUtil;
 import com.huxq17.download.OKHttpUtils;
 import com.huxq17.download.PumpFactory;
+import com.huxq17.download.Utils.ReflectUtil;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.manager.DownloadManager;
 import com.huxq17.download.manager.IDownloadManager;

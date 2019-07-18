@@ -2,7 +2,6 @@ package com.huxq17.download;
 
 import android.content.Context;
 
-import com.buyi.huxq17.serviceagency.ServiceAgency;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.provider.Provider;
 
