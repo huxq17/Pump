@@ -22,7 +22,11 @@ public class Provider {
         }
         return CONTENT_URI;
     }
-    public static boolean init(Context context){
+
+    public static boolean init(Context context) {
+        if (PumpFactory.getServiceCount() != 0) {
+            return false;
+        }
         DBService.init(context);
         DownloadManager downloadManager = ReflectUtil.newInstance(DownloadManager.class);
         downloadManager.start(context);
@@ -36,7 +40,7 @@ public class Provider {
         //If DownloadService is running,pause it.
 //        Intent intent = new Intent(context, DownloadService.class);
 //        context.stopService(intent);
-        return true;
+        return PumpFactory.getServiceCount() != 0;
     }
 
     public static final class DownloadTable {

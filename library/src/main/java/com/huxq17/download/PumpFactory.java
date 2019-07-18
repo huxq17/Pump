@@ -13,4 +13,8 @@ public class PumpFactory {
     public static void addService(Class<?> serviceClass, Object service) {
         serviceMap.put(serviceClass, service);
     }
+
+    public static int getServiceCount() {
+        return serviceMap.size();
+    }
 }
