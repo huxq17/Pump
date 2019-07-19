@@ -20,15 +20,20 @@ public class DownloadService implements Task {
 
     @Override
     public void run() {
+        LogUtil.d("DownloadService start");
         while (isRunning) {
             try {
                 DownloadTask downloadTask = downloadManager.acquireTask();
+                if (downloadTask == null) {
+                    break;
+                }
                 LogUtil.d("start run task=" + downloadTask.getDownloadInfo().getName());
                 TaskManager.execute(downloadTask);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+        LogUtil.d("DownloadService stopped");
         isRunning = false;
     }
 
@@ -39,6 +44,5 @@ public class DownloadService implements Task {
     @Override
     public void cancel() {
         Thread.currentThread().interrupt();
-        isRunning = false;
     }
 }

@@ -33,20 +33,24 @@ public class DownloadTask implements Task {
     private DownloadRequest downloadRequest;
 
     public DownloadTask(DownloadRequest downloadRequest, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
-        this.downloadRequest = downloadRequest;
-        this.downloadInfo = downloadRequest.getDownloadInfo();
-        downloadInfo.setDownloadTask(this);
-        isDestroyed = false;
-        isDowngrade = false;
-        dbService = DBService.getInstance();
-        downloadInfo.setUsed(true);
-        speedMonitor = new SpeedMonitor(downloadInfo);
-        messageCenter = PumpFactory.getService(IMessageCenter.class);
-        this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
-        downloadInfo.setCompletedSize(0);
-        downloadInfo.setErrorCode(0);
-        downloadInfo.setStatus(DownloadInfo.Status.WAIT);
-        notifyProgressChanged(downloadInfo);
+        if (downloadRequest != null) {
+            this.downloadRequest = downloadRequest;
+            this.downloadInfo = downloadRequest.getDownloadInfo();
+            downloadInfo.setDownloadTask(this);
+            isDestroyed = false;
+            isDowngrade = false;
+            dbService = DBService.getInstance();
+            downloadInfo.setUsed(true);
+            speedMonitor = new SpeedMonitor(downloadInfo);
+            messageCenter = PumpFactory.getService(IMessageCenter.class);
+            this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
+            downloadInfo.setCompletedSize(0);
+            downloadInfo.setErrorCode(0);
+            downloadInfo.setStatus(DownloadInfo.Status.WAIT);
+            notifyProgressChanged(downloadInfo);
+        } else {
+            downloadInfo = null;
+        }
     }
 
     private long start, end;

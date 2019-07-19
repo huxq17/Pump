@@ -94,12 +94,15 @@ public class MainActivity extends AppCompatActivity {
                 File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
                 Pump.newRequest(url, file1.getAbsolutePath())
                         .tag(TAG)
+                        .forceReDownload(true)
                         .submit();
                 Pump.newRequest(url4, file3.getAbsolutePath())
                         .tag(TAG)
+                        .forceReDownload(true)
                         .submit();
                 Pump.newRequest(url5, file4.getAbsolutePath())
                         .tag(TAG)
+                        .forceReDownload(true)
                         .submit();
             }
         });
@@ -108,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                 setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        boolean groupByTag = System.currentTimeMillis() % 2 == 0;
+                        boolean groupByTag = false;
                         DownloadListActivity.start(v.getContext(), groupByTag ? TAG : "");
                     }
                 });
@@ -117,13 +120,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        //Enable this Observer.
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        Pump.unSubscribe(url5);
+        Pump.unSubscribe(url2);
     }
 
     private void initProgressDialog() {

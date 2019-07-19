@@ -14,6 +14,7 @@ import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownLoadLifeCycleObserver;
 import com.huxq17.download.DownloadService;
 import com.huxq17.download.task.DownloadTask;
+import com.huxq17.download.task.ShutdownTask;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObserver {
     private Context context;
@@ -239,13 +241,19 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     @Override
     public synchronized void shutdown() {
         isShutdown = true;
-        downloadService.cancel();
         for (DownloadTask downloadTask : runningTaskQueue) {
             if (downloadTask != null) {
                 downloadTask.stop();
             }
         }
+        for (DownloadTask downloadTask : readyTaskQueue) {
+            onDownloadEnd(downloadTask);
+        }
         readyTaskQueue.clear();
+        downloadService.cancel();
+        if (downloadService.isRunning()) {
+            readyTaskQueue.offer(new ShutdownTask());
+        }
         DownloadInfoSnapshot.release();
         DBService.getInstance().close();
     }
@@ -264,6 +272,10 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
             semaphore.acquire();
         }
         DownloadTask task = readyTaskQueue.take();
+        if (task instanceof ShutdownTask) {
+            semaphore.release();
+            return null;
+        }
         return task;
     }
 
@@ -283,8 +295,9 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     public void onDownloadEnd(DownloadTask downloadTask) {
         DownloadDetailsInfo downloadInfo = downloadTask.getDownloadInfo();
         LogUtil.d("Task " + downloadInfo.getName() + " is stopped.");
-        runningTaskQueue.remove(downloadTask);
         taskMap.remove(downloadInfo.getUrl());
-        semaphore.release();
+        if (runningTaskQueue.remove(downloadTask)) {
+            semaphore.release();
+        }
     }
 }
