@@ -162,6 +162,8 @@ public class DownloadTask implements Task {
     public void cancel() {
         if (thread != null) {
             thread.interrupt();
+        }else{
+            downLoadLifeCycleObserver.onDownloadEnd(this);
         }
         for (Task task : downloadBlockTasks) {
             task.cancel();

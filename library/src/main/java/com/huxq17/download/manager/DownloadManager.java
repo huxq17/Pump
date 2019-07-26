@@ -37,7 +37,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
      */
     private int maxRunningTaskNumber = 3;
     private boolean isShutdown = true;
-    DownloadService downloadService;
+    private DownloadService downloadService;
 
     private DownloadManager() {
         taskMap = new ConcurrentHashMap<>();
@@ -242,12 +242,12 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     public synchronized void shutdown() {
         isShutdown = true;
         for (DownloadTask downloadTask : runningTaskQueue) {
-            if (downloadTask != null) {
+            if (downloadTask != null)
                 downloadTask.stop();
-            }
         }
         for (DownloadTask downloadTask : readyTaskQueue) {
-            onDownloadEnd(downloadTask);
+            if (downloadTask != null)
+                downloadTask.stop();
         }
         readyTaskQueue.clear();
         downloadService.cancel();

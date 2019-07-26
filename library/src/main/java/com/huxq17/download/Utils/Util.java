@@ -36,8 +36,9 @@ public class Util {
         if (dirFile.isFile()) {
             return dirFile.delete();
         } else {
-            if (dirFile.listFiles() != null) {
-                for (File file : dirFile.listFiles()) {
+            File[] children = dirFile.listFiles();
+            if (children != null) {
+                for (File file : children) {
                     deleteDir(file);
                 }
             }
@@ -72,7 +73,7 @@ public class Util {
             } else {
                 if (hasStoragePermission(context)) {
                     File cacheFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + context.getPackageName() + "/cache/");
-                    if(!cacheFile.exists()){
+                    if (!cacheFile.exists()) {
                         cacheFile.mkdirs();
                     }
                     return cacheFile.getAbsolutePath();
