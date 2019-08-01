@@ -1,12 +1,15 @@
 package com.huxq17.download;
 
 
+import android.text.TextUtils;
+
 import java.lang.ref.WeakReference;
 
 public class DownloadInfo {
     private WeakReference wfExtraData;
     protected String url;
     protected String filePath;
+    protected String id;
 
     protected long completedSize;
     protected long contentLength;
@@ -32,6 +35,14 @@ public class DownloadInfo {
 
     public String getTag() {
         return tag == null ? "" : tag;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public long getCreateTime() {

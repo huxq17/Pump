@@ -8,6 +8,7 @@ import android.os.Message;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfoSnapshot;
 import com.huxq17.download.PumpFactory;
+import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.manager.IDownloadManager;
 
 import java.util.Iterator;

@@ -14,13 +14,14 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
     private DownloadTask downloadTask;
 
     public DownloadDetailsInfo(String url, String filePath) {
-        this(url, filePath, null);
+        this(url, filePath, null, url);
     }
 
-    public DownloadDetailsInfo(String url, String filePath, String tag) {
+    public DownloadDetailsInfo(String url, String filePath, String tag, String id) {
         this.url = url;
         this.filePath = filePath;
         this.tag = tag;
+        this.id = id;
         downloadFile = new File(filePath);
     }
 
@@ -146,20 +147,18 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
         return downloadFile.getName();
     }
 
-//    @Override
-//    public String toString() {
-//        return "DownloadDetailsInfo{" +
-//                ", tempDir=" + tempDir +
-//                ", downloadPartFiles=" + downloadPartFiles +
-//                ", downloadFile=" + downloadFile +
-//                ", isUsed=" + isUsed +
-//                ", url='" + url + '\'' +
-//                ", filePath='" + filePath + '\'' +
-//                ", completedSize=" + completedSize +
-//                ", contentLength=" + contentLength +
-//                ", finished=" + finished +
-//                ", status=" + status +
-//                ", speed='" + speed + '\'' +
-//                '}';
-//    }
+    @Override
+    public String toString() {
+        return "DownloadDetailsInfo{" +
+                "url='" + url + '\'' +
+                ", filePath='" + filePath + '\'' +
+                ", id='" + id + '\'' +
+                ", completedSize=" + completedSize +
+                ", contentLength=" + contentLength +
+                ", finished=" + finished +
+                ", status=" + status +
+                ", errorCode=" + errorCode +
+                ", tag='" + tag + '\'' +
+                '}';
+    }
 }

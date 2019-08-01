@@ -63,7 +63,7 @@ public class CheckCacheAction implements Action {
                 long contentLength = getContentLength(headers);
                 if (contentLength > 0) {
                     detailsInfo.setContentLength(contentLength);
-                    downloadRequest.setCacheBean(new Provider.CacheBean(downloadRequest.getUrl(), lastModified, eTag));
+                    downloadRequest.setCacheBean(new Provider.CacheBean(downloadRequest.getId(), lastModified, eTag));
                 } else {
                     detailsInfo.setErrorCode(ErrorCode.CONTENT_LENGTH_NOT_FOUND);
                     result = false;

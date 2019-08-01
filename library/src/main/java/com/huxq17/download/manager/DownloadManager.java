@@ -8,35 +8,27 @@ import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.DownloadInfoSnapshot;
 import com.huxq17.download.DownloadRequest;
+import com.huxq17.download.DownloadService;
 import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownLoadLifeCycleObserver;
-import com.huxq17.download.DownloadService;
 import com.huxq17.download.task.DownloadTask;
-import com.huxq17.download.task.ShutdownTask;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObserver {
     private Context context;
-    private LinkedBlockingQueue<DownloadTask> readyTaskQueue;
-    private LinkedBlockingQueue<DownloadTask> runningTaskQueue;
     private ConcurrentHashMap<String, DownloadTask> taskMap;
-    private ConcurrentHashMap<String, DownloadDetailsInfo> downloadMap;
-    private Semaphore semaphore;
+    private ConcurrentHashMap<String, DownloadDetailsInfo> downloadInfoMap;
 
     /**
      * 允许同时下载的任务数量
      */
     private int maxRunningTaskNumber = 3;
-    private boolean isShutdown = true;
     private DownloadService downloadService;
 
     private DownloadManager() {
@@ -44,86 +36,76 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         downloadService = new DownloadService(this);
     }
 
-    private DownloadDetailsInfo createDownloadInfo(String url, String filePath, String tag) {
-        DownloadDetailsInfo downloadInfo = null;
-        if (downloadMap != null) {
-            downloadInfo = downloadMap.get(url);
-        }
-        if (downloadInfo == null) {
-            downloadInfo = DBService.getInstance().getDownloadInfo(url);
-        }
-        if (downloadInfo != null) {
-            return downloadInfo;
-        }
-        //create a new instance if not found.
-        downloadInfo = new DownloadDetailsInfo(url, filePath, tag);
-        downloadInfo.setCreateTime(System.currentTimeMillis());
-        DBService.getInstance().updateInfo(downloadInfo);
-        return downloadInfo;
+    @Override
+    public void start(Context context) {
+        this.context = context;
     }
 
-    public synchronized void submit(DownloadRequest downloadRequest) {
-        String url = downloadRequest.getUrl();
-        String filePath = downloadRequest.getFilePath();
-        String tag = downloadRequest.getTag();
-        DownloadDetailsInfo downloadInfo = createDownloadInfo(url, filePath, tag);
-        if (downloadMap != null) {
-            downloadMap.put(url, downloadInfo);
-        }
-        downloadRequest.setDownloadInfo(downloadInfo);
-        if (taskMap.get(url) != null) {
-            //The task is running,we need do nothing.
-            LogUtil.e("task " + downloadInfo.getName() + " is running,we need do nothing.");
-            return;
-        }
-//        if (downloadInfo.isFinished()) {
-//            downloadInfo.setCompletedSize(0);
-//        }
-//            downloadInfo.calculateDownloadProgress();
-//            downloadInfo.setTag(null);
-        downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
-//            if (downloadInfo.getDownloadFile().exists()) {
-//                downloadInfo.getDownloadFile().delete();
-//            }
-        submitTask(downloadRequest);
-    }
-
-    private void submitTask(DownloadRequest downloadRequest) {
-        isShutdown = false;
-        if (semaphore == null) {
-            semaphore = new Semaphore(maxRunningTaskNumber);
-        }
-        DownloadTask downloadTask = new DownloadTask(downloadRequest, this);
-        taskMap.put(downloadRequest.getUrl(), downloadTask);
-        readyTaskQueue.offer(downloadTask);
-        LogUtil.d("task " + downloadRequest.getDownloadInfo().getName() + " is ready" + ",remaining " + semaphore.availablePermits() + " permits.");
+    private void startDownloadService() {
         if (!downloadService.isRunning()) {
             downloadService.start();
         }
     }
 
-    public synchronized void delete(DownloadInfo downloadInfo) {
+    private DownloadDetailsInfo createDownloadInfo(String id, String url, String filePath, String tag) {
+        DownloadDetailsInfo downloadInfo = null;
+        if (downloadInfoMap != null) {
+            downloadInfo = downloadInfoMap.get(id);
+        }
+        if (downloadInfo == null) {
+            downloadInfo = DBService.getInstance().getDownloadInfo(id);
+        }
+        if (downloadInfo != null) {
+            return downloadInfo;
+        }
+        //create a new instance if not found.
+        downloadInfo = new DownloadDetailsInfo(url, filePath, tag, id);
+        downloadInfo.setCreateTime(System.currentTimeMillis());
+        DBService.getInstance().updateInfo(downloadInfo);
+        return downloadInfo;
+    }
+
+    public void submit(DownloadRequest downloadRequest) {
+        startDownloadService();
+        String id = downloadRequest.getId();
+        String filePath = downloadRequest.getFilePath();
+        File downloadFile = new File(filePath);
+        if (taskMap.get(id) != null) {
+            //The task is running,we need do nothing.
+            LogUtil.e("task " + downloadFile.getName() + " is running,we need do nothing.");
+            return;
+        }
+        DownloadDetailsInfo downloadInfo = null;
+        if (downloadInfoMap != null) {
+            downloadInfo = downloadInfoMap.get(id);
+        }
+        if (downloadInfo != null) {
+            downloadRequest.setDownloadInfo(downloadInfo);
+        }
+        downloadService.addDownloadRequest(downloadRequest);
+    }
+
+    public void delete(DownloadInfo downloadInfo) {
         if (downloadInfo == null) return;
-        if (downloadMap != null) {
-            downloadMap.remove(downloadInfo.getUrl());
+        if (downloadInfoMap != null) {
+            downloadInfoMap.remove(downloadInfo.getId());
         }
         synchronized (downloadInfo) {
             DownloadDetailsInfo transferInfo = (DownloadDetailsInfo) downloadInfo;
             DownloadTask downloadTask = transferInfo.getDownloadTask();
             if (downloadTask == null) {
-                downloadTask = taskMap.get(downloadInfo.getUrl());
+                downloadTask = taskMap.get(downloadInfo.getId());
             }
             if (downloadTask != null) {
-                readyTaskQueue.remove(downloadTask);
                 downloadTask.delete();
             }
             transferInfo.getDownloadFile().delete();
             Util.deleteDir(transferInfo.getTempDir());
-            DBService.getInstance().deleteInfo(downloadInfo.getUrl(), downloadInfo.getFilePath());
+            DBService.getInstance().deleteInfo(downloadInfo.getId());
         }
     }
 
-    public synchronized void delete(String tag) {
+    public void delete(String tag) {
         if (tag == null) return;
         List<DownloadDetailsInfo> tasks = DBService.getInstance().getDownloadListByTag(tag);
         for (DownloadDetailsInfo info : tasks) {
@@ -142,7 +124,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public void pause(DownloadInfo downloadInfo) {
-        for (DownloadTask task : runningTaskQueue) {
+        for (DownloadTask task : taskMap.values()) {
             if (task.getDownloadInfo() == downloadInfo) {
                 task.pause();
             }
@@ -199,20 +181,20 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public List<DownloadDetailsInfo> getAllDownloadList() {
-        if (downloadMap == null) {
-            downloadMap = new ConcurrentHashMap<>();
+        if (downloadInfoMap == null) {
+            downloadInfoMap = new ConcurrentHashMap<>();
             List<DownloadDetailsInfo> list = DBService.getInstance().getDownloadList();
             for (DownloadDetailsInfo transferInfo : list) {
-                String url = transferInfo.getUrl();
-                DownloadTask downloadTask = taskMap.get(url);
+                String id = transferInfo.getId();
+                DownloadTask downloadTask = taskMap.get(id);
                 if (downloadTask != null) {
-                    downloadMap.put(url, downloadTask.getDownloadInfo());
+                    downloadInfoMap.put(id, downloadTask.getDownloadInfo());
                 } else {
-                    downloadMap.put(url, transferInfo);
+                    downloadInfoMap.put(id, transferInfo);
                 }
             }
         }
-        return new ArrayList<>(downloadMap.values());
+        return new ArrayList<>(downloadInfoMap.values());
     }
 
     @Override
@@ -236,30 +218,22 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     @Override
     public void setDownloadConfig(DownloadConfig downloadConfig) {
         maxRunningTaskNumber = downloadConfig.getMaxRunningTaskNumber();
+        downloadService.setMaxRunningTaskNumber(maxRunningTaskNumber);
     }
 
     @Override
     public synchronized void shutdown() {
-        isShutdown = true;
-        for (DownloadTask downloadTask : runningTaskQueue) {
-            if (downloadTask != null)
-                downloadTask.stop();
-        }
-        for (DownloadTask downloadTask : readyTaskQueue) {
-            if (downloadTask != null)
-                downloadTask.stop();
-        }
-        readyTaskQueue.clear();
         downloadService.cancel();
-        if (downloadService.isRunning()) {
-            readyTaskQueue.offer(new ShutdownTask());
+        for (DownloadTask downloadTask : taskMap.values()) {
+            if (downloadTask != null)
+                downloadTask.stop();
         }
         DownloadInfoSnapshot.release();
         DBService.getInstance().close();
     }
 
     public boolean isShutdown() {
-        return isShutdown;
+        return !downloadService.isRunning();
     }
 
     @Override
@@ -267,37 +241,18 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         return context;
     }
 
-    public DownloadTask acquireTask() throws InterruptedException {
-        if (semaphore != null) {
-            semaphore.acquire();
-        }
-        DownloadTask task = readyTaskQueue.take();
-        if (task instanceof ShutdownTask) {
-            semaphore.release();
-            return null;
-        }
-        return task;
-    }
-
-    @Override
-    public void start(Context context) {
-        this.context = context;
-        readyTaskQueue = new LinkedBlockingQueue<>();
-        runningTaskQueue = new LinkedBlockingQueue<>();
-    }
-
     @Override
     public void onDownloadStart(DownloadTask downloadTask) {
-        runningTaskQueue.add(downloadTask);
+        DownloadInfo downloadInfo = downloadTask.getDownloadInfo();
+        if (downloadInfoMap != null && downloadInfo != null) {
+            downloadInfoMap.put(downloadTask.getId(), downloadTask.getDownloadInfo());
+        }
+        taskMap.put(downloadTask.getId(), downloadTask);
     }
 
     @Override
     public void onDownloadEnd(DownloadTask downloadTask) {
-        DownloadDetailsInfo downloadInfo = downloadTask.getDownloadInfo();
-        LogUtil.d("Task " + downloadInfo.getName() + " is stopped.");
-        taskMap.remove(downloadInfo.getUrl());
-        if (runningTaskQueue.remove(downloadTask)) {
-            semaphore.release();
-        }
+        LogUtil.d("Task " + downloadTask.getName() + " is stopped.");
+        taskMap.remove(downloadTask.getId());
     }
 }

@@ -45,6 +45,7 @@ public class Provider {
 
     public static final class DownloadTable {
         public static final String TABLE_NAME = "download_info";
+        public static final String ID = "id";
         public static final String URL = "url";
         public static final String PATH = "path";
         public static final String THREAD_NUM = "thread_num";

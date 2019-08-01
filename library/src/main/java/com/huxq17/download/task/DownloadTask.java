@@ -21,7 +21,7 @@ public class DownloadTask implements Task {
     private boolean isDestroyed;
     private boolean isNeedDelete;
     private IMessageCenter messageCenter;
-    private DownLoadLifeCycleObserver downLoadLifeCycleObserver;
+    protected DownLoadLifeCycleObserver downLoadLifeCycleObserver;
     private SpeedMonitor speedMonitor;
     private Thread thread;
     private List<Task> downloadBlockTasks = new ArrayList<>();
@@ -31,8 +31,10 @@ public class DownloadTask implements Task {
      */
     private boolean isDowngrade;
     private DownloadRequest downloadRequest;
+    private long startTime;
 
     public DownloadTask(DownloadRequest downloadRequest, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
+        this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
         if (downloadRequest != null) {
             this.downloadRequest = downloadRequest;
             this.downloadInfo = downloadRequest.getDownloadInfo();
@@ -43,8 +45,6 @@ public class DownloadTask implements Task {
             downloadInfo.setUsed(true);
             speedMonitor = new SpeedMonitor(downloadInfo);
             messageCenter = PumpFactory.getService(IMessageCenter.class);
-            this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
-            downloadInfo.setCompletedSize(0);
             downloadInfo.setErrorCode(0);
             downloadInfo.setStatus(DownloadInfo.Status.WAIT);
             notifyProgressChanged(downloadInfo);
@@ -53,10 +53,20 @@ public class DownloadTask implements Task {
         }
     }
 
-    private long start, end;
-
     public DownloadRequest getRequest() {
         return downloadRequest;
+    }
+
+    public String getUrl() {
+        return downloadRequest.getUrl();
+    }
+
+    public String getId() {
+        return downloadRequest.getId();
+    }
+
+    public String getName() {
+        return downloadRequest.getDownloadInfo().getName();
     }
 
     @Override
@@ -68,10 +78,9 @@ public class DownloadTask implements Task {
         }
         downLoadLifeCycleObserver.onDownloadStart(this);
         if (!shouldStop()) {
-            start = System.currentTimeMillis();
+            startTime = System.currentTimeMillis();
             downloadWithDownloadChain();
-            end = System.currentTimeMillis();
-            LogUtil.d("download spend=" + (end - start));
+            LogUtil.d("download " + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime));
         }
         thread = null;
         downLoadLifeCycleObserver.onDownloadEnd(this);
@@ -162,7 +171,7 @@ public class DownloadTask implements Task {
     public void cancel() {
         if (thread != null) {
             thread.interrupt();
-        }else{
+        } else {
             downLoadLifeCycleObserver.onDownloadEnd(this);
         }
         for (Task task : downloadBlockTasks) {

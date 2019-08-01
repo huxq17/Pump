@@ -8,7 +8,7 @@ public class LogUtil {
 
     public static void e(String content) {
         if (mEnableLog) {
-            Log.e(TAG, "huTest "+content);
+            Log.e(TAG, "huTest " + content);
         }
     }
 
@@ -20,7 +20,7 @@ public class LogUtil {
 
     public static void d(String content) {
         if (mEnableLog) {
-            Log.d(TAG, "huTest "+content);
+            Log.d(TAG, "huTest " + content);
         }
     }
 

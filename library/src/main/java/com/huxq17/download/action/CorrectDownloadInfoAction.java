@@ -8,6 +8,9 @@ import com.huxq17.download.db.DBService;
 import com.huxq17.download.task.DownloadTask;
 
 import java.io.File;
+import java.io.FilenameFilter;
+
+import static com.huxq17.download.DownloadBatch.DOWNLOAD_PART;
 
 public class CorrectDownloadInfoAction implements Action {
     @Override
@@ -28,12 +31,17 @@ public class CorrectDownloadInfoAction implements Action {
         downloadInfo.setContentLength(fileLength);
         downloadTask.updateInfo(downloadInfo);
 //        downloadInfo.threadNum = tempDir.exists() ? downloadInfo.threadNum : oldThreadNum;
-        String[] childList = tempDir.list();
+        String[] childList = tempDir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.startsWith(DOWNLOAD_PART);
+            }
+        });
         if (childList != null && childList.length != request.getThreadNum()) {
             Util.deleteDir(tempDir);
         }
         if (!tempDir.exists()) {
-            tempDir.mkdirs();
+           return tempDir.mkdirs();
         }
         return true;
     }

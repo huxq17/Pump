@@ -26,9 +26,6 @@ public interface IDownloadManager {
 
     void resume(DownloadInfo downloadInfo);
 
-    DownloadTask acquireTask() throws InterruptedException;
-
-
     List<DownloadDetailsInfo> getDownloadingList();
 
     List<DownloadDetailsInfo> getDownloadedList();

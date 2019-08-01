@@ -1,11 +1,14 @@
 package com.huxq17.download;
 
 
+import android.text.TextUtils;
+
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.DownloadListener;
 import com.huxq17.download.provider.Provider;
 
 public class DownloadRequest {
+    private String id;
     private String url;
     private String filePath;
     private int threadNum = 3;
@@ -37,9 +40,17 @@ public class DownloadRequest {
         return downloadInfo;
     }
 
-    private DownloadRequest(String url, String filePath) {
+    DownloadRequest(String url, String filePath) {
         this.url = url;
         this.filePath = filePath;
+    }
+
+    public String getId() {
+        return TextUtils.isEmpty(id) ? url : id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public int getRetryCount() {
@@ -81,6 +92,11 @@ public class DownloadRequest {
             downloadRequest = new DownloadRequest(url, filePath);
         }
 
+        public DownloadGenerator setId(String id) {
+            downloadRequest.id = id;
+            return this;
+        }
+
         public DownloadGenerator threadNum(int threadNum) {
             downloadRequest.threadNum = threadNum;
             return this;
@@ -93,6 +109,7 @@ public class DownloadRequest {
 
         /**
          * Tag download task, can use {@link Pump#getDownloadListByTag(String)} to get download list filter by tag,and use {@link DownloadInfo#getTag()} to get tag.
+         *
          * @param tag tag
          * @return
          */

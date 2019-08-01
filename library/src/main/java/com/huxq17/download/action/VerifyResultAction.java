@@ -22,7 +22,7 @@ public class VerifyResultAction implements Action {
                 Util.deleteDir(downloadInfo.getTempDir());
                 downloadInfo.getDownloadFile().delete();
                 downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
-                DBService.getInstance().deleteInfo(downloadInfo.getUrl(), downloadInfo.getFilePath());
+                DBService.getInstance().deleteInfo(downloadInfo.getId());
             } else {
                 if (status == DownloadInfo.Status.PAUSING) {
                     downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
