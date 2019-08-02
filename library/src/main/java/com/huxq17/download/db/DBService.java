@@ -127,7 +127,7 @@ public class DBService {
             info.setCreateTime(cursor.getLong(5));
             info.setId(cursor.getString(7));
             info.calculateDownloadProgress();
-            LogUtil.d("table " + info);
+//            LogUtil.d("table " + info);
             tasks.add(info);
         }
         cursor.close();
