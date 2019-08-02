@@ -31,9 +31,11 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
     private Lock lock = new ReentrantLock();
     private Condition notEmpty = lock.newCondition();
     private Condition notFull = lock.newCondition();
+    private DownloadTaskExecutor downloadTaskExecutor;
 
     public DownloadService(DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
+        downloadTaskExecutor =  new DownloadTaskExecutor(this);
     }
 
     public void start() {
@@ -42,13 +44,12 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
         runningTaskQueue = new LinkedList<>();
         requestQueue = new LinkedBlockingQueue<>();
         TaskManager.execute(this);
-        new DownloadTaskExecutor(this);
+        downloadTaskExecutor.start();
     }
 
     public void addDownloadRequest(DownloadRequest request) {
         if (isRunning.get()) {
             requestQueue.add(request);
-            signalNotFull();
         }
     }
 
@@ -113,8 +114,13 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
     @Override
     public void cancel() {
         isCanceled.set(true);
-        signalNotEmpty();
         addDownloadRequest(new ShutdownRequest());
+        cancelDownloadTaskExecutor();
+    }
+
+    private void cancelDownloadTaskExecutor() {
+        signalNotFull();
+        signalNotEmpty();
     }
 
     private void signalNotFull() {
@@ -125,7 +131,7 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
 
     private void lockIfTaskFull() {
         lock.lock();
-        while (runningNum.get() >= maxRunningTaskNumber) {
+        while (runningNum.get() >= maxRunningTaskNumber && isRunning()) {
             try {
                 notFull.await();
             } catch (InterruptedException e) {

@@ -47,6 +47,6 @@ public class DownloadProvider extends ContentProvider {
     }
 
     private SQLiteDatabase getDatabase() {
-        return DBService.getInstance().getReadableDatabase();
+        return DBService.getInstance().getWritableDatabase();
     }
 }

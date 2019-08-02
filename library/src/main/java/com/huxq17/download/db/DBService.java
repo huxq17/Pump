@@ -30,7 +30,7 @@ public class DBService {
         return instance;
     }
 
-    public SQLiteDatabase getReadableDatabase() {
+    public SQLiteDatabase getWritableDatabase() {
         return helper.getWritableDatabase();
     }
 
@@ -38,7 +38,7 @@ public class DBService {
         if (TextUtils.isEmpty(cacheBean.lastModified) && TextUtils.isEmpty(cacheBean.eTag)) {
             return;
         }
-        SQLiteDatabase db = helper.getWritableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(Provider.CacheTable.URL, cacheBean.url);
         contentValues.put(Provider.CacheTable.LAST_MODIFIED, cacheBean.lastModified);
@@ -62,7 +62,7 @@ public class DBService {
     }
 
     public synchronized void updateInfo(DownloadDetailsInfo downloadInfo) {
-        SQLiteDatabase db = helper.getWritableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         String[] args = {downloadInfo.getId()};
         Cursor cursor = db.query(Provider.DownloadTable.TABLE_NAME, new String[]{Provider.DownloadTable.URL}, Provider.DownloadTable.ID + "=?", args, null, null, null, null);
         if (cursor.getCount() == 1) {
@@ -151,7 +151,7 @@ public class DBService {
     }
 
     public synchronized void deleteInfo(String id) {
-        SQLiteDatabase db = helper.getWritableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         db.delete(Provider.DownloadTable.TABLE_NAME, Provider.DownloadTable.ID + "=?", new String[]{id});
         db.delete(Provider.CacheTable.TABLE_NAME, Provider.CacheTable.URL + "=?", new String[]{id});
     }

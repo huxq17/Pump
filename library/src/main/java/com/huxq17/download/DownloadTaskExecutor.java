@@ -4,8 +4,10 @@ import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.task.DownloadTask;
 import com.huxq17.download.task.Task;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class DownloadTaskExecutor implements Task {
-    private boolean isRunning = true;
+    private AtomicBoolean isRunning = new AtomicBoolean();
     private DownloadService downloadService;
 
     public DownloadTaskExecutor(DownloadService downloadService) {
@@ -13,23 +15,29 @@ public class DownloadTaskExecutor implements Task {
         TaskManager.execute(this);
     }
 
+    public void start() {
+        if (!isRunning.get()) {
+            isRunning.set(true);
+            TaskManager.execute(this);
+        }
+    }
+
     @Override
     public void run() {
-        while (isRunning) {
+        while (isRunning.get()) {
             DownloadTask downloadTask = downloadService.getDownloadTask();
             if (downloadTask == null) {
-                isRunning = false;
+                isRunning .set(false);
                 break;
             }
             LogUtil.d("start run " + downloadTask.getName());
             TaskManager.execute(downloadTask);
         }
-        LogUtil.d("DownloadQueueTask end.");
+        LogUtil.d("DownloadTaskExecutor end.");
     }
 
     @Override
     public void cancel() {
-        Thread.currentThread().interrupt();
     }
 
 }
