@@ -160,6 +160,7 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
     @Override
     public void onDownloadEnd(DownloadTask downloadTask) {
         runningTaskQueue.remove(downloadTask);
+        waitingTaskQueue.remove(downloadTask);
         downLoadLifeCycleObserver.onDownloadEnd(downloadTask);
         signalConsumer();
     }
