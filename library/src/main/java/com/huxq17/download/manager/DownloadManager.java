@@ -25,10 +25,6 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     private ConcurrentHashMap<String, DownloadTask> taskMap;
     private ConcurrentHashMap<String, DownloadDetailsInfo> downloadInfoMap;
 
-    /**
-     * 允许同时下载的任务数量
-     */
-    private int maxRunningTaskNumber = 3;
     private DownloadService downloadService;
 
     private DownloadManager() {
@@ -45,24 +41,6 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         if (!downloadService.isRunning()) {
             downloadService.start();
         }
-    }
-
-    private DownloadDetailsInfo createDownloadInfo(String id, String url, String filePath, String tag) {
-        DownloadDetailsInfo downloadInfo = null;
-        if (downloadInfoMap != null) {
-            downloadInfo = downloadInfoMap.get(id);
-        }
-        if (downloadInfo == null) {
-            downloadInfo = DBService.getInstance().getDownloadInfo(id);
-        }
-        if (downloadInfo != null) {
-            return downloadInfo;
-        }
-        //create a new instance if not found.
-        downloadInfo = new DownloadDetailsInfo(url, filePath, tag, id);
-        downloadInfo.setCreateTime(System.currentTimeMillis());
-        DBService.getInstance().updateInfo(downloadInfo);
-        return downloadInfo;
     }
 
     public void submit(DownloadRequest downloadRequest) {
@@ -82,7 +60,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         if (downloadInfo != null) {
             downloadRequest.setDownloadInfo(downloadInfo);
         }
-        downloadService.addDownloadRequest(downloadRequest);
+        downloadService.enqueueRequest(downloadRequest);
     }
 
     public void delete(DownloadInfo downloadInfo) {
@@ -132,7 +110,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     }
 
     @Override
-    public synchronized void resume(DownloadInfo downloadInfo) {
+    public void resume(DownloadInfo downloadInfo) {
         DownloadDetailsInfo transferInfo = (DownloadDetailsInfo) downloadInfo;
         DownloadTask downloadTask = transferInfo.getDownloadTask();
         if (downloadTask != null && downloadTask.getRequest() != null) {
@@ -217,12 +195,11 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public void setDownloadConfig(DownloadConfig downloadConfig) {
-        maxRunningTaskNumber = downloadConfig.getMaxRunningTaskNumber();
-        downloadService.setMaxRunningTaskNumber(maxRunningTaskNumber);
+        downloadService.setMaxRunningTaskNumber(downloadConfig.getMaxRunningTaskNumber());
     }
 
     @Override
-    public synchronized void shutdown() {
+    public void shutdown() {
         downloadService.cancel();
         for (DownloadTask downloadTask : taskMap.values()) {
             if (downloadTask != null)

@@ -22,9 +22,7 @@ import com.huxq17.download.Pump;
 import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.message.DownloadListener;
-import com.huxq17.download.message.DownloadListener;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -218,7 +216,9 @@ public class DownloadListActivity extends AppCompatActivity {
             if (v == tvStatus) {
                 switch (status) {
                     case STOPPED:
-                        Pump.download(downloadInfo.getUrl(), downloadInfo.getFilePath());
+                        Pump.newRequest(downloadInfo.getUrl(),downloadInfo.getFilePath())
+                                .setId(downloadInfo.getId())
+                                .submit();
                         break;
                     case PAUSED:
                         Pump.resume(downloadInfo);

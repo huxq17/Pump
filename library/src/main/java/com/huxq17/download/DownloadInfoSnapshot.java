@@ -34,11 +34,13 @@ public class DownloadInfoSnapshot {
     }
 
     public static void release() {
-        while (sPool != null) {
-            DownloadInfoSnapshot snapshot = sPool;
-            sPool = snapshot.next;
-            snapshot.next = null;
-            sPoolSize--;
+        synchronized (DownloadInfoSnapshot.class) {
+            while (sPool != null) {
+                DownloadInfoSnapshot snapshot = sPool;
+                sPool = snapshot.next;
+                snapshot.next = null;
+                sPoolSize--;
+            }
         }
     }
 

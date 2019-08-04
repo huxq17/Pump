@@ -1,16 +1,13 @@
 package com.huxq17.download.demo;
 
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.Pump;
-import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.message.DownloadListener;
 
