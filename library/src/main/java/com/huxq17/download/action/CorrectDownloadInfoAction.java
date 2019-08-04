@@ -29,7 +29,7 @@ public class CorrectDownloadInfoAction implements Action {
         downloadInfo.setFinished(0);
         downloadInfo.setCompletedSize(0);
         downloadInfo.setContentLength(fileLength);
-        downloadTask.updateInfo(downloadInfo);
+        downloadTask.updateInfo();
 //        downloadInfo.threadNum = tempDir.exists() ? downloadInfo.threadNum : oldThreadNum;
         String[] childList = tempDir.list(new FilenameFilter() {
             @Override

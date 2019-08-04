@@ -7,16 +7,16 @@ import com.huxq17.download.DownloadInfoSnapshot;
 import com.huxq17.download.Pump;
 
 public class DownloadListener {
-    private final String url;
+    private final String id;
     private DownloadInfo.Status status;
     private boolean enable;
 
     public DownloadListener() {
-        url = null;
+        id = null;
     }
 
-    public DownloadListener(String url) {
-        this.url = url;
+    public DownloadListener(String id) {
+        this.id = id;
     }
 
     /**
@@ -70,8 +70,8 @@ public class DownloadListener {
         }
     }
 
-    public String getUrl() {
-        return url;
+    public String getId() {
+        return id;
     }
 
     /**
@@ -81,8 +81,8 @@ public class DownloadListener {
      * @return Receive if return true, or not receive.
      */
     public boolean filter(DownloadInfo downloadInfo) {
-        if (!TextUtils.isEmpty(url)) {
-            return url.contains(downloadInfo.getUrl());
+        if (!TextUtils.isEmpty(id)) {
+            return id.equals(downloadInfo.getId());
         }
         return true;
     }
@@ -99,8 +99,8 @@ public class DownloadListener {
 
     @Override
     public int hashCode() {
-        if (!TextUtils.isEmpty(url)) {
-            return url.hashCode();
+        if (!TextUtils.isEmpty(id)) {
+            return id.hashCode();
         }
         return super.hashCode();
     }
@@ -109,8 +109,8 @@ public class DownloadListener {
     public boolean equals(Object obj) {
         if (DownloadListener.class.isAssignableFrom(obj.getClass())) {
             DownloadListener that = (DownloadListener) obj;
-            String thatUrl = that.getUrl();
-            if (!TextUtils.isEmpty(thatUrl) && thatUrl.equals(getUrl())) {
+            String thatId = that.getId();
+            if (!TextUtils.isEmpty(thatId) && thatId.equals(getId())) {
                 return true;
             }
         }

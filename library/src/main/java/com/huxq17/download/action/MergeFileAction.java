@@ -41,7 +41,7 @@ public class MergeFileAction implements Action {
             LogUtil.i("merge" + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime));
             downloadInfo.setFinished(1);
             downloadInfo.setCompletedSize(completedSize);
-            downloadTask.updateInfo(downloadInfo);
+            downloadTask.updateInfo();
             downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
         } else {
             downloadInfo.setStatus(DownloadInfo.Status.FAILED);

@@ -199,10 +199,10 @@ public class DownloadTask implements Task {
         }
     }
 
-    public void updateInfo(DownloadDetailsInfo transferInfo) {
-        synchronized (transferInfo) {
+    public void updateInfo() {
+        synchronized (downloadInfo) {
             if (!isNeedDelete) {
-                dbService.updateInfo(transferInfo);
+                dbService.updateInfo(downloadInfo);
             }
         }
     }
