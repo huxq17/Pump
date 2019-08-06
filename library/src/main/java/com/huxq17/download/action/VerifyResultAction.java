@@ -36,7 +36,9 @@ public class VerifyResultAction implements Action {
                         DBService.getInstance().updateCache(cacheBean);
                     }
                 }
-                downloadTask.notifyProgressChanged(downloadInfo);
+                if (!chain.isFinishedFromCache()) {//Avoid notify complete repeatly.
+                    downloadTask.notifyProgressChanged(downloadInfo);
+                }
             }
         }
         return true;

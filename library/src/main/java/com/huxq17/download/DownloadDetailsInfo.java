@@ -5,6 +5,7 @@ import com.huxq17.download.task.DownloadTask;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
     private File tempDir;
@@ -108,9 +109,7 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
         File tempDir = Util.getTempDir(filePath);
         File[] listFiles = tempDir.listFiles();
         if (listFiles != null && listFiles.length > 0) {
-            for (int i = 0; i < listFiles.length; i++) {
-                downloadPartFiles.add(listFiles[i]);
-            }
+            downloadPartFiles.addAll(Arrays.asList(listFiles));
         }
     }
 

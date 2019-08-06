@@ -43,6 +43,9 @@ public class DownloadChain {
         downloadTask.downgrade();
     }
 
+    public boolean isFinishedFromCache() {
+        return index == 0;
+    }
 
     public boolean isRetryable() {
         return (downloadTask.isDowngrade() || downloadTask.getDownloadInfo().getErrorCode() == NETWORK_UNAVAILABLE) && retryCount > tryCount;
