@@ -6,7 +6,6 @@ import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.DownloadRequest;
-import com.huxq17.download.task.DownloadTask;
 
 import java.io.File;
 import java.util.List;
@@ -18,7 +17,9 @@ public interface IDownloadManager {
 
     void delete(DownloadInfo downloadInfo);
 
-    void delete(String tag);
+    void deleteById(String id);
+
+    void deleteByTag(String tag);
 
     void pause(DownloadInfo downloadInfo);
 
@@ -34,9 +35,11 @@ public interface IDownloadManager {
 
     List<DownloadDetailsInfo> getAllDownloadList();
 
-    boolean hasDownloadSucceed(String url);
+    DownloadDetailsInfo getDownloadInfoById(String id);
 
-    File getFileIfSucceed(String url);
+    boolean hasDownloadSucceed(String id);
+
+    File getFileIfSucceed(String id);
 
     void setDownloadConfig(DownloadConfig downloadConfig);
 

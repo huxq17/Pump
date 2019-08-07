@@ -1,5 +1,6 @@
 package com.huxq17.download.action;
 
+
 import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadDetailsInfo;
@@ -27,22 +28,24 @@ public class StartDownloadAction implements Action {
         CountDownLatch countDownLatch;
         long completedSize = 0;
         countDownLatch = new CountDownLatch(threadNum);
-        synchronized (downloadInfo) {
-            for (int i = 0; i < threadNum; i++) {
-                DownloadBatch batch = new DownloadBatch();
-                batch.threadId = i;
-                batch.calculateStartPos(fileLength, threadNum);
-                batch.calculateEndPos(fileLength, threadNum);
-                completedSize += batch.calculateCompletedPartSize(tempDir);
-                batch.url = url;
-                DownloadBlockTask task = new DownloadBlockTask(batch, countDownLatch, chain);
-                downloadTask.addBlockTask(task);
-                TaskManager.execute(task);
+        synchronized (downloadTask.getLock()) {
+            if (!downloadTask.shouldStop()){
+                for (int i = 0; i < threadNum; i++) {
+                    DownloadBatch batch = new DownloadBatch();
+                    batch.threadId = i;
+                    batch.calculateStartPos(fileLength, threadNum);
+                    batch.calculateEndPos(fileLength, threadNum);
+                    completedSize += batch.calculateCompletedPartSize(tempDir);
+                    batch.url = url;
+                    DownloadBlockTask task = new DownloadBlockTask(batch, countDownLatch, chain);
+                    downloadTask.addBlockTask(task);
+                    TaskManager.execute(task);
+                }
+                downloadInfo.setCompletedSize(completedSize);
+            }else{
+                return false;
             }
         }
-        downloadInfo.setCompletedSize(completedSize);
-//        downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
-//        downloadTask.notifyProgressChanged(downloadInfo);
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {
@@ -55,6 +58,7 @@ public class StartDownloadAction implements Action {
         if (downloadInfo.getErrorCode() == ErrorCode.NETWORK_UNAVAILABLE) {
             result = false;
         }
+
         return result;
     }
 }

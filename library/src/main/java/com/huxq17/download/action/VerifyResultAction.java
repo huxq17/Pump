@@ -1,5 +1,6 @@
 package com.huxq17.download.action;
 
+
 import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
@@ -15,7 +16,7 @@ public class VerifyResultAction implements Action {
         DownloadTask downloadTask = chain.getDownloadTask();
         DownloadDetailsInfo downloadInfo = downloadTask.getDownloadInfo();
         DownloadRequest downloadRequest = downloadTask.getRequest();
-        synchronized (downloadInfo) {
+        synchronized (downloadTask.getLock()) {
             DownloadInfo.Status status = downloadInfo.getStatus();
             downloadTask.destroy();
             if (downloadTask.isNeedDelete()) {

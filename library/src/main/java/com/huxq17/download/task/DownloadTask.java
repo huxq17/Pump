@@ -1,5 +1,6 @@
 package com.huxq17.download.task;
 
+
 import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
@@ -14,11 +15,12 @@ import com.huxq17.download.message.IMessageCenter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DownloadTask implements Task {
     private final DownloadDetailsInfo downloadInfo;
     private DBService dbService;
-    private boolean isDestroyed;
+    private AtomicBoolean isDestroyed;
     private boolean isNeedDelete;
     private IMessageCenter messageCenter;
     protected DownLoadLifeCycleObserver downLoadLifeCycleObserver;
@@ -32,6 +34,7 @@ public class DownloadTask implements Task {
     private boolean isDowngrade;
     private DownloadRequest downloadRequest;
     private long startTime;
+    private final Object lock;
 
     public DownloadTask(DownloadRequest downloadRequest, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
@@ -39,7 +42,7 @@ public class DownloadTask implements Task {
             this.downloadRequest = downloadRequest;
             this.downloadInfo = downloadRequest.getDownloadInfo();
             downloadInfo.setDownloadTask(this);
-            isDestroyed = false;
+            isDestroyed = new AtomicBoolean();
             isDowngrade = false;
             dbService = DBService.getInstance();
             downloadInfo.setUsed(true);
@@ -51,6 +54,11 @@ public class DownloadTask implements Task {
         } else {
             downloadInfo = null;
         }
+        lock = downloadInfo;
+    }
+
+    public Object getLock() {
+        return lock;
     }
 
     public DownloadRequest getRequest() {
@@ -72,7 +80,7 @@ public class DownloadTask implements Task {
     @Override
     public void run() {
         thread = Thread.currentThread();
-        if (!isDestroyed) {
+        if (!isDestroyed.get()) {
             downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
 //            notifyProgressChanged(downloadInfo);
         }
@@ -94,8 +102,8 @@ public class DownloadTask implements Task {
     }
 
     public boolean onDownload(int length) {
-        synchronized (downloadInfo) {
-            if (isDestroyed) {
+        synchronized (lock) {
+            if (isDestroyed.get()) {
                 return false;
             }
             downloadInfo.download(length);
@@ -112,7 +120,7 @@ public class DownloadTask implements Task {
     }
 
     public boolean isDowngrade() {
-        synchronized (downloadInfo) {
+        synchronized (lock) {
             return isDowngrade && downloadRequest.getThreadNum() == 1;
         }
     }
@@ -121,7 +129,7 @@ public class DownloadTask implements Task {
      * downgrade when server not support breakpoint download.
      */
     public void downgrade() {
-        synchronized (downloadInfo) {
+        synchronized (lock) {
             if (!isDowngrade) {
                 isDowngrade = true;
                 downloadRequest.setThreadNum(1);
@@ -149,8 +157,8 @@ public class DownloadTask implements Task {
     }
 
     public void pause() {
-        synchronized (downloadInfo) {
-            if (!isDestroyed) {
+        synchronized (lock) {
+            if (!isDestroyed.get()) {
                 downloadInfo.setStatus(DownloadInfo.Status.PAUSING);
                 notifyProgressChanged(downloadInfo);
                 cancel();
@@ -159,8 +167,8 @@ public class DownloadTask implements Task {
     }
 
     public void stop() {
-        synchronized (downloadInfo) {
-            if (!isDestroyed) {
+        synchronized (lock) {
+            if (!isDestroyed.get()) {
                 downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
                 downloadInfo.setDownloadTask(null);
                 cancel();
@@ -181,8 +189,8 @@ public class DownloadTask implements Task {
     }
 
     public void delete() {
-        synchronized (downloadInfo) {
-            if (!isDestroyed) {
+        synchronized (lock) {
+            if (!isDestroyed.get()) {
                 isNeedDelete = true;
                 cancel();
             }
@@ -200,7 +208,7 @@ public class DownloadTask implements Task {
     }
 
     public void updateInfo() {
-        synchronized (downloadInfo) {
+        synchronized (lock) {
             if (!isNeedDelete) {
                 dbService.updateInfo(downloadInfo);
             }
@@ -208,11 +216,11 @@ public class DownloadTask implements Task {
     }
 
     public void destroy() {
-        isDestroyed = true;
+        isDestroyed.set(true);
     }
 
     public boolean shouldStop() {
-        return isDestroyed;
+        return isDestroyed.get();
     }
 
 }

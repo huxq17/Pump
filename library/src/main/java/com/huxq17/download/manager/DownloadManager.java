@@ -65,25 +65,38 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     public void delete(DownloadInfo downloadInfo) {
         if (downloadInfo == null) return;
-        if (downloadInfoMap != null) {
-            downloadInfoMap.remove(downloadInfo.getId());
-        }
-        synchronized (downloadInfo) {
-            DownloadDetailsInfo transferInfo = (DownloadDetailsInfo) downloadInfo;
-            DownloadTask downloadTask = transferInfo.getDownloadTask();
-            if (downloadTask == null) {
-                downloadTask = taskMap.get(downloadInfo.getId());
-            }
-            if (downloadTask != null) {
+        deleteById(downloadInfo.getId());
+    }
+
+    public void deleteById(String id) {
+        DownloadTask downloadTask = taskMap.get(id);
+        if (downloadTask != null) {
+            synchronized (downloadTask.getLock()) {
                 downloadTask.delete();
+                DownloadDetailsInfo downloadInfo = downloadTask.getDownloadInfo();
+                if (downloadInfo != null) {
+                    if (downloadInfoMap != null) {
+                        downloadInfoMap.remove(downloadInfo.getId());
+                    }
+                    downloadInfo.getDownloadFile().delete();
+                    Util.deleteDir(downloadInfo.getTempDir());
+                    DBService.getInstance().deleteInfo(id);
+                }
             }
-            transferInfo.getDownloadFile().delete();
-            Util.deleteDir(transferInfo.getTempDir());
-            DBService.getInstance().deleteInfo(downloadInfo.getId());
+        }else{
+            DownloadDetailsInfo downloadInfo = getDownloadInfoById(id);
+            if (downloadInfoMap != null) {
+                downloadInfoMap.remove(id);
+            }
+            if(downloadInfo!=null){
+                downloadInfo.getDownloadFile().delete();
+                Util.deleteDir(downloadInfo.getTempDir());
+                DBService.getInstance().deleteInfo(id);
+            }
         }
     }
 
-    public void delete(String tag) {
+    public void deleteByTag(String tag) {
         if (tag == null) return;
         List<DownloadDetailsInfo> tasks = DBService.getInstance().getDownloadListByTag(tag);
         for (DownloadDetailsInfo info : tasks) {
@@ -175,9 +188,13 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         return new ArrayList<>(downloadInfoMap.values());
     }
 
+    public DownloadDetailsInfo getDownloadInfoById(String id) {
+        return DBService.getInstance().getDownloadInfo(id);
+    }
+
     @Override
-    public boolean hasDownloadSucceed(String url) {
-        DownloadDetailsInfo info = DBService.getInstance().getDownloadInfo(url);
+    public boolean hasDownloadSucceed(String id) {
+        DownloadDetailsInfo info = DBService.getInstance().getDownloadInfo(id);
         if (info != null && info.isFinished()) {
             return true;
         }
@@ -185,9 +202,9 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     }
 
     @Override
-    public File getFileIfSucceed(String url) {
-        if (hasDownloadSucceed(url)) {
-            DownloadDetailsInfo info = DBService.getInstance().getDownloadInfo(url);
+    public File getFileIfSucceed(String id) {
+        if (hasDownloadSucceed(id)) {
+            DownloadDetailsInfo info = DBService.getInstance().getDownloadInfo(id);
             return info.getDownloadFile();
         }
         return null;

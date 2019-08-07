@@ -15,6 +15,7 @@ import java.util.List;
 
 import static com.huxq17.download.ErrorCode.NETWORK_UNAVAILABLE;
 
+
 public class DownloadChain {
     private DownloadTask downloadTask;
     private List<Action> actions;
@@ -59,11 +60,14 @@ public class DownloadChain {
         int actionSize = actions.size();
         while (index != actionSize) {
             Action action = actions.get(index);
-            boolean result = action.proceed(this);
-            boolean shouldStop = downloadTask.shouldStop();
-            if (shouldStop) {
+            boolean result ;
+            if(!downloadTask.shouldStop()){
+                result = action.proceed(this);
+            }else {
                 break;
-            } else if (result) {
+            }
+
+          if (result) {
                 index++;
             } else {
                 if (isRetryable()) {

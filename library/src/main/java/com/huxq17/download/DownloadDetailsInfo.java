@@ -91,15 +91,17 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
     }
 
     public boolean isFinished() {
-        if (finished == 1) {
-            if (downloadFile.exists() && downloadFile.length() == contentLength) {
-                return true;
-            } else if (downloadFile.exists()) {
-                downloadFile.delete();
+        synchronized (this) {
+            if (finished == 1) {
+                if (downloadFile.exists() && downloadFile.length() == contentLength) {
+                    return true;
+                } else if (downloadFile.exists()) {
+                    downloadFile.delete();
+                }
             }
+            finished = 0;
+            return false;
         }
-        finished = 0;
-        return false;
     }
 
     /**

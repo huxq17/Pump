@@ -8,7 +8,6 @@ import android.os.Message;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfoSnapshot;
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.manager.IDownloadManager;
 
 import java.util.Iterator;
@@ -87,8 +86,8 @@ public class MessageCenter implements IMessageCenter {
     }
 
     @Override
-    public synchronized void unRegister(String url) {
-        DownloadListener downloadObserver = new DownloadListener(url);
+    public synchronized void unRegister(String id) {
+        DownloadListener downloadObserver = new DownloadListener(id);
         unRegister(downloadObserver);
     }
 

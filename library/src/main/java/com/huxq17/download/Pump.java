@@ -1,7 +1,10 @@
 package com.huxq17.download;
 
 
-import com.huxq17.download.Utils.LogUtil;
+import com.huxq17.download.DownloadDetailsInfo;
+import com.huxq17.download.DownloadInfo;
+import com.huxq17.download.DownloadRequest;
+import com.huxq17.download.PumpFactory;
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.DownloadListener;
@@ -54,10 +57,10 @@ public class Pump {
     /**
      * unSubscribe url download progress.
      *
-     * @param url download url
+     * @param id unique download id,default is download url.
      */
-    public static void unSubscribe(String url) {
-        PumpFactory.getService(IMessageCenter.class).unRegister(url);
+    public static void unSubscribe(String id) {
+        PumpFactory.getService(IMessageCenter.class).unRegister(id);
     }
 
     /**
@@ -102,18 +105,17 @@ public class Pump {
      *
      * @param tag tag
      */
-    public static void delete(String tag) {
-        PumpFactory.getService(IDownloadManager.class).delete(tag);
+    public static void deleteByTag(String tag) {
+        PumpFactory.getService(IDownloadManager.class).deleteByTag(tag);
     }
 
     /**
-     * Delete a download info by {@link DownloadInfo}
+     * Delete a download info by unique download id. this method may delete a group of tasks.
      *
-     * @param url      download url
-     * @param filePath
+     * @param id unique download id,default is download url.
      */
-    public static void delete(String url, String filePath) {
-        PumpFactory.getService(IDownloadManager.class).delete(new DownloadDetailsInfo(url, filePath));
+    public static void deleteById(String id) {
+        PumpFactory.getService(IDownloadManager.class).deleteById(id);
     }
 
     /**
@@ -148,6 +150,7 @@ public class Pump {
 
     /**
      * Get download list filter by tag.
+     *
      * @param tag tag
      * @return
      */
@@ -156,23 +159,33 @@ public class Pump {
     }
 
     /**
+     * Get downloadInfo by unique download id.
+     *
+     * @param id unique download id,default is download url.
+     * @return
+     */
+    public static DownloadDetailsInfo getDownloadInfoById(String id) {
+        return PumpFactory.getService(IDownloadManager.class).getDownloadInfoById(id);
+    }
+
+    /**
      * Check url whether download success
      *
-     * @param url download url
+     * @param id unique download id,default is download url.
      * @return true If Pump has downloaded
      */
-    public static boolean hasDownloadSucceed(String url) {
-        return PumpFactory.getService(IDownloadManager.class).hasDownloadSucceed(url);
+    public static boolean hasDownloadSucceed(String id) {
+        return PumpFactory.getService(IDownloadManager.class).hasDownloadSucceed(id);
     }
 
     /**
      * If url had download successful,return the local file
      *
-     * @param url download url
+     * @param id unique download id,default is download url.
      * @return the file has downloaded.
      */
-    public static File getFileIfSucceed(String url) {
-        return PumpFactory.getService(IDownloadManager.class).getFileIfSucceed(url);
+    public static File getFileIfSucceed(String id) {
+        return PumpFactory.getService(IDownloadManager.class).getFileIfSucceed(id);
     }
 
 }
