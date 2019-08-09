@@ -17,4 +17,8 @@ public class ErrorCode {
      * Breakpoint download need request file's length first,but not found in http response head,connect server to resolve it.
      */
     public static final int CONTENT_LENGTH_NOT_FOUND = 1004;
+    /**
+     * Usable space is not enough.
+     */
+    public static final int USABLE_SPACE_NOT_ENOUGH = 1005;
 }

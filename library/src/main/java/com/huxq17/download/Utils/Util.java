@@ -18,6 +18,8 @@ import okio.BufferedSource;
 import okio.Okio;
 
 public class Util {
+    public static final long MIN_STORAGE_USABLE_SPACE = 4 * 1024;
+
     public static void closeQuietly(Closeable closeable) {
         if (closeable != null) {
             try {
@@ -148,7 +150,11 @@ public class Util {
             String partFileName = partFile.getName();
             int idIndex = partFileName.lastIndexOf("-") + 1;
             int id = Integer.parseInt(partFileName.substring(idIndex));
-            sortedFiles[id] = partFile;
+            if (id < sortedFiles.length) {
+                sortedFiles[id] = partFile;
+            } else {
+                return;
+            }
         }
         BufferedSink bufferedSink = null;
         BufferedSource bufferedSource = null;
@@ -163,6 +169,7 @@ public class Util {
                     bufferedSink.write(buffer, 0, len);
                 }
                 closeQuietly(bufferedSource);
+                file.delete();
             }
             bufferedSink.flush();
         } catch (FileNotFoundException e) {
@@ -180,5 +187,19 @@ public class Util {
         File file = new File(filePath);
         File parentFile = file.getParentFile();
         return new File(parentFile, "." + file.getName() + ".temp" + File.separatorChar);
+    }
+
+    public static long getUsableSpace(File file) {
+        if (file == null) return 0L;
+        if (file.isDirectory()) {
+            return file.getUsableSpace();
+        } else {
+            File parentFile = file.getParentFile();
+            if (parentFile != null) {
+                return parentFile.getUsableSpace();
+            } else {
+                return 0L;
+            }
+        }
     }
 }

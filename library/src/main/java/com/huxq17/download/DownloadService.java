@@ -1,16 +1,26 @@
 package com.huxq17.download;
 
+import android.content.Context;
+import android.os.Environment;
+import android.text.format.Formatter;
+
 import com.huxq17.download.Utils.LogUtil;
+import com.huxq17.download.Utils.Util;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownLoadLifeCycleObserver;
+import com.huxq17.download.manager.IDownloadManager;
+import com.huxq17.download.message.IMessageCenter;
 import com.huxq17.download.task.DownloadTask;
 import com.huxq17.download.task.Task;
 
+import java.io.File;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static com.huxq17.download.Utils.Util.MIN_STORAGE_USABLE_SPACE;
 
 public class DownloadService implements Task, DownLoadLifeCycleObserver {
     private DownLoadLifeCycleObserver downLoadLifeCycleObserver;
@@ -67,12 +77,26 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
         }
         DownloadRequest downloadRequest = requestQueue.poll();
         if (downloadRequest != null) {
+            String url = downloadRequest.getUrl();
+            String filePath = downloadRequest.getFilePath();
+            String tag = downloadRequest.getTag();
+            String id = downloadRequest.getId();
+
+            long downloadDirUsableSpace = Util.getUsableSpace(new File(downloadRequest.getFilePath()));
+            long dataFileUsableSpace = Util.getUsableSpace(Environment.getDataDirectory());
+            if (downloadDirUsableSpace <= MIN_STORAGE_USABLE_SPACE || dataFileUsableSpace <= MIN_STORAGE_USABLE_SPACE) {
+                Context context = PumpFactory.getService(IDownloadManager.class).getContext();
+                String dataFileAvailableSize = Formatter.formatFileSize(context, dataFileUsableSpace);
+                String downloadFileAvailableSize = Formatter.formatFileSize(context, downloadDirUsableSpace);
+                LogUtil.e("data directory usable space is " + dataFileAvailableSize + "and download directory usable space is " + downloadFileAvailableSize);
+                DownloadDetailsInfo downloadInfo = new DownloadDetailsInfo(url, filePath, tag, id);
+                downloadInfo.setErrorCode(ErrorCode.USABLE_SPACE_NOT_ENOUGH);
+                PumpFactory.getService(IMessageCenter.class).notifyProgressChanged(downloadInfo);
+                return false;
+            }
             DownloadDetailsInfo downloadInfo = downloadRequest.getDownloadInfo();
             if (downloadInfo == null) {
-                String url = downloadRequest.getUrl();
-                String filePath = downloadRequest.getFilePath();
-                String tag = downloadRequest.getTag();
-                String id = downloadRequest.getId();
+
                 downloadInfo = createDownloadInfo(id, url, filePath, tag);
                 downloadRequest.setDownloadInfo(downloadInfo);
             }

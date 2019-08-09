@@ -18,7 +18,7 @@ public class MergeFileAction implements Action {
     @Override
     public boolean proceed(DownloadChain chain) {
         DownloadTask downloadTask = chain.getDownloadTask();
-        synchronized (downloadTask.getLock()){
+        synchronized (downloadTask.getLock()) {
             DownloadDetailsInfo downloadInfo = downloadTask.getDownloadInfo();
             long fileLength = downloadInfo.getContentLength();
             File tempDir = downloadInfo.getTempDir();
@@ -27,18 +27,16 @@ public class MergeFileAction implements Action {
                 file.delete();
             }
             long completedSize = downloadInfo.getCompletedSize();
-            long startTime = System.currentTimeMillis();
-            if (fileLength != 0 && completedSize == fileLength) {
-                File[] downloadPartFiles = tempDir.listFiles(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File dir, String name) {
-                        return name.startsWith(DOWNLOAD_PART);
-                    }
-                });
-                if (downloadPartFiles != null && downloadPartFiles.length > 0) {
-                    Util.mergeFiles(downloadPartFiles, file);
-                    Util.deleteDir(tempDir);
+            File[] downloadPartFiles = tempDir.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.startsWith(DOWNLOAD_PART);
                 }
+            });
+            if (fileLength > 0 && completedSize == fileLength && downloadPartFiles != null && downloadPartFiles.length == downloadTask.getRequest().getThreadNum()) {
+                long startTime = System.currentTimeMillis();
+                Util.mergeFiles(downloadPartFiles, file);
+                Util.deleteDir(tempDir);
                 LogUtil.i("merge" + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime));
                 downloadInfo.setFinished(1);
                 downloadInfo.setCompletedSize(completedSize);

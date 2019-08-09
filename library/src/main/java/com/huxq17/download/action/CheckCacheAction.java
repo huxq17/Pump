@@ -1,16 +1,24 @@
 package com.huxq17.download.action;
 
+import android.content.Context;
+import android.os.Environment;
 import android.text.TextUtils;
+import android.text.format.Formatter;
 
 import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadRequest;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.OKHttpUtils;
+import com.huxq17.download.PumpFactory;
+import com.huxq17.download.Utils.LogUtil;
+import com.huxq17.download.Utils.Util;
 import com.huxq17.download.db.DBService;
+import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.provider.Provider;
 import com.huxq17.download.task.DownloadTask;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
@@ -18,6 +26,8 @@ import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+
+import static com.huxq17.download.Utils.Util.MIN_STORAGE_USABLE_SPACE;
 
 public class CheckCacheAction implements Action {
     private OkHttpClient okHttpClient = OKHttpUtils.get();
@@ -62,8 +72,19 @@ public class CheckCacheAction implements Action {
             if (response.isSuccessful()) {
                 long contentLength = getContentLength(headers);
                 if (contentLength > 0) {
-                    detailsInfo.setContentLength(contentLength);
-                    downloadRequest.setCacheBean(new Provider.CacheBean(downloadRequest.getId(), lastModified, eTag));
+                    long downloadDirUsableSpace = Util.getUsableSpace(new File(downloadRequest.getFilePath()));
+                    long dataFileUsableSpace = Util.getUsableSpace(Environment.getDataDirectory());
+                    if (downloadDirUsableSpace < contentLength * 2 || dataFileUsableSpace <= MIN_STORAGE_USABLE_SPACE) {
+                        detailsInfo.setErrorCode(ErrorCode.USABLE_SPACE_NOT_ENOUGH);
+                        result = false;
+
+                        Context context = PumpFactory.getService(IDownloadManager.class).getContext();
+                        String downloadFileAvailableSize = Formatter.formatFileSize(context, downloadDirUsableSpace);
+                        LogUtil.e("Download directory usable space is " + downloadFileAvailableSize + ";but download file's contentLength is " + contentLength);
+                    } else {
+                        detailsInfo.setContentLength(contentLength);
+                        downloadRequest.setCacheBean(new Provider.CacheBean(downloadRequest.getId(), lastModified, eTag));
+                    }
                 } else {
                     detailsInfo.setErrorCode(ErrorCode.CONTENT_LENGTH_NOT_FOUND);
                     result = false;
