@@ -30,22 +30,20 @@ public class VerifyResultAction implements Action {
                 }
                 long completedSize = downloadInfo.getCompletedSize();
                 long contentLength = downloadInfo.getContentLength();
-                if (completedSize > 0 && completedSize == contentLength) {
-                    if (downloadInfo.getDownloadFile().length() == contentLength) {
-                        Provider.CacheBean cacheBean = downloadRequest.getCacheBean();
-                        if (cacheBean != null) {
-                            DBService.getInstance().updateCache(cacheBean);
-                        }
-                        downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
-                        if (!chain.isFinishedFromCache()) {//Avoid notify complete repeatly.
-                            downloadTask.notifyProgressChanged(downloadInfo);
-                        }
-                    } else {
-                        downloadInfo.setStatus(DownloadInfo.Status.FAILED);
+                long downloadFileLength = downloadInfo.getDownloadFile().length();
+                if (completedSize > 0 && completedSize == contentLength && downloadFileLength == contentLength) {
+                    Provider.CacheBean cacheBean = downloadRequest.getCacheBean();
+                    if (cacheBean != null) {
+                        DBService.getInstance().updateCache(cacheBean);
+                    }
+                    downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
+                    if (!chain.isFinishedFromCache()) {//Avoid notify complete repeatly.
                         downloadTask.notifyProgressChanged(downloadInfo);
                     }
+                } else {
+                    downloadInfo.setStatus(DownloadInfo.Status.FAILED);
+                    downloadTask.notifyProgressChanged(downloadInfo);
                 }
-
             }
         }
         return true;

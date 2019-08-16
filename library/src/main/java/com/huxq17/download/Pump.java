@@ -1,10 +1,6 @@
 package com.huxq17.download;
 
 
-import com.huxq17.download.DownloadDetailsInfo;
-import com.huxq17.download.DownloadInfo;
-import com.huxq17.download.DownloadRequest;
-import com.huxq17.download.PumpFactory;
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.DownloadListener;

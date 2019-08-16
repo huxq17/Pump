@@ -35,8 +35,16 @@ public class MergeFileAction implements Action {
             });
             if (fileLength > 0 && completedSize == fileLength && downloadPartFiles != null && downloadPartFiles.length == downloadTask.getRequest().getThreadNum()) {
                 long startTime = System.currentTimeMillis();
-                Util.mergeFiles(downloadPartFiles, file);
-                Util.deleteDir(tempDir);
+                if (downloadPartFiles.length == 1) {
+                    if (!downloadPartFiles[0].renameTo(file)) {
+                        Util.deleteDir(tempDir);
+                        downloadInfo.setStatus(DownloadInfo.Status.FAILED);
+                        return false;
+                    }
+                } else {
+                    Util.mergeFiles(downloadPartFiles, file);
+                    Util.deleteDir(tempDir);
+                }
                 LogUtil.i("merge" + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime));
                 downloadInfo.setFinished(1);
                 downloadInfo.setCompletedSize(completedSize);

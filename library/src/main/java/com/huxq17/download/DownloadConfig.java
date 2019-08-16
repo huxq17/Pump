@@ -2,24 +2,29 @@ package com.huxq17.download;
 
 import android.content.Context;
 
-import com.huxq17.download.manager.IDownloadManager;
+import com.huxq17.download.config.IDownloadConfigService;
 import com.huxq17.download.provider.Provider;
 
 public class DownloadConfig {
     /**
      * 允许同时下载的最大任务数量
      */
-    private int maxRunningTaskNumber;
+    private int maxRunningTaskNumber = 3;
+    /**
+     * 最小可用的内存空间
+     */
+    private long minUsableStorageSpace = 4 * 1024L;
 
-    private DownloadConfig(int maxRunningTaskNumber) {
-        this.maxRunningTaskNumber = maxRunningTaskNumber;
+    private DownloadConfig() {
     }
-
 
     public int getMaxRunningTaskNumber() {
         return maxRunningTaskNumber;
     }
 
+    public long getMinUsableSpace() {
+        return minUsableStorageSpace;
+    }
 
     public static Builder newBuilder(Context context) {
         Provider.init(context);
@@ -27,7 +32,11 @@ public class DownloadConfig {
     }
 
     public static class Builder {
-        private int maxRunningTaskNumber = 3;
+        private DownloadConfig downloadConfig;
+
+        private Builder() {
+            this.downloadConfig = new DownloadConfig();
+        }
 
         /**
          * Set how many threads are used when downloading,default 3.
@@ -43,11 +52,22 @@ public class DownloadConfig {
         /**
          * Set the maximum number of tasks to run, default 3.
          *
-         * @param maxRunningTaskNumber
+         * @param maxRunningTaskNumber maximum number of tasks to run
          * @return
          */
         public Builder setMaxRunningTaskNum(int maxRunningTaskNumber) {
-            this.maxRunningTaskNumber = maxRunningTaskNumber;
+            downloadConfig.maxRunningTaskNumber = maxRunningTaskNumber;
+            return this;
+        }
+
+        /**
+         * Set the minimum available storage space size for downloading to avoid insufficient storage space during downloading, default is 4kb。
+         *
+         * @param minUsableStorageSpace minimum available storage space size
+         * @return
+         */
+        public Builder setMinUsableStorageSpace(long minUsableStorageSpace) {
+            downloadConfig.minUsableStorageSpace = minUsableStorageSpace;
             return this;
         }
 
@@ -63,8 +83,7 @@ public class DownloadConfig {
         }
 
         public void build() {
-            DownloadConfig config = new DownloadConfig(maxRunningTaskNumber);
-            PumpFactory.getService(IDownloadManager.class).setDownloadConfig(config);
+            PumpFactory.getService(IDownloadConfigService.class).setConfig(downloadConfig);
         }
     }
 }

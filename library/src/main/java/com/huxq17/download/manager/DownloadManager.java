@@ -3,7 +3,7 @@ package com.huxq17.download.manager;
 
 import android.content.Context;
 
-import com.huxq17.download.DownloadConfig;
+
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.DownloadInfoSnapshot;
@@ -208,11 +208,6 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
             return info.getDownloadFile();
         }
         return null;
-    }
-
-    @Override
-    public void setDownloadConfig(DownloadConfig downloadConfig) {
-        downloadService.setMaxRunningTaskNumber(downloadConfig.getMaxRunningTaskNumber());
     }
 
     @Override

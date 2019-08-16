@@ -3,7 +3,9 @@ package com.huxq17.download.Utils;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Environment;
+import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 
@@ -18,8 +20,6 @@ import okio.BufferedSource;
 import okio.Okio;
 
 public class Util {
-    public static final long MIN_STORAGE_USABLE_SPACE = 4 * 1024;
-
     public static void closeQuietly(Closeable closeable) {
         if (closeable != null) {
             try {
@@ -200,6 +200,15 @@ public class Util {
             } else {
                 return 0L;
             }
+        }
+    }
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    public static void copyFile(File sourceFile, File destFile){
+        try (BufferedSource bufferedSource = Okio.buffer(Okio.source(sourceFile));
+             BufferedSink bufferedSink = Okio.buffer(Okio.sink(destFile))) {
+            bufferedSink.writeAll(bufferedSource);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

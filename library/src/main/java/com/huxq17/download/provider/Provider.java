@@ -6,6 +6,8 @@ import android.net.Uri;
 import com.huxq17.download.OKHttpUtils;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.Utils.ReflectUtil;
+import com.huxq17.download.config.DownloadConfigService;
+import com.huxq17.download.config.IDownloadConfigService;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.manager.DownloadManager;
 import com.huxq17.download.manager.IDownloadManager;
@@ -34,8 +36,8 @@ public class Provider {
         MessageCenter messageCenter = ReflectUtil.newInstance(MessageCenter.class);
         messageCenter.start(context);
         PumpFactory.addService(IMessageCenter.class, messageCenter);
-//        PumpFactory.getService(IMessageCenter.class).start(context);
-//        PumpFactory.getService(IDownloadManager.class).start(context);
+        IDownloadConfigService downloadConfig = ReflectUtil.newInstance(DownloadConfigService.class);
+        PumpFactory.addService(IDownloadConfigService.class, downloadConfig);
         OKHttpUtils.init(context);
         //If DownloadService is running,pause it.
 //        Intent intent = new Intent(context, DownloadService.class);

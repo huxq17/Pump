@@ -6,6 +6,7 @@ import android.text.format.Formatter;
 
 import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.Utils.Util;
+import com.huxq17.download.config.IDownloadConfigService;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownLoadLifeCycleObserver;
 import com.huxq17.download.manager.IDownloadManager;
@@ -20,7 +21,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.huxq17.download.Utils.Util.MIN_STORAGE_USABLE_SPACE;
 
 public class DownloadService implements Task, DownLoadLifeCycleObserver {
     private DownLoadLifeCycleObserver downLoadLifeCycleObserver;
@@ -39,6 +39,7 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
      * 正在下载的任务map
      */
     private ConcurrentLinkedQueue<DownloadTask> runningTaskQueue;
+    private long minUsableStorageSpace;
 
     public DownloadService(DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
@@ -50,6 +51,8 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
         waitingTaskQueue = new ConcurrentLinkedQueue<>();
         requestQueue = new ConcurrentLinkedQueue<>();
         runningTaskQueue = new ConcurrentLinkedQueue<>();
+        maxRunningTaskNumber = PumpFactory.getService(IDownloadConfigService.class).getMaxRunningTaskNumber();
+        minUsableStorageSpace = PumpFactory.getService(IDownloadConfigService.class).getMinUsableSpace();
         TaskManager.execute(this);
     }
 
@@ -60,11 +63,7 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
         }
     }
 
-    public void setMaxRunningTaskNumber(int maxRunningTaskNumber) {
-        this.maxRunningTaskNumber = maxRunningTaskNumber;
-    }
-
-    private boolean consumeRequest() {
+    private void consumeRequest() {
         lock.lock();
         try {
             if (requestQueue.isEmpty() && waitingTaskQueue.isEmpty()) {
@@ -84,19 +83,18 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
 
             long downloadDirUsableSpace = Util.getUsableSpace(new File(downloadRequest.getFilePath()));
             long dataFileUsableSpace = Util.getUsableSpace(Environment.getDataDirectory());
-            if (downloadDirUsableSpace <= MIN_STORAGE_USABLE_SPACE || dataFileUsableSpace <= MIN_STORAGE_USABLE_SPACE) {
+            if (downloadDirUsableSpace <= minUsableStorageSpace || dataFileUsableSpace <= minUsableStorageSpace) {
                 Context context = PumpFactory.getService(IDownloadManager.class).getContext();
                 String dataFileAvailableSize = Formatter.formatFileSize(context, dataFileUsableSpace);
                 String downloadFileAvailableSize = Formatter.formatFileSize(context, downloadDirUsableSpace);
-                LogUtil.e("data directory usable space is " + dataFileAvailableSize + "and download directory usable space is " + downloadFileAvailableSize);
+                LogUtil.e("data directory usable space is " + dataFileAvailableSize + " and download directory usable space is " + downloadFileAvailableSize);
                 DownloadDetailsInfo downloadInfo = new DownloadDetailsInfo(url, filePath, tag, id);
                 downloadInfo.setErrorCode(ErrorCode.USABLE_SPACE_NOT_ENOUGH);
                 PumpFactory.getService(IMessageCenter.class).notifyProgressChanged(downloadInfo);
-                return false;
+                return;
             }
             DownloadDetailsInfo downloadInfo = downloadRequest.getDownloadInfo();
             if (downloadInfo == null) {
-
                 downloadInfo = createDownloadInfo(id, url, filePath, tag);
                 downloadRequest.setDownloadInfo(downloadInfo);
             }
@@ -109,13 +107,13 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
             LogUtil.d("Task " + downloadTask.getName() + " is ready.");
             downLoadLifeCycleObserver.onDownloadStart(downloadTask);
         }
-        return true;
     }
 
-    private boolean consumeTask() {
+    private void consumeTask() {
         lock.lock();
         try {
             while (requestQueue.isEmpty() && runningTaskQueue.size() >= maxRunningTaskNumber && isRunning()) {
+                LogUtil.d("running "+runningTaskQueue.size()+" tasks;but max allow run "+maxRunningTaskNumber+" tasks.");
                 consumer.await();
             }
         } catch (InterruptedException e) {
@@ -131,7 +129,6 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
                 TaskManager.execute(downloadTask);
             }
         }
-        return true;
     }
 
     @Override

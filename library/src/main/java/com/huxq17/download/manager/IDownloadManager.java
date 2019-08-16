@@ -2,7 +2,7 @@ package com.huxq17.download.manager;
 
 import android.content.Context;
 
-import com.huxq17.download.DownloadConfig;
+
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.DownloadRequest;
@@ -40,8 +40,6 @@ public interface IDownloadManager {
     boolean hasDownloadSucceed(String id);
 
     File getFileIfSucceed(String id);
-
-    void setDownloadConfig(DownloadConfig downloadConfig);
 
     void shutdown();
 

@@ -13,6 +13,7 @@ import com.huxq17.download.OKHttpUtils;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.Utils.Util;
+import com.huxq17.download.config.IDownloadConfigService;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.provider.Provider;
@@ -27,7 +28,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import static com.huxq17.download.Utils.Util.MIN_STORAGE_USABLE_SPACE;
 
 public class CheckCacheAction implements Action {
     private OkHttpClient okHttpClient = OKHttpUtils.get();
@@ -74,7 +74,8 @@ public class CheckCacheAction implements Action {
                 if (contentLength > 0) {
                     long downloadDirUsableSpace = Util.getUsableSpace(new File(downloadRequest.getFilePath()));
                     long dataFileUsableSpace = Util.getUsableSpace(Environment.getDataDirectory());
-                    if (downloadDirUsableSpace < contentLength * 2 || dataFileUsableSpace <= MIN_STORAGE_USABLE_SPACE) {
+                    long minUsableStorageSpace = PumpFactory.getService(IDownloadConfigService.class).getMinUsableSpace();
+                    if (downloadDirUsableSpace < contentLength * 2 || dataFileUsableSpace <= minUsableStorageSpace) {
                         detailsInfo.setErrorCode(ErrorCode.USABLE_SPACE_NOT_ENOUGH);
                         result = false;
 

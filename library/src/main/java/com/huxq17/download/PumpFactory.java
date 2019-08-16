@@ -10,7 +10,7 @@ public class PumpFactory {
         return (T) serviceMap.get(tClass);
     }
 
-    public static void addService(Class<?> serviceClass, Object service) {
+    public static <T> void addService(Class<T> serviceClass, T service) {
         serviceMap.put(serviceClass, service);
     }
 
