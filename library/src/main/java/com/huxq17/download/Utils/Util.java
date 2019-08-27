@@ -202,13 +202,22 @@ public class Util {
             }
         }
     }
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    public static void copyFile(File sourceFile, File destFile){
-        try (BufferedSource bufferedSource = Okio.buffer(Okio.source(sourceFile));
-             BufferedSink bufferedSink = Okio.buffer(Okio.sink(destFile))) {
+
+    public static void copyFile(File sourceFile, File destFile) {
+        BufferedSource bufferedSource = null;
+        BufferedSink bufferedSink = null;
+        try {
+            bufferedSource = Okio.buffer(Okio.source(sourceFile));
+            bufferedSink = Okio.buffer(Okio.sink(destFile));
             bufferedSink.writeAll(bufferedSource);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            closeQuietly(bufferedSink);
+            closeQuietly(bufferedSource);
         }
+
     }
 }

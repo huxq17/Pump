@@ -87,7 +87,7 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
                 Context context = PumpFactory.getService(IDownloadManager.class).getContext();
                 String dataFileAvailableSize = Formatter.formatFileSize(context, dataFileUsableSpace);
                 String downloadFileAvailableSize = Formatter.formatFileSize(context, downloadDirUsableSpace);
-                LogUtil.e("data directory usable space is " + dataFileAvailableSize + " and download directory usable space is " + downloadFileAvailableSize);
+                LogUtil.e("Data directory usable space is " + dataFileAvailableSize + " and download directory usable space is " + downloadFileAvailableSize);
                 DownloadDetailsInfo downloadInfo = new DownloadDetailsInfo(url, filePath, tag, id);
                 downloadInfo.setErrorCode(ErrorCode.USABLE_SPACE_NOT_ENOUGH);
                 PumpFactory.getService(IMessageCenter.class).notifyProgressChanged(downloadInfo);

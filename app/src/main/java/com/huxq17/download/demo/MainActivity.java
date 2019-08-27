@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                 progressDialog.setProgress(0);
                 progressDialog.show();
                 Pump.newRequest(url2)
-                        .listener(new DownloadListener(url2) {
+                        .listener(new DownloadListener() {
 
                             @Override
                             public void onProgress(int progress) {

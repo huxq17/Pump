@@ -23,10 +23,16 @@ public class DownloadConfigService implements IDownloadConfigService {
     }
 
     public int getMaxRunningTaskNumber() {
+        if (downloadConfig == null) {
+            return maxRunningTaskNumber;
+        }
         return downloadConfig.getMaxRunningTaskNumber();
     }
 
     public long getMinUsableSpace() {
+        if (downloadConfig == null) {
+            return minUsableStorageSpace;
+        }
         return downloadConfig.getMinUsableSpace();
     }
 }

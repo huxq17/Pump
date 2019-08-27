@@ -87,7 +87,8 @@ public class MessageCenter implements IMessageCenter {
 
     @Override
     public synchronized void unRegister(String id) {
-        DownloadListener downloadObserver = new DownloadListener(id);
+        DownloadListener downloadObserver = new DownloadListener();
+        downloadObserver.setId(id);
         unRegister(downloadObserver);
     }
 

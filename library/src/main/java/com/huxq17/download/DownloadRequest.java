@@ -103,7 +103,7 @@ public class DownloadRequest {
         }
 
         public DownloadGenerator listener(final DownloadListener listener) {
-            listener.enable();
+            listener.enable(downloadRequest.getId());
             return this;
         }
 

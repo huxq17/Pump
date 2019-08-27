@@ -7,16 +7,11 @@ import com.huxq17.download.DownloadInfoSnapshot;
 import com.huxq17.download.Pump;
 
 public class DownloadListener {
-    private final String id;
+    private String id;
     private DownloadInfo.Status status;
     private boolean enable;
 
     public DownloadListener() {
-        id = null;
-    }
-
-    public DownloadListener(String id) {
-        this.id = id;
     }
 
     /**
@@ -30,10 +25,19 @@ public class DownloadListener {
         this.enable = enable;
     }
 
+    void setId(String id) {
+        this.id = id;
+    }
+
     /**
      * Enable this Observer.
      */
     public final void enable() {
+        enable(null);
+    }
+
+    public final void enable(String id) {
+        this.id = id;
         if (!enable) {
             Pump.subscribe(this);
         }

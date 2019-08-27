@@ -75,7 +75,7 @@ public class CheckCacheAction implements Action {
                     long downloadDirUsableSpace = Util.getUsableSpace(new File(downloadRequest.getFilePath()));
                     long dataFileUsableSpace = Util.getUsableSpace(Environment.getDataDirectory());
                     long minUsableStorageSpace = PumpFactory.getService(IDownloadConfigService.class).getMinUsableSpace();
-                    if (downloadDirUsableSpace < contentLength * 2 || dataFileUsableSpace <= minUsableStorageSpace) {
+                    if (downloadDirUsableSpace <= contentLength * 2 || dataFileUsableSpace <= minUsableStorageSpace) {
                         detailsInfo.setErrorCode(ErrorCode.USABLE_SPACE_NOT_ENOUGH);
                         result = false;
 
