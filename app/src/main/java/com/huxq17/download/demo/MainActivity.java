@@ -15,13 +15,13 @@ import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
     //        private String url = "http://dlied5.myapp.com/myapp/1104466820/sgame/2017_com.tencent.tmgp.sgame_h178_1.41.2.16_5a7ef8.apk";
-//    private String url = "http://down.youxifan.com/Q6ICeD";
-    private String url = "http://www.anzhi.com/dl_app.php?s=3080740&n=5";
+    private String url = "http://down.youxifan.com/Q6ICeD";
+//    private String url = "http://www.anzhi.com/dl_app.php?s=3080740&n=5";
     //    private String url = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
     private String url2 = "https://file.izuiyou.com/download/package/zuiyou.apk?from=ixiaochuan";
     String url4 = "http://v.nq6.com/xinqu.apk";
     //    String url5 = "http://t2.hddhhn.com/uploads/tu/201612/98/st93.png";
-    String url5 = "http://wap.apk.anzhi.com/data4/apk/201810/24/e2cd3e0aded695c8fb7edcc508e3fd1b_37132000.apk";
+    String url5 = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
     private ProgressDialog progressDialog;
     private final static String TAG = "groupA";
 
