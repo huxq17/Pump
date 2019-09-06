@@ -7,6 +7,7 @@ import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.DownloadListener;
 import com.huxq17.download.provider.Provider;
 
+
 public class DownloadRequest {
     private String id;
     private String url;
@@ -19,6 +20,20 @@ public class DownloadRequest {
     private int retryCount = 0;
     private static final int DEFAULT_RETRY_DELAY = 200;
     private int retryDelay = DEFAULT_RETRY_DELAY;
+    private String md5;
+    private OnVerifyMd5Listener onVerifyMd5Listener;
+
+    public String getMd5() {
+        return md5 == null ? "" : md5;
+    }
+
+    public void setMd5(String md5) {
+        this.md5 = md5;
+    }
+
+    public OnVerifyMd5Listener getOnVerifyMd5Listener() {
+        return onVerifyMd5Listener;
+    }
 
     public void setCacheBean(Provider.CacheBean cacheBean) {
         this.cacheBean = cacheBean;
@@ -104,6 +119,10 @@ public class DownloadRequest {
 
         public DownloadGenerator listener(final DownloadListener listener) {
             listener.enable(downloadRequest.getId());
+            return this;
+        }
+        public DownloadGenerator setOnVerifyMd5Listener(OnVerifyMd5Listener listener) {
+            downloadRequest.onVerifyMd5Listener = listener;
             return this;
         }
 

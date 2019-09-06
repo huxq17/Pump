@@ -68,6 +68,8 @@ public class CheckCacheAction implements Action {
 //            }
             String lastModified = headers.get("Last-Modified");
             String eTag = headers.get("ETag");
+            String md5 = headers.get("Content-MD5");
+            downloadRequest.setMd5(md5);
             int responseCode = response.code();
             if (response.isSuccessful()) {
                 long contentLength = getContentLength(headers);
@@ -75,7 +77,7 @@ public class CheckCacheAction implements Action {
                     long downloadDirUsableSpace = Util.getUsableSpace(new File(downloadRequest.getFilePath()));
                     long dataFileUsableSpace = Util.getUsableSpace(Environment.getDataDirectory());
                     long minUsableStorageSpace = PumpFactory.getService(IDownloadConfigService.class).getMinUsableSpace();
-                    if (downloadDirUsableSpace <= contentLength * 2 || dataFileUsableSpace <= minUsableStorageSpace) {
+                    if (downloadDirUsableSpace < contentLength * 2 || dataFileUsableSpace <= minUsableStorageSpace) {
                         detailsInfo.setErrorCode(ErrorCode.USABLE_SPACE_NOT_ENOUGH);
                         result = false;
 
@@ -127,6 +129,7 @@ public class CheckCacheAction implements Action {
 
         return -1;
     }
+
 
     @Override
     public boolean proceed(DownloadChain chain) {

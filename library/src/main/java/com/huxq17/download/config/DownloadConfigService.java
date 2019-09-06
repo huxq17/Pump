@@ -2,6 +2,7 @@ package com.huxq17.download.config;
 
 
 import com.huxq17.download.DownloadConfig;
+import com.huxq17.download.OnVerifyMd5Listener;
 
 public class DownloadConfigService implements IDownloadConfigService {
     /**
@@ -34,5 +35,13 @@ public class DownloadConfigService implements IDownloadConfigService {
             return minUsableStorageSpace;
         }
         return downloadConfig.getMinUsableSpace();
+    }
+
+    @Override
+    public OnVerifyMd5Listener getOnVerifyMd5Listener() {
+        if(downloadConfig==null){
+            return null;
+        }
+        return downloadConfig.getOnVerifyMd5Listener();
     }
 }

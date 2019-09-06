@@ -45,7 +45,7 @@ public class MergeFileAction implements Action {
                     Util.mergeFiles(downloadPartFiles, file);
                     Util.deleteDir(tempDir);
                 }
-                LogUtil.i("merge" + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime));
+                LogUtil.d("merge " + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime));
                 downloadInfo.setFinished(1);
                 downloadInfo.setCompletedSize(completedSize);
                 downloadTask.updateInfo();

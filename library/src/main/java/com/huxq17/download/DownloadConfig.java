@@ -14,6 +14,7 @@ public class DownloadConfig {
      * 最小可用的内存空间
      */
     private long minUsableStorageSpace = 4 * 1024L;
+    private OnVerifyMd5Listener onVerifyMd5Listener;
 
     private DownloadConfig() {
     }
@@ -29,6 +30,10 @@ public class DownloadConfig {
     public static Builder newBuilder(Context context) {
         Provider.init(context);
         return new Builder();
+    }
+
+    public OnVerifyMd5Listener getOnVerifyMd5Listener() {
+        return onVerifyMd5Listener;
     }
 
     public static class Builder {

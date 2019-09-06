@@ -11,8 +11,10 @@ import android.text.TextUtils;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.util.UUID;
 
 import okio.BufferedSink;
@@ -220,4 +222,38 @@ public class Util {
         }
 
     }
+
+    public static String getMD5(File file) {
+        FileInputStream fileInputStream = null;
+        try {
+            MessageDigest MD5 = MessageDigest.getInstance("MD5");
+            fileInputStream = new FileInputStream(file);
+            byte[] buffer = new byte[8192];
+            int length;
+            while ((length = fileInputStream.read(buffer)) != -1) {
+                MD5.update(buffer, 0, length);
+            }
+            return getMd5StrFromBytes(MD5.digest());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        } finally {
+            closeQuietly(fileInputStream);
+        }
+    }
+
+    /**
+     * MD5sum for string
+     */
+    public static String getMd5StrFromBytes(byte[] md5bytes) {
+        if (md5bytes == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < md5bytes.length; i++) {
+            sb.append(String.format("%02x", md5bytes[i]));
+        }
+        return sb.toString();
+    }
+
 }
