@@ -36,20 +36,22 @@ public class CheckCacheAction implements Action {
 
     private Request buildRequest(DownloadRequest downloadRequest) {
         String url = downloadRequest.getUrl();
-        Provider.CacheBean cacheBean = DBService.getInstance().queryCache(url);
         Request.Builder builder = new Request.Builder()
                 .head()
                 .addHeader("Accept-Encoding", "identity")
                 .url(url);
 
-        if (cacheBean != null) {
-            String eTag = cacheBean.eTag;
-            String lastModified = cacheBean.lastModified;
-            if (!TextUtils.isEmpty(lastModified)) {
-                builder.addHeader("If-Modified-Since", lastModified);
-            }
-            if (!TextUtils.isEmpty(eTag)) {
-                builder.addHeader("If-None-Match", eTag);
+        if (downloadRequest.getDownloadInfo().isFinished()) {
+            Provider.CacheBean cacheBean = DBService.getInstance().queryCache(url);
+            if (cacheBean != null) {
+                String eTag = cacheBean.eTag;
+                String lastModified = cacheBean.lastModified;
+                if (!TextUtils.isEmpty(lastModified)) {
+                    builder.addHeader("If-Modified-Since", lastModified);
+                }
+                if (!TextUtils.isEmpty(eTag)) {
+                    builder.addHeader("If-None-Match", eTag);
+                }
             }
         }
         return builder.build();
@@ -62,14 +64,9 @@ public class CheckCacheAction implements Action {
         try {
             response = okHttpClient.newCall(request).execute();
             Headers headers = response.headers();
-//            for (String name : headers.names()) {
-//                String value = headers.get(name);
-//                LogUtil.e("header name=" + name + ";value=" + value + ";responseCode=" + response.networkResponse().code());
-//            }
             String lastModified = headers.get("Last-Modified");
             String eTag = headers.get("ETag");
-            String md5 = headers.get("Content-MD5");
-            downloadRequest.setMd5(md5);
+            downloadRequest.setMd5(headers.get("Content-MD5"));
             int responseCode = response.code();
             if (response.isSuccessful()) {
                 long contentLength = getContentLength(headers);
@@ -129,7 +126,6 @@ public class CheckCacheAction implements Action {
 
         return -1;
     }
-
 
     @Override
     public boolean proceed(DownloadChain chain) {

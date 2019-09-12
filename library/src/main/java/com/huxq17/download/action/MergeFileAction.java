@@ -1,6 +1,7 @@
 package com.huxq17.download.action;
 
 
+
 import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
@@ -37,15 +38,18 @@ public class MergeFileAction implements Action {
                 long startTime = System.currentTimeMillis();
                 if (downloadPartFiles.length == 1) {
                     if (!downloadPartFiles[0].renameTo(file)) {
-                        Util.deleteDir(tempDir);
                         downloadInfo.setStatus(DownloadInfo.Status.FAILED);
+                        Util.deleteDir(tempDir);
+                        LogUtil.e("rename "+downloadPartFiles[0].getPath()+" to "+file.getPath()+" failed.");
                         return false;
+                    } else {
+                        Util.deleteDir(tempDir);
                     }
                 } else {
                     Util.mergeFiles(downloadPartFiles, file);
                     Util.deleteDir(tempDir);
                 }
-                LogUtil.d("merge " + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime));
+                LogUtil.i("merge " + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime)+"; file.length="+ file.length());
                 downloadInfo.setFinished(1);
                 downloadInfo.setCompletedSize(completedSize);
                 downloadTask.updateInfo();
