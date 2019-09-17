@@ -8,7 +8,7 @@ public class DownloadConfigService implements IDownloadConfigService {
     /**
      * 允许同时下载的最大任务数量
      */
-    private int maxRunningTaskNumber;
+    private int maxRunningTaskNumber = 3;
     /**
      * 最小可用的内存空间
      */
@@ -39,7 +39,7 @@ public class DownloadConfigService implements IDownloadConfigService {
 
     @Override
     public OnVerifyMd5Listener getOnVerifyMd5Listener() {
-        if(downloadConfig==null){
+        if (downloadConfig == null) {
             return null;
         }
         return downloadConfig.getOnVerifyMd5Listener();

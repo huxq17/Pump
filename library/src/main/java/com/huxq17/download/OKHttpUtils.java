@@ -19,8 +19,8 @@ public class OKHttpUtils {
 //                .cache(cache)
                 .followRedirects(true)
                 .protocols(Collections.singletonList(Protocol.HTTP_1_1))
-                .writeTimeout(30,TimeUnit.SECONDS)
-                .readTimeout(30,TimeUnit.SECONDS)
+                .writeTimeout(20,TimeUnit.SECONDS)
+                .readTimeout(20,TimeUnit.SECONDS)
                 .connectTimeout(15,TimeUnit.SECONDS)
                 .build();
     }
