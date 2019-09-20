@@ -51,12 +51,12 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
         waitingTaskQueue = new ConcurrentLinkedQueue<>();
         requestQueue = new ConcurrentLinkedQueue<>();
         runningTaskQueue = new ConcurrentLinkedQueue<>();
-        maxRunningTaskNumber = PumpFactory.getService(IDownloadConfigService.class).getMaxRunningTaskNumber();
-        minUsableStorageSpace = PumpFactory.getService(IDownloadConfigService.class).getMinUsableSpace();
         TaskManager.execute(this);
     }
 
     public void enqueueRequest(DownloadRequest request) {
+        maxRunningTaskNumber = PumpFactory.getService(IDownloadConfigService.class).getMaxRunningTaskNumber();
+        minUsableStorageSpace = PumpFactory.getService(IDownloadConfigService.class).getMinUsableSpace();
         if (isRunning.get()) {
             requestQueue.add(request);
             signalConsumer();

@@ -32,9 +32,6 @@ public class VerifyResultAction implements Action {
                 downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
                 DBService.getInstance().deleteInfo(downloadInfo.getId());
             } else {
-                if (status == DownloadInfo.Status.PAUSING) {
-                    downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
-                }
                 long completedSize = downloadInfo.getCompletedSize();
                 long contentLength = downloadInfo.getContentLength();
                 long downloadFileLength = downloadInfo.getDownloadFile().length();
@@ -48,6 +45,9 @@ public class VerifyResultAction implements Action {
                     if (!chain.isFinishedFromCache()) {//Avoid notify complete repeatly.
                         downloadTask.notifyProgressChanged(downloadInfo);
                     }
+                } else if (status == DownloadInfo.Status.PAUSING) {
+                    downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
+                    downloadTask.notifyProgressChanged(downloadInfo);
                 } else {
                     downloadInfo.setStatus(DownloadInfo.Status.FAILED);
                     downloadTask.notifyProgressChanged(downloadInfo);
