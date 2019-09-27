@@ -5,10 +5,12 @@ import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.DownloadChain;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.OKHttpUtils;
+import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.Utils.Util;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.concurrent.CountDownLatch;
 
 import okhttp3.Call;
@@ -57,7 +59,7 @@ public class DownloadBlockTask implements Task {
                 response = call.execute();
                 int code = response.code();
                 if (!isCanceled) {
-                    if (code == 206 || (code == 200 && downloadTask.isDowngrade())) {
+                    if (code == HttpURLConnection.HTTP_PARTIAL || (code == HttpURLConnection.HTTP_OK && downloadTask.isDowngrade())) {
                         bufferedSource = response.body().source();
                         int len;
                         bufferedSink = Okio.buffer(Okio.appendingSink(tempFile));
@@ -69,7 +71,7 @@ public class DownloadBlockTask implements Task {
                             bufferedSink.write(buffer, 0, len);
                         }
                         bufferedSink.flush();
-                    } else if (code == 200) {
+                    } else if (code == HttpURLConnection.HTTP_OK) {
                         //downgrade when server not support breakpoint download.
                         downloadChain.downgrade();
                     }

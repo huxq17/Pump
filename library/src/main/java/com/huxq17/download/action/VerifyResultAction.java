@@ -45,6 +45,9 @@ public class VerifyResultAction implements Action {
                     if (!chain.isFinishedFromCache()) {//Avoid notify complete repeatly.
                         downloadTask.notifyProgressChanged(downloadInfo);
                     }
+                    if (downloadRequest.getOnDownloadSuccessListener() != null) {
+                        downloadRequest.getOnDownloadSuccessListener().onDownloadSuccess(downloadInfo.getDownloadFile(), downloadRequest);
+                    }
                 } else if (status == DownloadInfo.Status.PAUSING) {
                     downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
                     downloadTask.notifyProgressChanged(downloadInfo);

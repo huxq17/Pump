@@ -26,6 +26,13 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
         downloadFile = new File(filePath);
     }
 
+    public void setFilePath(String filePath) {
+        if (filePath != null && !filePath.equals(this.filePath)) {
+            Util.deleteFile(downloadFile);
+            downloadFile = new File(filePath);
+        }
+    }
+
     public void setDownloadTask(DownloadTask downloadTask) {
         this.downloadTask = downloadTask;
     }

@@ -18,10 +18,12 @@ public class OKHttpUtils {
         OK_HTTP_CLIENT = new OkHttpClient().newBuilder()
 //                .cache(cache)
                 .followRedirects(true)
+                .retryOnConnectionFailure(true)
                 .protocols(Collections.singletonList(Protocol.HTTP_1_1))
                 .writeTimeout(20,TimeUnit.SECONDS)
                 .readTimeout(20,TimeUnit.SECONDS)
                 .connectTimeout(15,TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true)
                 .build();
     }
 

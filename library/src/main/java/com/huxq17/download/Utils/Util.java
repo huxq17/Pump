@@ -223,6 +223,53 @@ public class Util {
 
     }
 
+    /**
+     * 为防止创建一个正在被删除的文件夹，所以在删除前先重命名该文件夹
+     * 可以解决很多快速创建删除而产生的0字节大小文件问题
+     *
+     * @param file 文件对象
+     * @return 是否成功
+     */
+    public static boolean deleteFile(File file) {
+        File to = new File(file.getAbsolutePath() + System.currentTimeMillis());
+        file.renameTo(to);
+        return to.delete();
+    }
+
+    /**
+     * 重命名
+     *
+     * @param filePathName 原始文件路径
+     * @param newPathName  新的文件路径
+     * @return 是否成功
+     */
+    public static boolean rename(String filePathName, String newPathName) {
+        if (TextUtils.isEmpty(filePathName)) return false;
+        if (TextUtils.isEmpty(newPathName)) return false;
+
+        delete(newPathName);
+
+        File file = new File(filePathName);
+        File newFile = new File(newPathName);
+        if (!file.exists()) {
+            return false;
+        }
+        File parentFile = newFile.getParentFile();
+        if (!parentFile.exists()) {
+            parentFile.mkdirs();
+        }
+        return file.renameTo(newFile);
+    }
+
+    /**
+     * 删除文件
+     */
+    public static boolean delete(String filePathName) {
+        if (TextUtils.isEmpty(filePathName)) return false;
+        File file = new File(filePathName);
+        return deleteFile(file);
+    }
+
     public static String getMD5(File file) {
         FileInputStream fileInputStream = null;
         try {

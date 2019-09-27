@@ -7,6 +7,8 @@ import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.DownloadListener;
 import com.huxq17.download.provider.Provider;
 
+import java.io.File;
+
 
 public class DownloadRequest {
     private String id;
@@ -22,6 +24,7 @@ public class DownloadRequest {
     private int retryDelay = DEFAULT_RETRY_DELAY;
     private String md5;
     private OnVerifyMd5Listener onVerifyMd5Listener;
+    private OnDownloadSuccessListener onDownloadSuccessListener;
 
     public String getMd5() {
         return md5 == null ? "" : md5;
@@ -35,6 +38,10 @@ public class DownloadRequest {
         return onVerifyMd5Listener;
     }
 
+    public OnDownloadSuccessListener getOnDownloadSuccessListener() {
+        return onDownloadSuccessListener;
+    }
+
     public void setCacheBean(Provider.CacheBean cacheBean) {
         this.cacheBean = cacheBean;
     }
@@ -45,6 +52,7 @@ public class DownloadRequest {
 
     public void setDownloadInfo(DownloadDetailsInfo downloadInfo) {
         this.downloadInfo = downloadInfo;
+        downloadInfo.setFilePath(filePath);
     }
 
     public int getRetryDelay() {
@@ -121,8 +129,19 @@ public class DownloadRequest {
             listener.enable(downloadRequest.getId());
             return this;
         }
+
         public DownloadGenerator setOnVerifyMd5Listener(OnVerifyMd5Listener listener) {
             downloadRequest.onVerifyMd5Listener = listener;
+            return this;
+        }
+
+        /**
+         * 设置下载成功的监听，回掉执行在异步下载线程，不会阻塞ui线程。
+         * @param onDownloadSuccessListener 下载成功监听
+         * @return DownloadGenerator
+         */
+        public DownloadGenerator setOnDownloadSuccessListener(OnDownloadSuccessListener onDownloadSuccessListener) {
+            downloadRequest.onDownloadSuccessListener = onDownloadSuccessListener;
             return this;
         }
 
@@ -177,5 +196,9 @@ public class DownloadRequest {
         public void submit() {
             PumpFactory.getService(IDownloadManager.class).submit(downloadRequest);
         }
+    }
+
+    public interface OnDownloadSuccessListener {
+        void onDownloadSuccess(File downloadFile, DownloadRequest downloadRequest);
     }
 }
