@@ -41,13 +41,12 @@ public class VerifyResultAction implements Action {
                     if (cacheBean != null) {
                         DBService.getInstance().updateCache(cacheBean);
                     }
-                    downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
-                    if (!chain.isFinishedFromCache()) {//Avoid notify complete repeatly.
-                        downloadTask.notifyProgressChanged(downloadInfo);
-                    }
                     if (downloadRequest.getOnDownloadSuccessListener() != null) {
                         downloadRequest.getOnDownloadSuccessListener().onDownloadSuccess(downloadInfo.getDownloadFile(), downloadRequest);
                     }
+
+                    downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
+                    downloadTask.notifyProgressChanged(downloadInfo);
                 } else if (status == DownloadInfo.Status.PAUSING) {
                     downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
                     downloadTask.notifyProgressChanged(downloadInfo);

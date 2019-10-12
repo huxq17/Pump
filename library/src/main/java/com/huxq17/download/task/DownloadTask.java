@@ -49,6 +49,9 @@ public class DownloadTask implements Task {
             speedMonitor = new SpeedMonitor(downloadInfo);
             messageCenter = PumpFactory.getService(IMessageCenter.class);
             downloadInfo.setErrorCode(0);
+            if (downloadInfo.getCompletedSize() == downloadInfo.getContentLength()) {
+                downloadInfo.setCompletedSize(0);
+            }
             downloadInfo.setStatus(DownloadInfo.Status.WAIT);
             notifyProgressChanged(downloadInfo);
         } else {
