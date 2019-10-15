@@ -15,6 +15,7 @@ import com.huxq17.download.message.IMessageCenter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DownloadTask implements Task {
@@ -26,7 +27,7 @@ public class DownloadTask implements Task {
     protected DownLoadLifeCycleObserver downLoadLifeCycleObserver;
     private SpeedMonitor speedMonitor;
     private Thread thread;
-    private List<Task> downloadBlockTasks = new ArrayList<>();
+    private List<Task> downloadBlockTasks = new CopyOnWriteArrayList<>();
     private int lastProgress = 0;
     /**
      * True indicate that not support breakpoint download.
@@ -35,6 +36,7 @@ public class DownloadTask implements Task {
     private DownloadRequest downloadRequest;
     private long startTime;
     private final Object lock;
+    private volatile boolean isCanceled;
 
     public DownloadTask(DownloadRequest downloadRequest, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
@@ -180,6 +182,8 @@ public class DownloadTask implements Task {
     }
 
     public void cancel() {
+        if (isCanceled) return;
+        isCanceled = true;
         if (thread != null) {
             thread.interrupt();
         } else {

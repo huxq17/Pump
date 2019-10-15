@@ -26,7 +26,7 @@ public class DownloadBlockTask implements Task {
     private DownloadBatch batch;
     private DownloadChain downloadChain;
     private CountDownLatch countDownLatch;
-    private boolean isCanceled;
+    private volatile boolean isCanceled;
     private Call call;
 
     public DownloadBlockTask(DownloadBatch batch, CountDownLatch countDownLatch, DownloadChain downloadChain) {
@@ -80,6 +80,7 @@ public class DownloadBlockTask implements Task {
                 if (!call.isCanceled()) {
                     e.printStackTrace();
                     downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
+                    downloadTask.cancel();
                 }
             } finally {
                 Util.closeQuietly(bufferedSource);
