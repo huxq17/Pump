@@ -1,7 +1,6 @@
 package com.huxq17.download.action;
 
 
-
 import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
@@ -36,24 +35,28 @@ public class MergeFileAction implements Action {
             });
             if (fileLength > 0 && completedSize == fileLength && downloadPartFiles != null && downloadPartFiles.length == downloadTask.getRequest().getThreadNum()) {
                 long startTime = System.currentTimeMillis();
+                boolean mergeSuccess = false;
                 if (downloadPartFiles.length == 1) {
-                    if (!downloadPartFiles[0].renameTo(file)) {
-                        downloadInfo.setStatus(DownloadInfo.Status.FAILED);
-                        Util.deleteDir(tempDir);
-                        LogUtil.e("rename "+downloadPartFiles[0].getPath()+" to "+file.getPath()+" failed.");
-                        return false;
-                    } else {
-                        Util.deleteDir(tempDir);
+                    if (Util.renameTo(downloadPartFiles[0], file)) {
+                        mergeSuccess = true;
                     }
                 } else {
-                    Util.mergeFiles(downloadPartFiles, file);
-                    Util.deleteDir(tempDir);
+                    if (Util.mergeFiles(downloadPartFiles, file)) {
+                        mergeSuccess = true;
+                    }
                 }
-                LogUtil.i("merge " + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime)+"; file.length="+ file.length());
-                downloadInfo.setFinished(1);
-                downloadInfo.setCompletedSize(completedSize);
-                downloadTask.updateInfo();
-                downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
+                Util.deleteDir(tempDir);
+                if (mergeSuccess) {
+                    LogUtil.d("Merge " + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime) + "; file.length=" + file.length());
+                    downloadInfo.setFinished(1);
+                    downloadInfo.setCompletedSize(completedSize);
+                    downloadTask.updateInfo();
+                    downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
+                } else {
+                    downloadInfo.setStatus(DownloadInfo.Status.FAILED);
+                    LogUtil.e("Merge to " + file.getPath() + " failed.");
+                }
+
             } else {
                 downloadInfo.setStatus(DownloadInfo.Status.FAILED);
             }

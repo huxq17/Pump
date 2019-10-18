@@ -28,7 +28,7 @@ public class VerifyResultAction implements Action {
             downloadTask.destroy();
             if (downloadTask.isNeedDelete()) {
                 Util.deleteDir(downloadInfo.getTempDir());
-                downloadInfo.getDownloadFile().delete();
+                Util.deleteFile(downloadInfo.getDownloadFile());
                 downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
                 DBService.getInstance().deleteInfo(downloadInfo.getId());
             } else {
