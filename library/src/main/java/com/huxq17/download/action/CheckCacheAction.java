@@ -2,6 +2,7 @@ package com.huxq17.download.action;
 
 import android.content.Context;
 import android.os.Environment;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 
@@ -37,8 +38,9 @@ public class CheckCacheAction implements Action {
     private Request buildRequest(DownloadRequest downloadRequest) {
         String url = downloadRequest.getUrl();
         Request.Builder builder = new Request.Builder()
-                .head()
+                .get()
                 .addHeader("Accept-Encoding", "identity")
+                .addHeader("Range", "bytes=0-0")
                 .url(url);
 
         if (downloadRequest.getDownloadInfo().isFinished()) {
@@ -115,13 +117,28 @@ public class CheckCacheAction implements Action {
         return result;
     }
 
-    private long getContentLength(Headers headers) {
-        try {
-            String contentLength = headers.get("Content-Length");
-//            LogUtil.e("headers="+ headers.toString());
-            return Long.parseLong(contentLength);
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
+//    private long getContentLength(Headers headers) {
+//        try {
+//            String contentLength = headers.get("Content-Length");
+////            LogUtil.e("headers="+ headers.toString());
+//            return Long.parseLong(contentLength);
+//        } catch (NumberFormatException e) {
+//            e.printStackTrace();
+//        }
+//
+//        return -1;
+//    }
+    private  long getContentLength(Headers headers) {
+        String contentRange = headers.get("Content-Range");
+        if (contentRange == null) return -1;
+
+        final String[] session = contentRange.split("/");
+        if (session.length >= 2) {
+            try {
+                return Long.parseLong(session[1]);
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
         }
 
         return -1;
