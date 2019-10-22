@@ -161,7 +161,7 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
 
     @Override
     public String getName() {
-        return downloadFile == null ? "undefined name" : downloadFile.getName();
+        return downloadFile == null ? "" : downloadFile.getName();
     }
 
     @Override

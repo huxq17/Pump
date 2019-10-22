@@ -73,6 +73,10 @@ public class DownloadRequest {
         return TextUtils.isEmpty(id) ? url : id;
     }
 
+    public String getName() {
+        return getId();
+    }
+
     public void setId(String id) {
         this.id = id;
     }

@@ -1,6 +1,8 @@
 package com.huxq17.download;
 
 
+import android.support.annotation.NonNull;
+
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.DownloadListener;
@@ -170,7 +172,7 @@ public class Pump {
      * @param id unique download id,default is download url.
      * @return true If Pump has downloaded
      */
-    public static boolean hasDownloadSucceed(String id) {
+    public static boolean hasDownloadSucceed(@NonNull String id) {
         return PumpFactory.getService(IDownloadManager.class).hasDownloadSucceed(id);
     }
 
@@ -180,7 +182,7 @@ public class Pump {
      * @param id unique download id,default is download url.
      * @return the file has downloaded.
      */
-    public static File getFileIfSucceed(String id) {
+    public static File getFileIfSucceed(@NonNull String id) {
         return PumpFactory.getService(IDownloadManager.class).getFileIfSucceed(id);
     }
 

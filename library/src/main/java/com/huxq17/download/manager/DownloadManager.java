@@ -48,9 +48,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         String id = downloadRequest.getId();
         if (taskMap.get(id) != null) {
             //The task is running,we need do nothing.
-            String filePath = downloadRequest.getFilePath();
-            File downloadFile = new File(filePath);
-            LogUtil.e("task " + downloadFile.getName() + " is running,we need do nothing.");
+            LogUtil.e("task " + downloadRequest.getName() + " is running,we need do nothing.");
             return;
         }
         DownloadDetailsInfo downloadInfo = null;

@@ -65,7 +65,6 @@ public class CheckCacheAction implements Action {
     private String eTag;
     private long contentLength;
     private String contentLengthField;
-    private String fileName;
 
     private boolean parseResponse(Request request) {
         boolean result = true;
@@ -77,7 +76,7 @@ public class CheckCacheAction implements Action {
             transferEncoding = headers.get("Transfer-Encoding");
             lastModified = headers.get("Last-Modified");
             if (downloadRequest.getFilePath() == null) {
-                fileName = parseContentDisposition(headers.get("Content-Disposition"));
+                String fileName = parseContentDisposition(headers.get("Content-Disposition"));
                 if (fileName == null) {
                     fileName = Util.getFileNameByUrl(downloadRequest.getUrl());
                 }

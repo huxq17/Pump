@@ -135,6 +135,9 @@ public class DBService {
     }
 
     public synchronized DownloadDetailsInfo getDownloadInfo(String id) {
+        if (TextUtils.isEmpty(id)) {
+            throw new IllegalArgumentException("id is empty.");
+        }
         SQLiteDatabase db = helper.getReadableDatabase();
         Cursor cursor = db.query(Provider.DownloadTable.TABLE_NAME, null,
                 Provider.DownloadTable.ID + "=?", new String[]{id}, null, null, null, null);
