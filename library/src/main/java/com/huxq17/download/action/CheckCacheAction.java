@@ -23,6 +23,8 @@ import com.huxq17.download.task.DownloadTask;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
@@ -39,7 +41,6 @@ public class CheckCacheAction implements Action {
         String url = downloadRequest.getUrl();
         Request.Builder builder = new Request.Builder()
                 .get()
-                .addHeader("Accept-Encoding", "identity")
                 .addHeader("Range", "bytes=0-0")
                 .url(url);
 
@@ -59,19 +60,55 @@ public class CheckCacheAction implements Action {
         return builder.build();
     }
 
-    private boolean executeRequest(Request request) {
+    private int responseCode;
+    private String lastModified;
+    private String eTag;
+    private long contentLength;
+    private String contentLengthField;
+    private String fileName;
+
+    private boolean parseResponse(Request request) {
         boolean result = true;
-        DownloadDetailsInfo detailsInfo = downloadTask.getDownloadInfo();
-        Response response;
+        Response response = null;
+        String transferEncoding = null;
         try {
             response = okHttpClient.newCall(request).execute();
             Headers headers = response.headers();
-            String lastModified = headers.get("Last-Modified");
-            String eTag = headers.get("ETag");
+            transferEncoding = headers.get("Transfer-Encoding");
+            lastModified = headers.get("Last-Modified");
+            if (downloadRequest.getFilePath() == null) {
+                fileName = parseContentDisposition(headers.get("Content-Disposition"));
+                if (fileName == null) {
+                    fileName = Util.getFileNameByUrl(downloadRequest.getUrl());
+                }
+                downloadRequest.setFilePath(Util.getCachePath(PumpFactory.getService(IDownloadManager.class).getContext()) + "/" + fileName);
+                DBService.getInstance().updateInfo(downloadRequest.getDownloadInfo());
+            }
+            eTag = headers.get("ETag");
+            contentLengthField = headers.get("Content-Length");
             downloadRequest.setMd5(headers.get("Content-MD5"));
-            int responseCode = response.code();
-            if (response.isSuccessful()) {
-                long contentLength = getContentLength(headers);
+            responseCode = response.code();
+            contentLength = getContentLength(headers);
+        } catch (IOException e) {
+            e.printStackTrace();
+            result = false;
+        } finally {
+            Util.closeQuietly(response);
+        }
+        if (contentLength == -1 && isNeedHeadContentLength(transferEncoding)) {
+            contentLength = headContentLength();
+            if (contentLength != -1) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    private boolean executeRequest(Request request) {
+        boolean result = true;
+        DownloadDetailsInfo detailsInfo = downloadTask.getDownloadInfo();
+        if (parseResponse(request)) {
+            if (responseCode >= 200 && responseCode < 300) {
                 if (contentLength > 0) {
                     long downloadDirUsableSpace = Util.getUsableSpace(new File(downloadRequest.getFilePath()));
                     long dataFileUsableSpace = Util.getUsableSpace(Environment.getDataDirectory());
@@ -105,42 +142,107 @@ public class CheckCacheAction implements Action {
                 }
                 result = false;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } else {
             detailsInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
-            result = false;
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            detailsInfo.setErrorCode(ErrorCode.CONTENT_LENGTH_NOT_FOUND);
             result = false;
         }
         return result;
     }
 
-//    private long getContentLength(Headers headers) {
-//        try {
-//            String contentLength = headers.get("Content-Length");
-////            LogUtil.e("headers="+ headers.toString());
-//            return Long.parseLong(contentLength);
-//        } catch (NumberFormatException e) {
-//            e.printStackTrace();
-//        }
-//
-//        return -1;
-//    }
-    private  long getContentLength(Headers headers) {
-        String contentRange = headers.get("Content-Range");
-        if (contentRange == null) return -1;
+    private static final Pattern CONTENT_DISPOSITION_QUOTED_PATTERN =
+            Pattern.compile("attachment;\\s*filename\\s*=\\s*\"([^\"]*)\"");
+    // no note
+    private static final Pattern CONTENT_DISPOSITION_NON_QUOTED_PATTERN =
+            Pattern.compile("attachment;\\s*filename\\s*=\\s*(.*)");
 
-        final String[] session = contentRange.split("/");
-        if (session.length >= 2) {
-            try {
-                return Long.parseLong(session[1]);
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
+    /**
+     * The same to com.android.providers.downloads.Helpers#parseContentDisposition.
+     * </p>
+     * Parse the Content-Disposition HTTP Header. The format of the header
+     * is defined here: http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html
+     * This header provides a filename for content that is going to be
+     * downloaded to the file system. We only support the attachment type.
+     */
+    @Nullable
+    private static String parseContentDisposition(String contentDisposition)
+            throws IOException {
+        if (contentDisposition == null) {
+            return null;
         }
 
+        try {
+            String fileName = null;
+            Matcher m = CONTENT_DISPOSITION_QUOTED_PATTERN.matcher(contentDisposition);
+            if (m.find()) {
+                fileName = m.group(1);
+            } else {
+                m = CONTENT_DISPOSITION_NON_QUOTED_PATTERN.matcher(contentDisposition);
+                if (m.find()) {
+                    fileName = m.group(1);
+                }
+            }
+
+            if (fileName != null && fileName.contains("../")) {
+                LogUtil.e("The filename [" + fileName + "] from"
+                        + " the response is not allowable, because it contains '../', which "
+                        + "can raise the directory traversal vulnerability");
+            }
+            return fileName;
+        } catch (IllegalStateException ex) {
+            // This function is defined as returning null when it can't parse the header
+        }
+        return null;
+    }
+
+    private long getContentLength(Headers headers) {
+        long contentLength = -1;
+        String contentRange = headers.get("Content-Range");
+        if (contentRange != null) {
+            final String[] session = contentRange.split("/");
+            if (session.length >= 2) {
+                try {
+                    contentLength = Long.parseLong(session[1]);
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return contentLength;
+    }
+
+    private boolean isNeedHeadContentLength(String transferEncoding) {
+        if (transferEncoding != null && transferEncoding.equals("chunked")) {
+            // because of the Transfer-Encoding can certain the result is right, so pass.
+            return false;
+        }
+
+        if (contentLengthField == null || contentLengthField.length() <= 0) {
+            // because of the response header isn't contain the Content-Length so the HEAD method
+            // request is useless, because we plan to get the right instance-length on the
+            // Content-Length field through the response header of non 0-0 Range HEAD method request
+            return false;
+        }
+        // because of the response header contain Content-Length, but because of we using Range: 0-0
+        // so we the Content-Length is always 1 now, we can't use it, so we try to use HEAD method
+        // request just for get the certain instance-length.
+        return true;
+    }
+
+    private long headContentLength() {
+        String url = downloadRequest.getUrl();
+        Request.Builder builder = new Request.Builder()
+                .head()
+                .url(url);
+        Response response = null;
+        try {
+            response = okHttpClient.newCall(builder.build()).execute();
+            Headers headers = response.headers();
+            return Util.parseContentLength(headers.get("Content-Length"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            Util.closeQuietly(response);
+        }
         return -1;
     }
 

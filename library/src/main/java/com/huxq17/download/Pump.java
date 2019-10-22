@@ -16,7 +16,7 @@ public class Pump {
      * @param url remote url
      */
     public static DownloadRequest.DownloadGenerator newRequest(String url) {
-        return newRequest(url, Util.getCachePathByUrl(PumpFactory.getService(IDownloadManager.class).getContext(), url));
+        return newRequest(url, null);
     }
 
     /**

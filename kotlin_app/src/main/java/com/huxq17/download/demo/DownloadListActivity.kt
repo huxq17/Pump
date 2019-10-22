@@ -28,7 +28,7 @@ class DownloadListActivity : AppCompatActivity() {
             val downloadInfo = downloadInfo
             val viewHolder = downloadInfo.extraData as DownloadViewHolder
             val tag = map[viewHolder]
-            if (tag != null && tag.filePath == downloadInfo.filePath) {
+            if (tag != null && tag.id == downloadInfo.id) {
                 viewHolder.bindData(downloadInfo, status)
             }
         }

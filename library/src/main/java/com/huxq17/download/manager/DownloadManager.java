@@ -46,10 +46,10 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     public void submit(DownloadRequest downloadRequest) {
         startDownloadService();
         String id = downloadRequest.getId();
-        String filePath = downloadRequest.getFilePath();
-        File downloadFile = new File(filePath);
         if (taskMap.get(id) != null) {
             //The task is running,we need do nothing.
+            String filePath = downloadRequest.getFilePath();
+            File downloadFile = new File(filePath);
             LogUtil.e("task " + downloadFile.getName() + " is running,we need do nothing.");
             return;
         }
@@ -83,12 +83,12 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
                     DBService.getInstance().deleteInfo(id);
                 }
             }
-        }else{
+        } else {
             DownloadDetailsInfo downloadInfo = getDownloadInfoById(id);
             if (downloadInfoMap != null) {
                 downloadInfoMap.remove(id);
             }
-            if(downloadInfo!=null){
+            if (downloadInfo != null) {
                 downloadInfo.getDownloadFile().delete();
                 Util.deleteDir(downloadInfo.getTempDir());
                 DBService.getInstance().deleteInfo(id);

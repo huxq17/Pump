@@ -3,6 +3,7 @@ package com.huxq17.download;
 
 import android.text.TextUtils;
 
+import com.huxq17.download.Utils.Util;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.DownloadListener;
 import com.huxq17.download.provider.Provider;
@@ -88,6 +89,11 @@ public class DownloadRequest {
         return filePath;
     }
 
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+        downloadInfo.setFilePath(filePath);
+    }
+
     public int getThreadNum() {
         return threadNum;
     }
@@ -137,6 +143,7 @@ public class DownloadRequest {
 
         /**
          * 设置下载成功的监听，回掉执行在异步下载线程，不会阻塞ui线程。
+         *
          * @param onDownloadSuccessListener 下载成功监听
          * @return DownloadGenerator
          */

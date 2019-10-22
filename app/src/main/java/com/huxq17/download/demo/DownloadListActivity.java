@@ -43,7 +43,7 @@ public class DownloadListActivity extends AppCompatActivity {
             DownloadViewHolder viewHolder = (DownloadViewHolder) downloadInfo.getExtraData();
             if (viewHolder != null) {
                 DownloadInfo tag = map.get(viewHolder);
-                if (tag != null && tag.getFilePath().equals(downloadInfo.getFilePath())) {
+                if (tag != null && tag.getId().equals(downloadInfo.getId())) {
                     viewHolder.bindData(downloadInfo, getStatus());
                 }
             }

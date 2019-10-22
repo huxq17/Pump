@@ -80,8 +80,12 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
             String filePath = downloadRequest.getFilePath();
             String tag = downloadRequest.getTag();
             String id = downloadRequest.getId();
-
-            long downloadDirUsableSpace = Util.getUsableSpace(new File(downloadRequest.getFilePath()));
+            long downloadDirUsableSpace = 0L;
+            if (filePath == null) {
+                downloadDirUsableSpace = Util.getUsableSpace(new File(Util.getCachePath(PumpFactory.getService(IDownloadManager.class).getContext())));
+            } else {
+                downloadDirUsableSpace = Util.getUsableSpace(new File(downloadRequest.getFilePath()));
+            }
             long dataFileUsableSpace = Util.getUsableSpace(Environment.getDataDirectory());
             if (downloadDirUsableSpace <= minUsableStorageSpace || dataFileUsableSpace <= minUsableStorageSpace) {
                 Context context = PumpFactory.getService(IDownloadManager.class).getContext();
@@ -113,7 +117,7 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
         lock.lock();
         try {
             while (requestQueue.isEmpty() && runningTaskQueue.size() >= maxRunningTaskNumber && isRunning()) {
-                LogUtil.d("running "+runningTaskQueue.size()+" tasks;but max allow run "+maxRunningTaskNumber+" tasks.");
+                LogUtil.d("running " + runningTaskQueue.size() + " tasks;but max allow run " + maxRunningTaskNumber + " tasks.");
                 consumer.await();
             }
         } catch (InterruptedException e) {

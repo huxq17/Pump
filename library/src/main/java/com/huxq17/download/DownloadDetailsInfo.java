@@ -23,12 +23,17 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
         this.filePath = filePath;
         this.tag = tag;
         this.id = id;
-        downloadFile = new File(filePath);
+        if (filePath != null) {
+            downloadFile = new File(filePath);
+        }
     }
 
     public void setFilePath(String filePath) {
         if (filePath != null && !filePath.equals(this.filePath)) {
-            Util.deleteFile(downloadFile);
+            this.filePath = filePath;
+            if (downloadFile != null) {
+                Util.deleteFile(downloadFile);
+            }
             downloadFile = new File(filePath);
         }
     }
@@ -99,6 +104,9 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
 
     public boolean isFinished() {
         synchronized (this) {
+            if (downloadFile == null) {
+                return false;
+            }
             if (finished == 1) {
                 if (downloadFile.exists() && downloadFile.length() == contentLength) {
                     return true;
@@ -115,6 +123,7 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
      * load completedSize if not finished.
      */
     private void loadDownloadFiles() {
+        if(filePath==null)return;
         File tempDir = Util.getTempDir(filePath);
         File[] listFiles = tempDir.listFiles();
         if (listFiles != null && listFiles.length > 0) {
@@ -152,7 +161,7 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
 
     @Override
     public String getName() {
-        return downloadFile.getName();
+        return downloadFile == null ? "undefined name" : downloadFile.getName();
     }
 
     @Override

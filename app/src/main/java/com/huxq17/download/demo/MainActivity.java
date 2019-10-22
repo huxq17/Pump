@@ -52,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
                 progressDialog.setProgress(0);
                 progressDialog.show();
                 Pump.newRequest(url2)
-                        .threadNum(1)
                         .listener(new DownloadListener() {
 
                             @Override

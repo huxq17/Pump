@@ -34,7 +34,8 @@ public class VerifyResultAction implements Action {
             } else {
                 long completedSize = downloadInfo.getCompletedSize();
                 long contentLength = downloadInfo.getContentLength();
-                long downloadFileLength = downloadInfo.getDownloadFile().length();
+                File downloadFile = downloadInfo.getDownloadFile();
+                long downloadFileLength = downloadFile==null?0:downloadFile.length();
                 if (completedSize > 0 && completedSize == contentLength && downloadFileLength == contentLength &&
                         isMd5Equals(downloadRequest.getMd5(), downloadInfo.getDownloadFile(), downloadRequest.getOnVerifyMd5Listener())) {
                     Provider.CacheBean cacheBean = downloadRequest.getCacheBean();

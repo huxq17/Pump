@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Environment;
+import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
@@ -111,8 +112,8 @@ public class Util {
             } else {
                 fileName = url.substring(url.lastIndexOf("/") + 1);
             }
-        } catch (IndexOutOfBoundsException e) {
-            e.printStackTrace();
+        } catch (IndexOutOfBoundsException ignore) {
+//            e.printStackTrace();
         }
 
         if (TextUtils.isEmpty(fileName)) {
@@ -339,6 +340,17 @@ public class Util {
             sb.append(String.format("%02x", md5bytes[i]));
         }
         return sb.toString();
+    }
+
+    public static long parseContentLength(@Nullable String contentLength) {
+        if (contentLength == null) return -1;
+
+        try {
+            return Long.parseLong(contentLength);
+        } catch (NumberFormatException ignored) {
+        }
+
+        return -1;
     }
 
 }
