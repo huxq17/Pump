@@ -99,7 +99,7 @@ public class Util {
     }
 
     public static String getFileNameByUrl(String url) {
-        return bytesToHexString(url.getBytes());
+        return getMD5ByStr(url);
     }
 
 //    /**
@@ -305,6 +305,17 @@ public class Util {
             return "";
         } finally {
             closeQuietly(fileInputStream);
+        }
+    }
+    public static String getMD5ByStr(String src) {
+        try {
+            MessageDigest MD5 = MessageDigest.getInstance("MD5");
+            byte[] buffer = src.getBytes();
+            MD5.update(buffer);
+            return bytesToHexString(MD5.digest());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
         }
     }
 
