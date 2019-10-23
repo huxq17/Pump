@@ -181,7 +181,7 @@ public class DownloadTask implements Task {
         }
     }
 
-    public void cancel() {
+    void cancel(boolean isDestroy) {
         if (isCanceled) return;
         isCanceled = true;
         if (thread != null) {
@@ -192,7 +192,13 @@ public class DownloadTask implements Task {
         for (Task task : downloadBlockTasks) {
             task.cancel();
         }
-        destroy();
+        if (isDestroy) {
+            destroy();
+        }
+    }
+
+    public void cancel() {
+        cancel(true);
     }
 
     public void delete() {

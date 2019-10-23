@@ -77,11 +77,6 @@ public class Util {
         return ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
-    public static String getCachePathByUrl(Context context, String url) {
-        String apkName = getFileNameByUrl(url);
-        return getCachePath(context) + "/" + apkName;
-    }
-
     public static String getCachePath(Context context) {
         File externalCacheDir = context.getExternalCacheDir();
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
@@ -104,22 +99,7 @@ public class Util {
     }
 
     public static String getFileNameByUrl(String url) {
-        int index = url.indexOf("?");
-        String fileName = null;
-        try {
-            if (index != -1) {
-                fileName = url.substring(url.lastIndexOf("/") + 1, url.indexOf("?"));
-            } else {
-                fileName = url.substring(url.lastIndexOf("/") + 1);
-            }
-        } catch (IndexOutOfBoundsException ignore) {
-//            e.printStackTrace();
-        }
-
-        if (TextUtils.isEmpty(fileName)) {
-            fileName = UUID.randomUUID().toString();
-        }
-        return fileName;
+        return bytesToHexString(url.getBytes());
     }
 
 //    /**
@@ -319,7 +299,7 @@ public class Util {
             while ((length = fileInputStream.read(buffer)) != -1) {
                 MD5.update(buffer, 0, length);
             }
-            return getMd5StrFromBytes(MD5.digest());
+            return bytesToHexString(MD5.digest());
         } catch (Exception e) {
             e.printStackTrace();
             return "";
@@ -328,18 +308,20 @@ public class Util {
         }
     }
 
-    /**
-     * MD5sum for string
-     */
-    public static String getMd5StrFromBytes(byte[] md5bytes) {
-        if (md5bytes == null) {
+    public static String bytesToHexString(byte[] src) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (src == null || src.length <= 0) {
             return "";
         }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < md5bytes.length; i++) {
-            sb.append(String.format("%02x", md5bytes[i]));
+        for (int i = 0; i < src.length; i++) {
+            int v = src[i] & 0xFF;
+            String hv = Integer.toHexString(v);
+            if (hv.length() < 2) {
+                stringBuilder.append(0);
+            }
+            stringBuilder.append(hv);
         }
-        return sb.toString();
+        return stringBuilder.toString();
     }
 
     public static long parseContentLength(@Nullable String contentLength) {

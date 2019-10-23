@@ -80,7 +80,7 @@ public class DownloadBlockTask implements Task {
                 if (!call.isCanceled()) {
                     e.printStackTrace();
                     downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
-                    downloadTask.cancel();
+                    downloadTask.cancel(!downloadChain.isRetryable());
                 }
             } finally {
                 Util.closeQuietly(bufferedSource);
