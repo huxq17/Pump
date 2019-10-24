@@ -76,10 +76,7 @@ public class CheckCacheAction implements Action {
             transferEncoding = headers.get("Transfer-Encoding");
             lastModified = headers.get("Last-Modified");
             if (downloadRequest.getFilePath() == null) {
-                String fileName = parseContentDisposition(headers.get("Content-Disposition"));
-                if (fileName == null) {
-                    fileName = Util.getFileNameByUrl(downloadRequest.getUrl());
-                }
+                String fileName = Util.getFileNameByUrl(downloadRequest.getUrl(), headers.get("Content-Disposition"), headers.get("Content-Type"));
                 downloadRequest.setFilePath(Util.getCachePath(PumpFactory.getService(IDownloadManager.class).getContext()) + "/" + fileName);
                 DBService.getInstance().updateInfo(downloadRequest.getDownloadInfo());
             }
@@ -88,13 +85,16 @@ public class CheckCacheAction implements Action {
             downloadRequest.setMd5(headers.get("Content-MD5"));
             responseCode = response.code();
             contentLength = getContentLength(headers);
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             e.printStackTrace();
             result = false;
         } finally {
             Util.closeQuietly(response);
         }
-        if (contentLength == -1 && isNeedHeadContentLength(transferEncoding)) {
+        if (contentLength == -1 &&
+
+                isNeedHeadContentLength(transferEncoding)) {
             contentLength = headContentLength();
             if (contentLength != -1) {
                 result = true;
@@ -146,51 +146,6 @@ public class CheckCacheAction implements Action {
             result = false;
         }
         return result;
-    }
-
-    private static final Pattern CONTENT_DISPOSITION_QUOTED_PATTERN =
-            Pattern.compile("attachment;\\s*filename\\s*=\\s*\"([^\"]*)\"");
-    // no note
-    private static final Pattern CONTENT_DISPOSITION_NON_QUOTED_PATTERN =
-            Pattern.compile("attachment;\\s*filename\\s*=\\s*(.*)");
-
-    /**
-     * The same to com.android.providers.downloads.Helpers#parseContentDisposition.
-     * </p>
-     * Parse the Content-Disposition HTTP Header. The format of the header
-     * is defined here: http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html
-     * This header provides a filename for content that is going to be
-     * downloaded to the file system. We only support the attachment type.
-     */
-    @Nullable
-    private static String parseContentDisposition(String contentDisposition)
-            throws IOException {
-        if (contentDisposition == null) {
-            return null;
-        }
-
-        try {
-            String fileName = null;
-            Matcher m = CONTENT_DISPOSITION_QUOTED_PATTERN.matcher(contentDisposition);
-            if (m.find()) {
-                fileName = m.group(1);
-            } else {
-                m = CONTENT_DISPOSITION_NON_QUOTED_PATTERN.matcher(contentDisposition);
-                if (m.find()) {
-                    fileName = m.group(1);
-                }
-            }
-
-            if (fileName != null && fileName.contains("../")) {
-                LogUtil.e("The filename [" + fileName + "] from"
-                        + " the response is not allowable, because it contains '../', which "
-                        + "can raise the directory traversal vulnerability");
-            }
-            return fileName;
-        } catch (IllegalStateException ex) {
-            // This function is defined as returning null when it can't parse the header
-        }
-        return null;
     }
 
     private long getContentLength(Headers headers) {

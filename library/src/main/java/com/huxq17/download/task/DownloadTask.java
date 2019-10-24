@@ -1,6 +1,8 @@
 package com.huxq17.download.task;
 
 
+import android.text.TextUtils;
+
 import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
@@ -79,7 +81,11 @@ public class DownloadTask implements Task {
     }
 
     public String getName() {
-        return downloadRequest.getDownloadInfo().getName();
+        String name = downloadRequest.getDownloadInfo().getName();
+        if (TextUtils.isEmpty(name)) {
+            name = downloadRequest.getName();
+        }
+        return name;
     }
 
     @Override

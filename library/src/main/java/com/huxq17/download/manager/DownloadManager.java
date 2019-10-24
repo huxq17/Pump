@@ -3,7 +3,6 @@ package com.huxq17.download.manager;
 
 import android.content.Context;
 
-
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.DownloadInfoSnapshot;
@@ -46,7 +45,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     public void submit(DownloadRequest downloadRequest) {
         startDownloadService();
         String id = downloadRequest.getId();
-        if (taskMap.get(id) != null) {
+        if (isTaskAlreadyPresent(downloadRequest.getId())) {
             //The task is running,we need do nothing.
             LogUtil.e("task " + downloadRequest.getName() + " is running,we need do nothing.");
             return;
@@ -59,6 +58,10 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
             downloadRequest.setDownloadInfo(downloadInfo);
         }
         downloadService.enqueueRequest(downloadRequest);
+    }
+
+    public boolean isTaskAlreadyPresent(String id) {
+        return taskMap.get(id) != null;
     }
 
     public void delete(DownloadInfo downloadInfo) {

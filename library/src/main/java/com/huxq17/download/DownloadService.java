@@ -9,6 +9,7 @@ import com.huxq17.download.Utils.Util;
 import com.huxq17.download.config.IDownloadConfigService;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownLoadLifeCycleObserver;
+import com.huxq17.download.manager.DownloadManager;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.IMessageCenter;
 import com.huxq17.download.task.DownloadTask;
@@ -58,8 +59,12 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
         maxRunningTaskNumber = PumpFactory.getService(IDownloadConfigService.class).getMaxRunningTaskNumber();
         minUsableStorageSpace = PumpFactory.getService(IDownloadConfigService.class).getMinUsableSpace();
         if (isRunning.get()) {
-            requestQueue.add(request);
-            signalConsumer();
+            if (!requestQueue.contains(request)) {
+                requestQueue.add(request);
+                signalConsumer();
+            } else {
+                LogUtil.e("task " + request.getName() + " already enqueue,we need do nothing.");
+            }
         }
     }
 
@@ -75,7 +80,7 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
             lock.unlock();
         }
         DownloadRequest downloadRequest = requestQueue.poll();
-        if (downloadRequest != null) {
+        if (downloadRequest != null&&!((DownloadManager) downLoadLifeCycleObserver).isTaskAlreadyPresent(downloadRequest.getId())) {
             String url = downloadRequest.getUrl();
             String filePath = downloadRequest.getFilePath();
             String tag = downloadRequest.getTag();

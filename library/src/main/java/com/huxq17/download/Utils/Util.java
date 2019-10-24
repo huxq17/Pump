@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
+import android.webkit.URLUtil;
 
 import java.io.Closeable;
 import java.io.File;
@@ -98,8 +99,10 @@ public class Util {
         }
     }
 
-    public static String getFileNameByUrl(String url) {
-        return getMD5ByStr(url);
+    public static String getFileNameByUrl(String url, @Nullable String contentDisposition,
+                                          @Nullable String mimeType) {
+        String fileName = URLUtil.guessFileName(url, contentDisposition, mimeType);
+        return TextUtils.isEmpty(fileName) || fileName.startsWith("downloadfile") ? getMD5ByStr(url) : fileName;
     }
 
 //    /**
@@ -307,6 +310,7 @@ public class Util {
             closeQuietly(fileInputStream);
         }
     }
+
     public static String getMD5ByStr(String src) {
         try {
             MessageDigest MD5 = MessageDigest.getInstance("MD5");

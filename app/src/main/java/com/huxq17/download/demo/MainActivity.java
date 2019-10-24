@@ -89,17 +89,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
-                File file3 = new File(getExternalCacheDir().getAbsolutePath(), "download2.apk");
-                File file4 = new File(getExternalCacheDir().getAbsolutePath(), "download3.apk");
-                Pump.newRequest(url, file1.getAbsolutePath())
+                Pump.newRequest(url,file1.getAbsolutePath())
                         .tag(TAG)
                         .forceReDownload(true)
                         .submit();
-                Pump.newRequest(url4, file3.getAbsolutePath())
+                Pump.newRequest(url4)
                         .tag(TAG)
                         .forceReDownload(true)
                         .submit();
-                Pump.newRequest(url5, file4.getAbsolutePath())
+                Pump.newRequest(url5)
                         .tag(TAG)
                         .forceReDownload(true)
                         .submit();

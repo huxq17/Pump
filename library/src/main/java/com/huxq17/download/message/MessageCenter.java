@@ -4,20 +4,20 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.webkit.URLUtil;
 
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfoSnapshot;
 import com.huxq17.download.PumpFactory;
+import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.manager.IDownloadManager;
 
 import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MessageCenter implements IMessageCenter {
-    private Context context;
-    private boolean isBusying = false;
-    private LinkedHashSet<DownloadListener> observers = new LinkedHashSet<>();
-    private LinkedHashSet<DownloadListener> removedObservers = new LinkedHashSet<>();
+    private ConcurrentLinkedQueue<DownloadListener> observers = new ConcurrentLinkedQueue<>();
+
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
@@ -30,7 +30,6 @@ public class MessageCenter implements IMessageCenter {
 //            downloadInfo.snapshotCompletedSize(high32Bit + low32Bit);
             DownloadInfoSnapshot snapshot = (DownloadInfoSnapshot) msg.obj;
             Iterator<DownloadListener> iterator = observers.iterator();
-            isBusying = true;
             while (iterator.hasNext()) {
                 DownloadListener downloadListener = iterator.next();
                 if (downloadListener != null && downloadListener.isEnable()) {
@@ -41,18 +40,12 @@ public class MessageCenter implements IMessageCenter {
                     iterator.remove();
                 }
             }
-            isBusying = false;
-            if (removedObservers.size() > 0) {
-                observers.removeAll(removedObservers);
-                removedObservers.clear();
-            }
             snapshot.recycle();
         }
     };
 
     @Override
     public void start(Context context) {
-        this.context = context;
     }
 
     private boolean isShutdown() {
@@ -87,18 +80,23 @@ public class MessageCenter implements IMessageCenter {
 
     @Override
     public synchronized void unRegister(String id) {
-        DownloadListener downloadObserver = new DownloadListener();
-        downloadObserver.setId(id);
-        unRegister(downloadObserver);
+        int beforeSize = observers.size();
+        Iterator<DownloadListener> iterator = observers.iterator();
+        while (iterator.hasNext()) {
+            DownloadListener downloadListener = iterator.next();
+            if (id.equals(downloadListener.getId())) {
+                downloadListener.setEnable(false);
+                iterator.remove();
+            }
+        }
+        LogUtil.d("unRegister id=" + id + ";size=" + observers.size() + ";before.size=" + beforeSize);
     }
 
     @Override
     public synchronized void unRegister(DownloadListener downloadListener) {
         downloadListener.setEnable(false);
-        if (!isBusying) {
-            observers.remove(downloadListener);
-        } else {
-            removedObservers.add(downloadListener);
-        }
+        int beforeSize = observers.size();
+        observers.remove(downloadListener);
+        LogUtil.d("unRegister id=" + downloadListener.getId() + ";size=" + observers.size() + ";before.size=" + beforeSize);
     }
 }

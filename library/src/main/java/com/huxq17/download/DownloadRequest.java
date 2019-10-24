@@ -212,4 +212,24 @@ public class DownloadRequest {
     public interface OnDownloadSuccessListener {
         void onDownloadSuccess(File downloadFile, DownloadRequest downloadRequest);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj instanceof DownloadRequest) {
+            DownloadRequest downloadRequest = (DownloadRequest) obj;
+            if (getId().equals(downloadRequest.getId())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return getId().hashCode();
+    }
+
 }
