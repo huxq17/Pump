@@ -80,7 +80,6 @@ public class MessageCenter implements IMessageCenter {
 
     @Override
     public synchronized void unRegister(String id) {
-        int beforeSize = observers.size();
         Iterator<DownloadListener> iterator = observers.iterator();
         while (iterator.hasNext()) {
             DownloadListener downloadListener = iterator.next();
@@ -89,14 +88,11 @@ public class MessageCenter implements IMessageCenter {
                 iterator.remove();
             }
         }
-        LogUtil.d("unRegister id=" + id + ";size=" + observers.size() + ";before.size=" + beforeSize);
     }
 
     @Override
     public synchronized void unRegister(DownloadListener downloadListener) {
         downloadListener.setEnable(false);
-        int beforeSize = observers.size();
         observers.remove(downloadListener);
-        LogUtil.d("unRegister id=" + downloadListener.getId() + ";size=" + observers.size() + ";before.size=" + beforeSize);
     }
 }

@@ -26,6 +26,7 @@ public class DownloadRequest {
     private String md5;
     private OnVerifyMd5Listener onVerifyMd5Listener;
     private OnDownloadSuccessListener onDownloadSuccessListener;
+    private DownloadListener downloadListener;
 
     public String getMd5() {
         return md5 == null ? "" : md5;
@@ -136,7 +137,7 @@ public class DownloadRequest {
         }
 
         public DownloadGenerator listener(final DownloadListener listener) {
-            listener.enable(downloadRequest.getId());
+            downloadRequest.downloadListener = listener;
             return this;
         }
 
@@ -146,7 +147,7 @@ public class DownloadRequest {
         }
 
         /**
-         * 设置下载成功的监听，回掉执行在异步下载线程，不会阻塞ui线程。
+         * 设置下载成功的监听，回调执行在异步下载线程，不会阻塞ui线程。
          *
          * @param onDownloadSuccessListener 下载成功监听
          * @return DownloadGenerator
@@ -205,6 +206,9 @@ public class DownloadRequest {
         }
 
         public void submit() {
+            if (downloadRequest.downloadListener != null) {
+                downloadRequest.downloadListener.enable(downloadRequest.getId());
+            }
             PumpFactory.getService(IDownloadManager.class).submit(downloadRequest);
         }
     }

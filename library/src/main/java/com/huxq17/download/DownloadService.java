@@ -41,6 +41,7 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
      */
     private ConcurrentLinkedQueue<DownloadTask> runningTaskQueue;
     private long minUsableStorageSpace;
+    private IDownloadManager downloadManager;
 
     public DownloadService(DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
@@ -52,6 +53,7 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
         waitingTaskQueue = new ConcurrentLinkedQueue<>();
         requestQueue = new ConcurrentLinkedQueue<>();
         runningTaskQueue = new ConcurrentLinkedQueue<>();
+        downloadManager = PumpFactory.getService(IDownloadManager.class);
         TaskManager.execute(this);
     }
 
@@ -80,7 +82,7 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
             lock.unlock();
         }
         DownloadRequest downloadRequest = requestQueue.poll();
-        if (downloadRequest != null&&!((DownloadManager) downLoadLifeCycleObserver).isTaskAlreadyPresent(downloadRequest.getId())) {
+        if (downloadRequest != null&&!downloadManager.isTaskAlreadyPresent(downloadRequest.getId())) {
             String url = downloadRequest.getUrl();
             String filePath = downloadRequest.getFilePath();
             String tag = downloadRequest.getTag();

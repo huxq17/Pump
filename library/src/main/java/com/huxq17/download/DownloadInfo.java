@@ -94,6 +94,10 @@ public class DownloadInfo {
     }
 
     public enum Status {
-        STOPPED, WAIT, PAUSED, PAUSING, RUNNING, FINISHED, FAILED
+        STOPPED, WAIT, PAUSED, PAUSING, RUNNING, FINISHED, FAILED;
+
+        public boolean isRunning() {
+            return this == DownloadInfo.Status.WAIT || this == DownloadInfo.Status.RUNNING;
+        }
     }
 }

@@ -33,6 +33,7 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
             this.filePath = filePath;
             if (downloadFile != null) {
                 Util.deleteFile(downloadFile);
+                Util.deleteDir(getTempDir());
             }
             downloadFile = new File(filePath);
         }
