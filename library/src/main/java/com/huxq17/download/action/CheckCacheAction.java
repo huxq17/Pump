@@ -85,15 +85,17 @@ public class CheckCacheAction implements Action {
             downloadRequest.setMd5(headers.get("Content-MD5"));
             responseCode = response.code();
             contentLength = getContentLength(headers);
-        } catch (
-                IOException e) {
+            long originalContentLength = Util.parseContentLength(headers.get("Content-Length"));
+            if (contentLength == -1 && originalContentLength != 1) {
+                contentLength = originalContentLength;
+            }
+        } catch (IOException e) {
             e.printStackTrace();
             result = false;
         } finally {
             Util.closeQuietly(response);
         }
         if (contentLength == -1 &&
-
                 isNeedHeadContentLength(transferEncoding)) {
             contentLength = headContentLength();
             if (contentLength != -1) {

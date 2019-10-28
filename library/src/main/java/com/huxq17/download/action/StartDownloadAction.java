@@ -19,6 +19,7 @@ public class StartDownloadAction implements Action {
     public boolean proceed(DownloadChain chain) {
         boolean result = true;
         DownloadTask downloadTask = chain.getDownloadTask();
+        boolean preIsDowngrade = downloadTask.isDowngrade();
         DownloadDetailsInfo downloadInfo = downloadTask.getDownloadInfo();
         DownloadRequest downloadRequest = downloadTask.getRequest();
         String url = downloadInfo.getUrl();
@@ -29,7 +30,7 @@ public class StartDownloadAction implements Action {
         long completedSize = 0;
         countDownLatch = new CountDownLatch(threadNum);
         synchronized (downloadTask.getLock()) {
-            if (!downloadTask.shouldStop()){
+            if (!downloadTask.shouldStop()) {
                 for (int i = 0; i < threadNum; i++) {
                     DownloadBatch batch = new DownloadBatch();
                     batch.threadId = i;
@@ -42,7 +43,7 @@ public class StartDownloadAction implements Action {
                     TaskManager.execute(task);
                 }
                 downloadInfo.setCompletedSize(completedSize);
-            }else{
+            } else {
                 return false;
             }
         }
@@ -52,7 +53,7 @@ public class StartDownloadAction implements Action {
             //ignore.
             result = false;
         }
-        if (downloadTask.isDowngrade()) {
+        if (downloadTask.isDowngrade() && !preIsDowngrade) {
             result = false;
         }
         if (downloadInfo.getErrorCode() == ErrorCode.NETWORK_UNAVAILABLE) {
