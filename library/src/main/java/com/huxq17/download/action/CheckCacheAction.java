@@ -86,7 +86,8 @@ public class CheckCacheAction implements Action {
             responseCode = response.code();
             contentLength = getContentLength(headers);
             long originalContentLength = Util.parseContentLength(headers.get("Content-Length"));
-            if (contentLength == -1 && originalContentLength != 1) {
+            if (contentLength == -1 && responseCode != HttpURLConnection.HTTP_PARTIAL) {
+            //TODO Downgrade here.
                 contentLength = originalContentLength;
             }
         } catch (IOException e) {

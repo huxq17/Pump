@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import com.huxq17.download.DownloadConfig;
 import com.huxq17.download.Pump;
+import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.message.DownloadListener;
 
@@ -73,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onFailed() {
                                 progressDialog.dismiss();
+                                LogUtil.e("onFailed code="+getDownloadInfo().getErrorCode());
                                 Toast.makeText(MainActivity.this, "Download failed", Toast.LENGTH_SHORT).show();
                             }
                         })
