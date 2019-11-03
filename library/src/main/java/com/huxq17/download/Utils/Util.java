@@ -3,33 +3,26 @@ package com.huxq17.download.Utils;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.storage.StorageManager;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
-import android.webkit.URLUtil;
+import android.webkit.MimeTypeMap;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.security.MessageDigest;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
-import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import okio.BufferedSink;
 import okio.BufferedSource;
@@ -97,12 +90,6 @@ public class Util {
         } else {
             return context.getCacheDir().getAbsolutePath();
         }
-    }
-
-    public static String getFileNameByUrl(String url, @Nullable String contentDisposition,
-                                          @Nullable String mimeType) {
-        String fileName = URLUtil.guessFileName(url, contentDisposition, mimeType);
-        return TextUtils.isEmpty(fileName) || fileName.startsWith("downloadfile") ? getMD5ByStr(url) : fileName;
     }
 
 //    /**
@@ -215,6 +202,27 @@ public class Util {
 
     public static long getUsableSpace(File file) {
         if (file == null) return 0L;
+        return getUsableSpaceBeforeO(file);
+//        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+//            return getUsableSpaceBeforeO(file);
+//        } else {
+//
+//        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private static long getUsableSpaceAfterO(Context context, File file) {
+        StorageManager sm = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
+        try {
+            UUID uuid = sm.getUuidForPath(file);
+            sm.getAllocatableBytes(uuid);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return 0L;
+    }
+
+    private static long getUsableSpaceBeforeO(File file) {
         if (file.isDirectory()) {
             return file.getUsableSpace();
         } else {
@@ -350,4 +358,120 @@ public class Util {
         return -1;
     }
 
+    public static String guessFileName(
+            String url,
+            @Nullable String contentDisposition,
+            @Nullable String mimeType) {
+        String filename = null;
+        String extension = null;
+
+        // If we couldn't do anything with the hint, move toward the content disposition
+        if (contentDisposition != null) {
+            filename = parseContentDisposition(contentDisposition);
+            if (filename != null) {
+                int index = filename.lastIndexOf('/') + 1;
+                if (index > 0) {
+                    filename = filename.substring(index);
+                }
+            }
+        }
+
+        // If all the other http-related approaches failed, use the plain uri
+        if (filename == null) {
+            String decodedUrl = Uri.decode(url);
+            if (decodedUrl != null) {
+                int queryIndex = decodedUrl.indexOf('?');
+                // If there is a query string strip it, same as desktop browsers
+                if (queryIndex > 0) {
+                    decodedUrl = decodedUrl.substring(0, queryIndex);
+                }
+                if (!decodedUrl.endsWith("/")) {
+                    int index = decodedUrl.lastIndexOf('/') + 1;
+                    if (index > 0) {
+                        filename = decodedUrl.substring(index);
+                    }
+                }
+            }
+        }
+
+        // Finally, if couldn't get filename from URI, get a generic filename
+        if (filename == null) {
+            filename = getMD5ByStr(url);
+        }
+
+        // Split filename between base and extension
+        // Add an extension if filename does not have one
+        int dotIndex = filename.indexOf('.');
+        if (dotIndex >= 0) {
+            if (mimeType != null) {
+                // Compare the last segment of the extension against the mime type.
+                // If there's a mismatch, discard the entire extension.
+                int lastDotIndex = filename.lastIndexOf('.');
+                String typeFromExt = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                        filename.substring(lastDotIndex + 1));
+                if (typeFromExt != null && !typeFromExt.equalsIgnoreCase(mimeType)) {
+                    extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+                    if (extension != null) {
+                        extension = "." + extension;
+                    }
+                }
+            }
+        }
+        if (extension == null) {
+            if (mimeType != null) {
+                int index = mimeType.indexOf(";");
+                if (index >= 0) {
+                    mimeType = mimeType.substring(0, index);
+                }
+                extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+                if (extension != null) {
+                    extension = "." + extension;
+                }
+            }
+            if (extension == null) {
+                if (mimeType != null && mimeType.toLowerCase(Locale.ROOT).startsWith("text/")) {
+                    if (mimeType.equalsIgnoreCase("text/html")) {
+                        extension = ".html";
+                    } else {
+                        extension = ".txt";
+                    }
+                }
+            }
+        }
+        if (extension == null) {
+            extension = filename.substring(dotIndex);
+        }
+        if (dotIndex >= 0) {
+            filename = filename.substring(0, dotIndex);
+        }
+        return filename + extension;
+    }
+
+    /**
+     * Parse the Content-Disposition HTTP Header. The format of the header
+     * is defined here: http://www.w3.org/Protocols/rfc2616/rfc2616-sec19.html
+     * This header provides a filename for content that is going to be
+     * downloaded to the file system. We only support the attachment type.
+     * Note that RFC 2616 specifies the filename value must be double-quoted.
+     * Unfortunately some servers do not quote the value so to maintain
+     * consistent behaviour with other browsers, we allow unquoted values too.
+     */
+    static String parseContentDisposition(String contentDisposition) {
+        try {
+            Matcher m = CONTENT_DISPOSITION_PATTERN.matcher(contentDisposition);
+            if (m.find()) {
+                return m.group(2);
+            }
+        } catch (IllegalStateException ex) {
+            // This function is defined as returning null when it can't parse the header
+        }
+        return null;
+    }
+
+    /**
+     * Regex used to parse content-disposition headers
+     */
+    private static final Pattern CONTENT_DISPOSITION_PATTERN =
+            Pattern.compile("attachment;\\s*filename\\s*=\\s*(\"?)([^\"]*)\\1\\s*$",
+                    Pattern.CASE_INSENSITIVE);
 }

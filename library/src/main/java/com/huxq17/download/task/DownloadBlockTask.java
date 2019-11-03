@@ -5,7 +5,6 @@ import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.DownloadChain;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.OKHttpUtils;
-import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.Utils.Util;
 
 import java.io.File;
@@ -59,7 +58,7 @@ public class DownloadBlockTask implements Task {
                 response = call.execute();
                 int code = response.code();
                 if (!isCanceled) {
-                    if (code == HttpURLConnection.HTTP_PARTIAL || (code == HttpURLConnection.HTTP_OK && downloadTask.isDowngrade())) {
+                    if (code == HttpURLConnection.HTTP_PARTIAL || (response.isSuccessful() && downloadTask.isDowngrade())) {
                         bufferedSource = response.body().source();
                         int len;
                         bufferedSink = Okio.buffer(Okio.appendingSink(tempFile));

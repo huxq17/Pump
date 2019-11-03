@@ -2,7 +2,6 @@ package com.huxq17.download.action;
 
 import android.content.Context;
 import android.os.Environment;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 
@@ -23,8 +22,6 @@ import com.huxq17.download.task.DownloadTask;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
@@ -76,7 +73,7 @@ public class CheckCacheAction implements Action {
             transferEncoding = headers.get("Transfer-Encoding");
             lastModified = headers.get("Last-Modified");
             if (downloadRequest.getFilePath() == null) {
-                String fileName = Util.getFileNameByUrl(downloadRequest.getUrl(), headers.get("Content-Disposition"), headers.get("Content-Type"));
+                String fileName = Util.guessFileName(downloadRequest.getUrl(), headers.get("Content-Disposition"), headers.get("Content-Type"));
                 downloadRequest.setFilePath(Util.getCachePath(PumpFactory.getService(IDownloadManager.class).getContext()) + "/" + fileName);
                 DBService.getInstance().updateInfo(downloadRequest.getDownloadInfo());
             }
@@ -87,7 +84,7 @@ public class CheckCacheAction implements Action {
             contentLength = getContentLength(headers);
             long originalContentLength = Util.parseContentLength(headers.get("Content-Length"));
             if (contentLength == -1 && responseCode != HttpURLConnection.HTTP_PARTIAL) {
-            //TODO Downgrade here.
+                //TODO Downgrade here.
                 contentLength = originalContentLength;
             }
         } catch (IOException e) {
@@ -127,8 +124,8 @@ public class CheckCacheAction implements Action {
                         downloadRequest.setCacheBean(new Provider.CacheBean(downloadRequest.getId(), lastModified, eTag));
                     }
                 } else {
-                    detailsInfo.setErrorCode(ErrorCode.CONTENT_LENGTH_NOT_FOUND);
-                    result = false;
+                    //Not found content-length in http head.
+                    detailsInfo.setContentLength(contentLength);
                 }
             } else if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
                 if (detailsInfo.isFinished() && !downloadRequest.isForceReDownload()) {

@@ -58,7 +58,7 @@ public class DownloadListener {
         return downloadInfo;
     }
 
-    public final void downloading(DownloadInfoSnapshot downloadInfoSnapshot) {
+    final void downloading(DownloadInfoSnapshot downloadInfoSnapshot) {
         DownloadInfo downloadInfo = downloadInfoSnapshot.downloadInfo;
         long completedSize = downloadInfoSnapshot.completedSize;
         DownloadInfo.Status status = downloadInfoSnapshot.status;

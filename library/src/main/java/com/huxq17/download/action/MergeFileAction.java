@@ -22,10 +22,7 @@ public class MergeFileAction implements Action {
             DownloadDetailsInfo downloadInfo = downloadTask.getDownloadInfo();
             long fileLength = downloadInfo.getContentLength();
             File tempDir = downloadInfo.getTempDir();
-            File file = downloadInfo.getDownloadFile();
-            if (file.exists()) {
-                file.delete();
-            }
+
             long completedSize = downloadInfo.getCompletedSize();
             File[] downloadPartFiles = tempDir.listFiles(new FilenameFilter() {
                 @Override
@@ -34,6 +31,8 @@ public class MergeFileAction implements Action {
                 }
             });
             if (fileLength > 0 && completedSize == fileLength && downloadPartFiles != null && downloadPartFiles.length == downloadTask.getRequest().getThreadNum()) {
+                File file = downloadInfo.getDownloadFile();
+                Util.deleteFile(file);
                 long startTime = System.currentTimeMillis();
                 boolean mergeSuccess = false;
                 if (downloadPartFiles.length == 1) {

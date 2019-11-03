@@ -19,6 +19,9 @@ public class DownloadBatch {
             downloadedSize = tempFile.length();
         } else {
             try {
+                if (!tempDir.exists()) {
+                    tempDir.mkdirs();
+                }
                 tempFile.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();

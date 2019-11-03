@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
     private String url = "http://down.youxifan.com/Q6ICeD";
 //    private String url = "http://www.anzhi.com/dl_app.php?s=3080740&n=5";
     //    private String url = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
-    private String url2 = "https://file.izuiyou.com/download/package/zuiyou.apk?from=ixiaochuan";
+    private String url2 = "http://www.httpwatch.com/httpgallery/chunked/chunkedimage.aspx";
     String url4 = "http://v.nq6.com/xinqu.apk";
     //    String url5 = "http://t2.hddhhn.com/uploads/tu/201612/98/st93.png";
     String url5 = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";

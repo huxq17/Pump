@@ -6,9 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
-
 import com.huxq17.download.DownloadDetailsInfo;
-import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.provider.Provider;
 
 import java.util.ArrayList;
@@ -98,8 +96,7 @@ public class DBService {
         Cursor cursor = db.query(Provider.DownloadTable.TABLE_NAME, new String[]{Provider.DownloadTable.FILE_LENGTH}, Provider.DownloadTable.ID + "=?", args, null, null, null, null);
         while (cursor.moveToNext()) {
 //            info.threadNum = cursor.getInt(2);
-            info.setContentLength(cursor.getLong(0));
-            length = info.getContentLength();
+            length = cursor.getLong(0);
             break;
         }
         cursor.close();

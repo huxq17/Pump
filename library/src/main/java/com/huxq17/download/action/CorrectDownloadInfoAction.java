@@ -22,13 +22,12 @@ public class CorrectDownloadInfoAction implements Action {
 
         File tempDir = downloadInfo.getTempDir();
         long localLength = DBService.getInstance().queryLocalLength(downloadInfo);
-        if (fileLength != localLength) {
+        if (fileLength <= 0 || fileLength != localLength) {
             //If file's length have changed,we need to re-download it.
             Util.deleteDir(tempDir);
         }
         downloadInfo.setFinished(0);
         downloadInfo.setCompletedSize(0);
-        downloadInfo.setContentLength(fileLength);
         downloadTask.updateInfo();
 //        downloadInfo.threadNum = tempDir.exists() ? downloadInfo.threadNum : oldThreadNum;
         String[] childList = tempDir.list(new FilenameFilter() {
@@ -40,9 +39,7 @@ public class CorrectDownloadInfoAction implements Action {
         if (childList != null && childList.length != request.getThreadNum()) {
             Util.deleteDir(tempDir);
         }
-        if (!tempDir.exists()) {
-           return tempDir.mkdirs();
-        }
+        Util.deleteFile(downloadInfo.getDownloadFile());
         return true;
     }
 }
