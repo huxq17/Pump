@@ -17,9 +17,10 @@ import java.io.File;
 public class MainActivity extends AppCompatActivity {
     //        private String url = "http://dlied5.myapp.com/myapp/1104466820/sgame/2017_com.tencent.tmgp.sgame_h178_1.41.2.16_5a7ef8.apk";
     private String url = "http://down.youxifan.com/Q6ICeD";
-//    private String url = "http://www.anzhi.com/dl_app.php?s=3080740&n=5";
+    //    private String url = "http://www.anzhi.com/dl_app.php?s=3080740&n=5";
     //    private String url = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
-    private String url2 = "http://www.httpwatch.com/httpgallery/chunked/chunkedimage.aspx";
+    private String url2 = "https://file.izuiyou.com/download/package/zuiyou.apk?from=ixiaochuan";
+    //http://www.httpwatch.com/httpgallery/chunked/chunkedimage.aspx
     String url4 = "http://v.nq6.com/xinqu.apk";
     //    String url5 = "http://t2.hddhhn.com/uploads/tu/201612/98/st93.png";
     String url5 = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
@@ -36,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
                 //Optional,set the maximum number of tasks to run, default 3.
                 .setMaxRunningTaskNum(2)
                 //Optional,set the minimum available storage space size for downloading to avoid insufficient storage space during downloading, default is 4kb.
-                .setMinUsableStorageSpace(4*1024L)
+                .setMinUsableStorageSpace(4 * 1024L)
                 .build();
 //        Pump.subscribe(downloadObserver);
 //        try {
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
                             @Override
                             public void onFailed() {
                                 progressDialog.dismiss();
-                                LogUtil.e("onFailed code="+getDownloadInfo().getErrorCode());
+                                LogUtil.e("onFailed code=" + getDownloadInfo().getErrorCode());
                                 Toast.makeText(MainActivity.this, "Download failed", Toast.LENGTH_SHORT).show();
                             }
                         })
@@ -91,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
-                Pump.newRequest(url,file1.getAbsolutePath())
+                Pump.newRequest(url, file1.getAbsolutePath())
                         .tag(TAG)
                         .forceReDownload(true)
                         .submit();
