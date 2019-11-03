@@ -48,7 +48,7 @@ public class SimpleDownloadTask implements Task {
         BufferedSink bufferedSink = null;
         BufferedSource bufferedSource = null;
         try {
-            if(downloadFile.createNewFile()){
+            if (downloadFile.createNewFile()) {
                 call = okHttpClient.newCall(request);
                 response = call.execute();
                 Headers headers = response.headers();
@@ -73,7 +73,7 @@ public class SimpleDownloadTask implements Task {
                 }
             }
         } catch (IOException e) {
-            if (!call.isCanceled()) {
+            if (call == null || !call.isCanceled()) {
                 e.printStackTrace();
                 downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
             }

@@ -228,6 +228,8 @@ public class Util {
         } else {
             File parentFile = file.getParentFile();
             if (parentFile != null) {
+                //Create parent directory if not exists.
+                parentFile.mkdirs();
                 return parentFile.getUsableSpace();
             } else {
                 return 0L;
