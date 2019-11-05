@@ -40,8 +40,7 @@ public class CheckCacheAction implements Action {
                 .get()
                 .addHeader("Range", "bytes=0-0")
                 .url(url);
-
-        if (downloadRequest.getDownloadInfo().isFinished()) {
+        if (downloadRequest.getDownloadInfo().isFinished() && !downloadRequest.isForceReDownload()) {
             Provider.CacheBean cacheBean = DBService.getInstance().queryCache(url);
             if (cacheBean != null) {
                 String eTag = cacheBean.eTag;
@@ -83,9 +82,9 @@ public class CheckCacheAction implements Action {
             responseCode = response.code();
             contentLength = getContentLength(headers);
             long originalContentLength = Util.parseContentLength(headers.get("Content-Length"));
-            if (contentLength == -1 && responseCode != HttpURLConnection.HTTP_PARTIAL) {
-                //TODO Downgrade here.
+            if (responseCode == HttpURLConnection.HTTP_OK) {
                 contentLength = originalContentLength;
+                downloadTask.setSupportBreakpoint(false);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -96,9 +95,9 @@ public class CheckCacheAction implements Action {
         if (contentLength == -1 &&
                 isNeedHeadContentLength(transferEncoding)) {
             contentLength = headContentLength();
-            if (contentLength != -1) {
-                result = true;
-            }
+        }
+        if (contentLength == -1 && responseCode != HttpURLConnection.HTTP_NOT_MODIFIED) {
+            downloadTask.setSupportBreakpoint(false);
         }
         return result;
     }
@@ -128,7 +127,7 @@ public class CheckCacheAction implements Action {
                     detailsInfo.setContentLength(contentLength);
                 }
             } else if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
-                if (detailsInfo.isFinished() && !downloadRequest.isForceReDownload()) {
+                if (detailsInfo.isFinished()) {
                     detailsInfo.setCompletedSize(detailsInfo.getContentLength());
                     detailsInfo.setFinished(1);
                     result = false;

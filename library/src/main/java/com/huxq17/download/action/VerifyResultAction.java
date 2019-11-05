@@ -35,6 +35,7 @@ public class VerifyResultAction implements Action {
                 long completedSize = downloadInfo.getCompletedSize();
                 long contentLength = downloadInfo.getContentLength();
                 File downloadFile = downloadInfo.getDownloadFile();
+                downloadInfo.setFinished(0);
                 long downloadFileLength = downloadFile == null ? 0 : downloadFile.length();
                 if (completedSize > 0 && completedSize == contentLength && downloadFileLength == contentLength &&
                         isMd5Equals(downloadRequest.getMd5(), downloadInfo.getDownloadFile(), downloadRequest.getOnVerifyMd5Listener())) {
@@ -45,12 +46,15 @@ public class VerifyResultAction implements Action {
                     if (downloadRequest.getOnDownloadSuccessListener() != null) {
                         downloadRequest.getOnDownloadSuccessListener().onDownloadSuccess(downloadInfo.getDownloadFile(), downloadRequest);
                     }
-
+                    downloadInfo.setFinished(1);
                     downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
                 } else if (status.isRunning()) {
                     downloadInfo.setStatus(DownloadInfo.Status.FAILED);
+                } else if (status == DownloadInfo.Status.PAUSING) {
+                    downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
                 }
                 downloadTask.notifyProgressChanged(downloadInfo);
+                downloadTask.updateInfo();
             }
         }
         return true;

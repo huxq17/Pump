@@ -34,11 +34,12 @@ public class DownloadTask implements Task {
     /**
      * True indicate that not support breakpoint download.
      */
-    private boolean isDowngrade;
     private DownloadRequest downloadRequest;
     private long startTime;
     private final Object lock;
     private volatile boolean isCanceled;
+    private boolean supportBreakpoint = true;
+
 
     public DownloadTask(DownloadRequest downloadRequest, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
@@ -47,7 +48,6 @@ public class DownloadTask implements Task {
             this.downloadInfo = downloadRequest.getDownloadInfo();
             downloadInfo.setDownloadTask(this);
             isDestroyed = new AtomicBoolean();
-            isDowngrade = false;
             dbService = DBService.getInstance();
             downloadInfo.setUsed(true);
             speedMonitor = new SpeedMonitor(downloadInfo);
@@ -62,6 +62,14 @@ public class DownloadTask implements Task {
             downloadInfo = null;
         }
         lock = downloadInfo;
+    }
+
+    public boolean isSupportBreakpoint() {
+        return supportBreakpoint;
+    }
+
+    public void setSupportBreakpoint(boolean supportBreakpoint) {
+        this.supportBreakpoint = supportBreakpoint;
     }
 
     public Object getLock() {
@@ -128,30 +136,6 @@ public class DownloadTask implements Task {
             }
         }
         return true;
-    }
-
-    public boolean isDowngrade() {
-        synchronized (lock) {
-            return isDowngrade && downloadRequest.getThreadNum() == 1;
-        }
-    }
-
-    /**
-     * downgrade when server not support breakpoint download.
-     */
-    public void downgrade() {
-        synchronized (lock) {
-            if (!isDowngrade) {
-                isDowngrade = true;
-                downloadRequest.setThreadNum(1);
-                for (Task task : downloadBlockTasks) {
-                    task.cancel();
-                }
-                downloadBlockTasks.clear();
-                Util.deleteDir(downloadInfo.getTempDir());
-                DBService.getInstance().updateInfo(downloadInfo);
-            }
-        }
     }
 
     public void notifyProgressChanged(DownloadDetailsInfo downloadInfo) {

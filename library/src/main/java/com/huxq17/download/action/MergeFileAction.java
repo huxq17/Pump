@@ -18,6 +18,9 @@ public class MergeFileAction implements Action {
     @Override
     public boolean proceed(DownloadChain chain) {
         DownloadTask downloadTask = chain.getDownloadTask();
+        if (!downloadTask.isSupportBreakpoint()) {
+            return true;
+        }
         synchronized (downloadTask.getLock()) {
             DownloadDetailsInfo downloadInfo = downloadTask.getDownloadInfo();
             long fileLength = downloadInfo.getContentLength();
@@ -49,7 +52,6 @@ public class MergeFileAction implements Action {
                     LogUtil.d("Merge " + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime) + "; file.length=" + file.length());
                     downloadInfo.setFinished(1);
                     downloadInfo.setCompletedSize(completedSize);
-                    downloadTask.updateInfo();
                     downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
                 } else {
                     downloadInfo.setStatus(DownloadInfo.Status.FAILED);

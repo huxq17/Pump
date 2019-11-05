@@ -28,39 +28,34 @@ public class StartDownloadAction implements Action {
         downloadChain = chain;
         boolean result = true;
         downloadTask = chain.getDownloadTask();
-        boolean preIsDowngrade = downloadTask.isDowngrade();
         downloadInfo = downloadTask.getDownloadInfo();
         downloadRequest = downloadTask.getRequest();
         url = downloadInfo.getUrl();
         fileLength = downloadInfo.getContentLength();
         tempDir = downloadInfo.getTempDir();
         if (!downloadTask.shouldStop()) {
-            if (fileLength > 0) {
-                result = downloadWithKnownContentLength();
+            if (downloadTask.isSupportBreakpoint()) {
+                result = downloadWithBreakpoint();
             } else {
-                result = downloadWithUnknownContentLength();
+                result = downloadWithoutBreakPoint();
             }
         } else {
             return false;
         }
-        if (downloadTask.isDowngrade() && !preIsDowngrade) {
-            result = false;
-        }
         if (downloadInfo.getErrorCode() == ErrorCode.NETWORK_UNAVAILABLE) {
             result = false;
         }
-
         return result;
     }
 
-    private boolean downloadWithUnknownContentLength() {
+    private boolean downloadWithoutBreakPoint() {
         SimpleDownloadTask simpleDownloadTask = new SimpleDownloadTask(downloadChain);
         downloadTask.addBlockTask(simpleDownloadTask);
         simpleDownloadTask.run();
         return true;
     }
 
-    private boolean downloadWithKnownContentLength() {
+    private boolean downloadWithBreakpoint() {
         CountDownLatch countDownLatch;
         long completedSize = 0;
         int threadNum = downloadRequest.getThreadNum();

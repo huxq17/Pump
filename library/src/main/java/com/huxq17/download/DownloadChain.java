@@ -21,7 +21,7 @@ public class DownloadChain {
     private List<Action> actions;
     private int index;
     private int tryCount;
-    private int retryCount;
+    private int retryUpperLimit;
     private int retryDelay;
 
     public DownloadChain(DownloadTask downloadTask) {
@@ -35,21 +35,12 @@ public class DownloadChain {
         index = 0;
         tryCount = 0;
         DownloadRequest request = downloadTask.getRequest();
-        retryCount = request.getRetryCount();
+        retryUpperLimit = request.getRetryCount();
         retryDelay = request.getRetryDelay();
     }
 
-    public void downgrade() {
-        retryCount++;
-        downloadTask.downgrade();
-    }
-
-    public boolean isFinishedFromCache() {
-        return index == 0;
-    }
-
     public boolean isRetryable() {
-        return (downloadTask.isDowngrade() || downloadTask.getDownloadInfo().getErrorCode() == NETWORK_UNAVAILABLE) && retryCount > tryCount;
+        return  downloadTask.getDownloadInfo().getErrorCode() == NETWORK_UNAVAILABLE && retryUpperLimit > tryCount;
     }
 
     public DownloadTask getDownloadTask() {

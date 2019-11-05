@@ -58,7 +58,7 @@ public class DownloadBlockTask implements Task {
                 response = call.execute();
                 int code = response.code();
                 if (!isCanceled) {
-                    if (code == HttpURLConnection.HTTP_PARTIAL || (response.isSuccessful() && downloadTask.isDowngrade())) {
+                    if (code == HttpURLConnection.HTTP_PARTIAL) {
                         bufferedSource = response.body().source();
                         int len;
                         bufferedSink = Okio.buffer(Okio.appendingSink(tempFile));
@@ -70,9 +70,9 @@ public class DownloadBlockTask implements Task {
                             bufferedSink.write(buffer, 0, len);
                         }
                         bufferedSink.flush();
-                    } else if (code == HttpURLConnection.HTTP_OK) {
-                        //downgrade when server not support breakpoint download.
-                        downloadChain.downgrade();
+                    } else {
+                        downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
+                        downloadTask.cancel(!downloadChain.isRetryable());
                     }
                 }
             } catch (IOException e) {
