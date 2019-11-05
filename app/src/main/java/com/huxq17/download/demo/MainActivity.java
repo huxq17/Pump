@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 progressDialog.setProgress(0);
                 progressDialog.show();
-                Pump.newRequest("http://10.176.61.42:9999/spl.mp4")
+                Pump.newRequest(url2)
                         .listener(new DownloadListener() {
 
                             @Override
@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         })
                         //Optionally,Set whether to repeatedly download the downloaded file,default false.
-                        .forceReDownload(false)
+                        .forceReDownload(true)
                         //Optionally,Set how many threads are used when downloading,default 3.
                         .threadNum(3)
                         .setRetry(3, 200)
