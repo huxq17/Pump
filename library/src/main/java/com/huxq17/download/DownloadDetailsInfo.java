@@ -13,6 +13,7 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
     private File downloadFile;
     private boolean isUsed = false;
     private DownloadTask downloadTask;
+    private SpeedMonitor speedMonitor;
 
     public DownloadDetailsInfo(String url, String filePath) {
         this(url, filePath, null, url);
@@ -26,6 +27,7 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
         if (filePath != null) {
             downloadFile = new File(filePath);
         }
+        speedMonitor = new SpeedMonitor();
     }
 
     public void setFilePath(String filePath) {
@@ -68,7 +70,16 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
 
     public void download(int length) {
         completedSize += length;
+        speedMonitor.download(length);
         this.status = Status.RUNNING;
+    }
+
+    @Override
+    public String getSpeed() {
+        return speed;
+    }
+    public void computeSpeed(){
+        speed = speedMonitor.getSpeed();
     }
 
     public void setContentLength(long contentLength) {
@@ -124,7 +135,7 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
      * load completedSize if not finished.
      */
     private void loadDownloadFiles() {
-        if(filePath==null)return;
+        if (filePath == null) return;
         File tempDir = Util.getTempDir(filePath);
         File[] listFiles = tempDir.listFiles();
         if (listFiles != null && listFiles.length > 0) {

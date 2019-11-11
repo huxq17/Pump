@@ -45,7 +45,7 @@ public class DBService {
     }
 
     public synchronized Provider.CacheBean queryCache(String url) {
-        SQLiteDatabase db = helper.getReadableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         String querySql = "select * from " + Provider.CacheTable.TABLE_NAME + " where " + Provider.CacheTable.URL + "=?";
         Cursor cursor = db.rawQuery(querySql, new String[]{url});
 
@@ -91,7 +91,7 @@ public class DBService {
 
     public synchronized long queryLocalLength(DownloadDetailsInfo info) {
         long length = 0;
-        SQLiteDatabase db = helper.getReadableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         String[] args = {info.getId()};
         Cursor cursor = db.query(Provider.DownloadTable.TABLE_NAME, new String[]{Provider.DownloadTable.FILE_LENGTH}, Provider.DownloadTable.ID + "=?", args, null, null, null, null);
         while (cursor.moveToNext()) {
@@ -109,7 +109,7 @@ public class DBService {
 
     public synchronized List<DownloadDetailsInfo> getDownloadListByTag(String tag) {
         List<DownloadDetailsInfo> tasks = new ArrayList<>();
-        SQLiteDatabase db = helper.getReadableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         Cursor cursor;
         if (tag == null) {
             cursor = db.query(Provider.DownloadTable.TABLE_NAME, null, null, null, null, null, Provider.DownloadTable.CREATE_TIME, null);
@@ -135,7 +135,7 @@ public class DBService {
         if (TextUtils.isEmpty(id)) {
             throw new IllegalArgumentException("id is empty.");
         }
-        SQLiteDatabase db = helper.getReadableDatabase();
+        SQLiteDatabase db = getWritableDatabase();
         Cursor cursor = db.query(Provider.DownloadTable.TABLE_NAME, null,
                 Provider.DownloadTable.ID + "=?", new String[]{id}, null, null, null, null);
         DownloadDetailsInfo info = null;

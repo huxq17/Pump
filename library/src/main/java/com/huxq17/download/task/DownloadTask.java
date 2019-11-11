@@ -27,7 +27,6 @@ public class DownloadTask implements Task {
     private boolean isNeedDelete;
     private IMessageCenter messageCenter;
     protected DownLoadLifeCycleObserver downLoadLifeCycleObserver;
-    private SpeedMonitor speedMonitor;
     private Thread thread;
     private List<Task> downloadBlockTasks = new CopyOnWriteArrayList<>();
     private int lastProgress = 0;
@@ -50,7 +49,6 @@ public class DownloadTask implements Task {
             isDestroyed = new AtomicBoolean();
             dbService = DBService.getInstance();
             downloadInfo.setUsed(true);
-            speedMonitor = new SpeedMonitor(downloadInfo);
             messageCenter = PumpFactory.getService(IMessageCenter.class);
             downloadInfo.setErrorCode(0);
             if (downloadInfo.getCompletedSize() == downloadInfo.getContentLength()) {
@@ -112,7 +110,6 @@ public class DownloadTask implements Task {
         thread = null;
         downLoadLifeCycleObserver.onDownloadEnd(this);
         downloadBlockTasks.clear();
-        speedMonitor = null;
     }
 
     private void downloadWithDownloadChain() {
@@ -126,11 +123,11 @@ public class DownloadTask implements Task {
                 return false;
             }
             downloadInfo.download(length);
-            speedMonitor.compute(length);
             int progress = (int) (downloadInfo.getCompletedSize() * 1f / downloadInfo.getContentLength() * 100);
             if (progress != lastProgress) {
                 if (progress != 100) {
                     lastProgress = progress;
+                    downloadInfo.computeSpeed();
                     notifyProgressChanged(downloadInfo);
                 }
             }

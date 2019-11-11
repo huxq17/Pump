@@ -76,17 +76,6 @@ public class DownloadConfig {
             return this;
         }
 
-        /**
-         * Set whether to repeatedly download the downloaded file,default false.
-         *
-         * @param forceReDownload
-         * @return
-         */
-        @Deprecated
-        public Builder setForceReDownload(boolean forceReDownload) {
-            return this;
-        }
-
         public void build() {
             PumpFactory.getService(IDownloadConfigService.class).setConfig(downloadConfig);
         }

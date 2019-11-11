@@ -21,6 +21,11 @@ android {
     lintOptions {
         abortOnError false
     }
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -31,6 +36,12 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    testImplementation 'org.mockito:mockito-core:2.13.0'
+// 如果需要 mock final 类或方法的话，还要引入 mockito-inline 依赖
+    testImplementation 'org.mockito:mockito-inline:2.13.0'
+
+    testImplementation 'org.robolectric:robolectric:4.3.1'
+    testImplementation 'org.robolectric:shadows-supportv4:3.5.1'
 }
 //for upload jar
 buildscript {
