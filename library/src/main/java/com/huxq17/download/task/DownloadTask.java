@@ -8,14 +8,11 @@ import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.DownloadRequest;
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.SpeedMonitor;
 import com.huxq17.download.Utils.LogUtil;
-import com.huxq17.download.Utils.Util;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownLoadLifeCycleObserver;
 import com.huxq17.download.message.IMessageCenter;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,7 +45,6 @@ public class DownloadTask implements Task {
             downloadInfo.setDownloadTask(this);
             isDestroyed = new AtomicBoolean();
             dbService = DBService.getInstance();
-            downloadInfo.setUsed(true);
             messageCenter = PumpFactory.getService(IMessageCenter.class);
             downloadInfo.setErrorCode(0);
             if (downloadInfo.getCompletedSize() == downloadInfo.getContentLength()) {

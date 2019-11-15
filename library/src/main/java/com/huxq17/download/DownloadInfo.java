@@ -1,8 +1,6 @@
 package com.huxq17.download;
 
 
-import android.text.TextUtils;
-
 import java.lang.ref.WeakReference;
 
 public class DownloadInfo {

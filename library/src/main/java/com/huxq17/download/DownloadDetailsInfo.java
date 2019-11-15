@@ -11,7 +11,6 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
     private File tempDir;
     private ArrayList<File> downloadPartFiles = new ArrayList<>();
     private File downloadFile;
-    private boolean isUsed = false;
     private DownloadTask downloadTask;
     private SpeedMonitor speedMonitor;
 
@@ -56,14 +55,6 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
         return transferInfo;
     }
 
-    public void setUsed(boolean used) {
-        this.isUsed = used;
-    }
-
-    public boolean isUsed() {
-        return isUsed;
-    }
-
     public void setCompletedSize(long completedSize) {
         this.completedSize = completedSize;
     }
@@ -78,7 +69,8 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
     public String getSpeed() {
         return speed;
     }
-    public void computeSpeed(){
+
+    public void computeSpeed() {
         speed = speedMonitor.getSpeed();
     }
 
@@ -108,7 +100,7 @@ public class DownloadDetailsInfo extends DownloadInfo implements Cloneable {
     }
 
     public File getTempDir() {
-        if (tempDir == null) {
+        if (tempDir == null && filePath != null) {
             tempDir = Util.getTempDir(filePath);
         }
         return tempDir;
