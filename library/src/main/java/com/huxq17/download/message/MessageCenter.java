@@ -101,4 +101,7 @@ public class MessageCenter implements IMessageCenter {
             removedObservers.add(downloadListener);
         }
     }
+    public Context getContext(){
+        return context;
+    }
 }
