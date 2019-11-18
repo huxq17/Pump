@@ -2,6 +2,8 @@ package com.huxq17.download.message;
 
 import android.content.Context;
 
+import com.huxq17.download.DownloadDetailsInfo;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +33,11 @@ public class MessageCenterTest {
 
     @Test
     public void notifyProgressChanged() {
+        DownloadDetailsInfo downloadDetailsInfo =Mockito.spy(new DownloadDetailsInfo(null,null,null,null));
+        Mockito.when(messageCenter.isShutdown()).thenReturn(true);
+        messageCenter.notifyProgressChanged(downloadDetailsInfo);
+//        messageCenter.getHandler()
+
     }
 
     @Test

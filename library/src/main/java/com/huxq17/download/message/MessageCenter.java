@@ -55,7 +55,7 @@ public class MessageCenter implements IMessageCenter {
         this.context = context;
     }
 
-    private boolean isShutdown() {
+    boolean isShutdown() {
         return PumpFactory.getService(IDownloadManager.class).isShutdown();
     }
 
@@ -105,7 +105,11 @@ public class MessageCenter implements IMessageCenter {
     /**
      * Add for test
      */
-    public Context getContext(){
+    Context getContext() {
         return context;
+    }
+
+    Handler getHandler() {
+        return handler;
     }
 }
