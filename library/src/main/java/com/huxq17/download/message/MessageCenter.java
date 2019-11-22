@@ -11,13 +11,11 @@ import com.huxq17.download.PumpFactory;
 import com.huxq17.download.manager.IDownloadManager;
 
 import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MessageCenter implements IMessageCenter {
     private Context context;
-    private volatile boolean isBusying = false;
-    private LinkedHashSet<DownloadListener> observers = new LinkedHashSet<>();
-    private LinkedHashSet<DownloadListener> removedObservers = new LinkedHashSet<>();
+    private ConcurrentLinkedQueue<DownloadListener> observers = new ConcurrentLinkedQueue<>();
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
@@ -28,31 +26,31 @@ public class MessageCenter implements IMessageCenter {
 //            long high32Bit = (msg.arg1 & 0x00000000ffffffffL) << 32;
 //            int low32Bit = msg.arg2;
 //            downloadInfo.snapshotCompletedSize(high32Bit + low32Bit);
-            DownloadInfoSnapshot snapshot = (DownloadInfoSnapshot) msg.obj;
-            Iterator<DownloadListener> iterator = observers.iterator();
-            isBusying = true;
-            while (iterator.hasNext()) {
-                DownloadListener downloadListener = iterator.next();
-                if (downloadListener != null && downloadListener.isEnable()) {
-                    if (downloadListener.filter(snapshot.downloadInfo)) {
-                        downloadListener.downloading(snapshot);
-                    }
-                } else {
-                    iterator.remove();
-                }
-            }
-            isBusying = false;
-            if (removedObservers.size() > 0) {
-                observers.removeAll(removedObservers);
-                removedObservers.clear();
-            }
-            snapshot.recycle();
+            handleDownloadInfoSnapshot(getObserverIterator(), (DownloadInfoSnapshot) msg.obj);
         }
     };
 
     @Override
     public void start(Context context) {
         this.context = context;
+    }
+
+    Iterator<DownloadListener> getObserverIterator() {
+        return observers.iterator();
+    }
+
+    void handleDownloadInfoSnapshot(Iterator<DownloadListener> iterator, DownloadInfoSnapshot snapshot) {
+        while (iterator.hasNext()) {
+            DownloadListener downloadListener = iterator.next();
+            if (downloadListener != null && downloadListener.isEnable()) {
+                if (downloadListener.filter(snapshot.downloadInfo)) {
+                    downloadListener.downloading(snapshot);
+                }
+            } else {
+                iterator.remove();
+            }
+        }
+        snapshot.recycle();
     }
 
     boolean isShutdown() {
@@ -87,19 +85,20 @@ public class MessageCenter implements IMessageCenter {
 
     @Override
     public synchronized void unRegister(String id) {
-        DownloadListener downloadObserver = new DownloadListener();
-        downloadObserver.setId(id);
-        unRegister(downloadObserver);
+        Iterator<DownloadListener> iterator = observers.iterator();
+        while (iterator.hasNext()) {
+            DownloadListener downloadListener = iterator.next();
+            if (id.equals(downloadListener.getId())) {
+                downloadListener.setEnable(false);
+                iterator.remove();
+            }
+        }
     }
 
     @Override
     public synchronized void unRegister(DownloadListener downloadListener) {
         downloadListener.setEnable(false);
-        if (!isBusying) {
-            observers.remove(downloadListener);
-        } else {
-            removedObservers.add(downloadListener);
-        }
+        observers.remove(downloadListener);
     }
 
     /**
@@ -109,7 +108,11 @@ public class MessageCenter implements IMessageCenter {
         return context;
     }
 
-    Handler getHandler() {
-        return handler;
+    void setHandler(Handler handler) {
+        this.handler = handler;
+    }
+
+    int getObserverSize() {
+        return observers.size();
     }
 }

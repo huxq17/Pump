@@ -8,25 +8,25 @@ public class LogUtil {
 
     public static void e(String content) {
         if (mEnableLog) {
-            Log.e(TAG, "huTest " + content);
+            Log.e(TAG, "Pump " + content);
         }
     }
 
     public static void i(String content) {
         if (mEnableLog) {
-            Log.i(TAG, content);
+            Log.i(TAG, "Pump " + content);
         }
     }
 
     public static void d(String content) {
         if (mEnableLog) {
-            Log.d(TAG, "huTest " + content);
+            Log.d(TAG, "Pump " + content);
         }
     }
 
     public static void v(String content) {
         if (mEnableLog) {
-            Log.v(TAG, content);
+            Log.v(TAG, "Pump " + content);
         }
     }
 }

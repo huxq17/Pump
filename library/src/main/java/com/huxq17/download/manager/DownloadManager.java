@@ -36,16 +36,9 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         this.context = context;
     }
 
-    private void startDownloadService() {
-        if (!downloadService.isRunning()) {
-            downloadService.start();
-        }
-    }
-
     public void submit(DownloadRequest downloadRequest) {
-        startDownloadService();
         String id = downloadRequest.getId();
-        if (isTaskAlreadyPresent(downloadRequest.getId())) {
+        if (taskMap.get(id) != null) {
             //The task is running,we need do nothing.
             LogUtil.e("task " + downloadRequest.getName() + " is running,we need do nothing.");
             return;
@@ -58,10 +51,6 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
             downloadRequest.setDownloadInfo(downloadInfo);
         }
         downloadService.enqueueRequest(downloadRequest);
-    }
-
-    public boolean isTaskAlreadyPresent(String id) {
-        return taskMap.get(id) != null;
     }
 
     public void delete(DownloadInfo downloadInfo) {

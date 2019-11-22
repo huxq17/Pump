@@ -41,8 +41,6 @@ public interface IDownloadManager {
 
     File getFileIfSucceed(String id);
 
-    boolean isTaskAlreadyPresent(String id);
-
     void shutdown();
 
     boolean isShutdown();
