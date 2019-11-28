@@ -36,7 +36,6 @@ public class DownloadTask implements Task {
     private volatile boolean isCanceled;
     private boolean supportBreakpoint = true;
 
-
     public DownloadTask(DownloadRequest downloadRequest, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
         if (downloadRequest != null) {
@@ -93,12 +92,9 @@ public class DownloadTask implements Task {
     @Override
     public void run() {
         thread = Thread.currentThread();
-        if (!isDestroyed.get()) {
-            downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
-//            notifyProgressChanged(downloadInfo);
-        }
-        downLoadLifeCycleObserver.onDownloadStart(this);
         if (!shouldStop()) {
+            downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
+            downLoadLifeCycleObserver.onDownloadStart(this);
             startTime = System.currentTimeMillis();
             downloadWithDownloadChain();
             LogUtil.d("download " + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime));
@@ -113,7 +109,7 @@ public class DownloadTask implements Task {
         chain.proceed();
     }
 
-    public boolean onDownload(int length) {
+    boolean onDownload(int length) {
         synchronized (lock) {
             if (isDestroyed.get()) {
                 return false;

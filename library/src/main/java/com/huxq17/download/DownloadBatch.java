@@ -46,8 +46,4 @@ public class DownloadBatch {
             }
         }
     }
-
-    public boolean hasFinished() {
-        return endPos - startPos == downloadedSize;
-    }
 }

@@ -9,15 +9,12 @@ import com.huxq17.download.Utils.Util;
 import com.huxq17.download.config.IDownloadConfigService;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.listener.DownLoadLifeCycleObserver;
-import com.huxq17.download.manager.DownloadManager;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.IMessageCenter;
 import com.huxq17.download.task.DownloadTask;
 import com.huxq17.download.task.Task;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -67,7 +64,7 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
     }
 
     void consumeRequest() {
-        if (requestQueue.isEmpty() && waitingTaskQueue.isEmpty()) {
+        if (isBlockForConsumeRequest()) {
             waitForConsumer();
         }
         DownloadRequest downloadRequest = requestQueue.poll();
@@ -96,7 +93,7 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
     }
 
     void consumeTask() {
-        while (requestQueue.isEmpty() && runningTaskQueue.size() >= getMaxRunningTaskNumber() && isRunning()) {
+        while (isBlockForConsumeTask()) {
             LogUtil.d("running " + runningTaskQueue.size() + " tasks;but max allow run " + getMaxRunningTaskNumber() + " tasks.");
             waitForConsumer();
         }
@@ -105,20 +102,22 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
             if (downloadTask != null) {
                 LogUtil.d("start run " + downloadTask.getName());
                 runningTaskQueue.offer(downloadTask);
-                TaskManager.execute(downloadTask);
+                executeDownloadTask(downloadTask);
             }
         }
     }
 
+    void executeDownloadTask(DownloadTask downloadTask) {
+        TaskManager.execute(downloadTask);
+    }
+
     @Override
     public void run() {
-        LogUtil.d("DownloadService start");
-        while (isRunning() && !isCanceled.get()) {
+        while (isRunnable()) {
             consumeRequest();
             consumeTask();
         }
         isRunning.set(false);
-        LogUtil.d("DownloadService stopped");
     }
 
 
@@ -150,6 +149,18 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
 
     @Override
     public void onDownloadStart(DownloadTask downloadTask) {
+    }
+
+    boolean isBlockForConsumeRequest() {
+        return requestQueue.isEmpty() && waitingTaskQueue.isEmpty();
+    }
+
+    boolean isBlockForConsumeTask() {
+        return requestQueue.isEmpty() && runningTaskQueue.size() >= getMaxRunningTaskNumber() && isRunning();
+    }
+
+    boolean isRunnable() {
+        return isRunning() && !isCanceled.get();
     }
 
     void signalConsumer() {

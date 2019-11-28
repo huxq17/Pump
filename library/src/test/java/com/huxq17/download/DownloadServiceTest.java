@@ -49,7 +49,7 @@ public class DownloadServiceTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         Provider.init(context);
-        downloadService = Mockito.spy(new DownloadService(lifeCycleObserver));
+        downloadService = spy(new DownloadService(lifeCycleObserver));
         TaskManager.setThreadPool(customThreadPool);
     }
 
@@ -99,6 +99,16 @@ public class DownloadServiceTest {
     }
 
     @Test
+    public void consumeRequest_block() {
+        start();
+        doNothing().when(downloadService).waitForConsumer();
+        downloadService.consumeRequest();
+        verify(downloadService).waitForConsumer();
+        assertTrue(downloadService.isBlockForConsumeRequest());
+        verify(lifeCycleObserver, never()).onDownloadStart(any(DownloadTask.class));
+    }
+
+    @Test
     public void consumeRequest_usableSpaceNotEnough() {
         doNothing().when(downloadService).signalConsumer();
         doNothing().when(customThreadPool).execute(eq(downloadService));
@@ -131,33 +141,58 @@ public class DownloadServiceTest {
     }
 
     @Test
-    public void consumeTask_wait() {
-//        consumeRequest();
-//        start();
-//        doReturn(0).when(downloadService).getMaxRunningTaskNumber();
-//        doNothing().when(downloadService).waitForConsumer();
-//        doNothing().when(customThreadPool).execute(any(DownloadTask.class));
-//        downloadService.consumeTask();
-//        verify(downloadService).waitForConsumer();
+    public void consumeTask_block() {
+        start();
+        doNothing().when(downloadService).waitForConsumer();
+        doNothing().when(customThreadPool).execute(any(DownloadTask.class));
+        when(downloadService.isBlockForConsumeTask()).thenReturn(true).thenReturn(false);
+        downloadService.consumeTask();
+        verify(downloadService).waitForConsumer();
     }
 
     @Test
     public void run() {
+        start();
+        when(downloadService.isRunnable()).thenReturn(true).thenReturn(false);
+        doNothing().when(downloadService).consumeRequest();
+        doNothing().when(downloadService).consumeTask();
+        downloadService.run();
+        verify(downloadService).consumeRequest();
+        verify(downloadService).consumeTask();
+        assertFalse(downloadService.isRunning());
     }
 
     @Test
     public void isRunning() {
+        assertFalse(downloadService.isRunning());
+        start();
+        assertTrue(downloadService.isRunning());
     }
 
     @Test
     public void cancel() {
-    }
-
-    @Test
-    public void onDownloadStart() {
+        doNothing().when(downloadService).signalConsumer();
+        start();
+        assertTrue(downloadService.isRunnable());
+        downloadService.cancel();
+        verify(downloadService).signalConsumer();
+        assertFalse(downloadService.isRunnable());
     }
 
     @Test
     public void onDownloadEnd() {
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) {
+                DownloadTask downloadTask = invocation.getArgument(0);
+                downloadService.onDownloadEnd(downloadTask);
+                verify(lifeCycleObserver).onDownloadEnd(downloadTask);
+                return null;
+            }
+        }).when(downloadService).executeDownloadTask(any(DownloadTask.class));
+        consumeRequest();
+        doNothing().when(customThreadPool).execute(any(DownloadTask.class));
+        downloadService.consumeTask();
+        verify(downloadService, never()).waitForConsumer();
     }
 }
