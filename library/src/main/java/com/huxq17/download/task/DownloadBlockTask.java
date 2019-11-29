@@ -5,7 +5,10 @@ import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.DownloadChain;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.OKHttpUtils;
+import com.huxq17.download.PumpFactory;
 import com.huxq17.download.Utils.Util;
+import com.huxq17.download.config.IDownloadConfigService;
+import com.huxq17.download.connection.DownloadConnection;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,13 +29,14 @@ public class DownloadBlockTask implements Task {
     private DownloadChain downloadChain;
     private CountDownLatch countDownLatch;
     private volatile boolean isCanceled;
-    private Call call;
+    private DownloadConnection connection;
 
     public DownloadBlockTask(DownloadBatch batch, CountDownLatch countDownLatch, DownloadChain downloadChain) {
         this.batch = batch;
         this.downloadChain = downloadChain;
         this.countDownLatch = countDownLatch;
         isCanceled = false;
+        connection = PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory().create(batch.url);
     }
 
     @Override
@@ -43,48 +47,34 @@ public class DownloadBlockTask implements Task {
         File tempFile = batch.tempFile;
         DownloadTask downloadTask = downloadChain.getDownloadTask();
         if (startPosition != endPosition + 1) {
-            OkHttpClient okHttpClient = OKHttpUtils.get();
-            Request request = new Request.Builder()
-                    .get()
-                    .addHeader("Range", "bytes=" + startPosition + "-" + endPosition)
-//                    .addHeader("Accept-Encoding", "identity")
-                    .url(batch.url)
-                    .build();
-            Response response = null;
-            BufferedSink bufferedSink = null;
-            BufferedSource bufferedSource = null;
+            connection.addHeader("Range", "bytes=" + startPosition + "-" + endPosition);
             try {
-                call = okHttpClient.newCall(request);
-                response = call.execute();
-                int code = response.code();
+                connection.connect();
+                int code = connection.getResponseCode();
                 if (!isCanceled) {
                     if (code == HttpURLConnection.HTTP_PARTIAL) {
-                        bufferedSource = response.body().source();
                         int len;
-                        bufferedSink = Okio.buffer(Okio.appendingSink(tempFile));
+                        connection.prepareDownload(tempFile);
                         byte[] buffer = new byte[8092];
-                        while (!isCanceled && (len = bufferedSource.read(buffer)) != -1) {
+                        while (!isCanceled && (len = connection.downloadBuffer(buffer)) != -1) {
                             if (!downloadTask.onDownload(len)) {
                                 break;
                             }
-                            bufferedSink.write(buffer, 0, len);
                         }
-                        bufferedSink.flush();
+                        connection.downloadFlush();
                     } else {
                         downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
                         downloadTask.cancel(!downloadChain.isRetryable());
                     }
                 }
             } catch (IOException e) {
-                if (!call.isCanceled()) {
+                if (!connection.isCanceled()) {
                     e.printStackTrace();
                     downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
                     downloadTask.cancel(!downloadChain.isRetryable());
                 }
             } finally {
-                Util.closeQuietly(bufferedSource);
-                Util.closeQuietly(bufferedSink);
-                Util.closeQuietly(response);
+                connection.close();
             }
         }
         countDownLatch.countDown();
@@ -96,8 +86,6 @@ public class DownloadBlockTask implements Task {
     @Override
     public void cancel() {
         isCanceled = true;
-        if (call != null) {
-            call.cancel();
-        }
+        connection.cancel();
     }
 }

@@ -6,7 +6,10 @@ import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadRequest;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.OKHttpUtils;
+import com.huxq17.download.PumpFactory;
 import com.huxq17.download.Utils.Util;
+import com.huxq17.download.config.IDownloadConfigService;
+import com.huxq17.download.connection.DownloadConnection;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,12 +27,13 @@ import okio.Okio;
 public class SimpleDownloadTask implements Task {
     private DownloadChain downloadChain;
     private boolean isCanceled;
-    private Call call;
     private DownloadRequest downloadRequest;
+    private DownloadConnection connection;
 
     public SimpleDownloadTask(DownloadChain downloadChain) {
         this.downloadChain = downloadChain;
         downloadRequest = downloadChain.getDownloadTask().getRequest();
+        connection = PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory().create(downloadRequest.getUrl());
     }
 
     @Override
@@ -37,58 +41,44 @@ public class SimpleDownloadTask implements Task {
         isCanceled = false;
         DownloadTask downloadTask = downloadChain.getDownloadTask();
         DownloadDetailsInfo downloadInfo = downloadTask.getDownloadInfo();
-        OkHttpClient okHttpClient = OKHttpUtils.get();
         File downloadFile = new File(downloadRequest.getFilePath());
         Util.deleteFile(downloadFile);
-        Request request = new Request.Builder()
-                .get()
-                .url(downloadRequest.getUrl())
-                .build();
-        Response response = null;
-        BufferedSink bufferedSink = null;
-        BufferedSource bufferedSource = null;
+
         try {
             if (downloadFile.createNewFile()) {
-                call = okHttpClient.newCall(request);
-                response = call.execute();
-                Headers headers = response.headers();
-                long contentLength = Util.parseContentLength(headers.get("Content-Length"));
+                connection.connect();
+
+                long contentLength = Util.parseContentLength(connection.getHeader("Content-Length"));
                 if (contentLength > 0) {
                     downloadInfo.setContentLength(contentLength);
                 }
-                if (response.isSuccessful()) {
+                if (connection.isSuccessful()) {
                     byte[] buffer = new byte[8092];
-                    bufferedSource = response.body().source();
+                    connection.prepareDownload(downloadFile);
+
                     int len;
-                    bufferedSink = Okio.buffer(Okio.appendingSink(downloadFile));
-                    while (!isCanceled && (len = bufferedSource.read(buffer)) != -1) {
-                        if (downloadTask.onDownload(len)) {
-                            bufferedSink.write(buffer, 0, len);
-                        } else {
+                    while (!isCanceled && (len = connection.downloadBuffer(buffer)) != -1) {
+                        if (!downloadTask.onDownload(len)) {
                             break;
                         }
                     }
-                    bufferedSink.flush();
+                    connection.downloadFlush();
                     downloadInfo.setContentLength(downloadFile.length());
                 }
             }
         } catch (IOException e) {
-            if (call == null || !call.isCanceled()) {
+            if (!connection.isCanceled()) {
                 e.printStackTrace();
                 downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
             }
         } finally {
-            Util.closeQuietly(bufferedSink);
-            Util.closeQuietly(bufferedSource);
-            Util.closeQuietly(response);
+            connection.close();
         }
     }
 
     @Override
     public void cancel() {
         isCanceled = true;
-        if (call != null) {
-            call.cancel();
-        }
+        connection.cancel();
     }
 }

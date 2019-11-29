@@ -14,6 +14,7 @@ import com.huxq17.download.PumpFactory;
 import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.Utils.Util;
 import com.huxq17.download.config.IDownloadConfigService;
+import com.huxq17.download.connection.DownloadConnection;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.provider.Provider;
@@ -23,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
+import okhttp3.Connection;
 import okhttp3.Headers;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -30,30 +32,27 @@ import okhttp3.Response;
 
 
 public class CheckCacheAction implements Action {
-    private OkHttpClient okHttpClient = OKHttpUtils.get();
     private DownloadTask downloadTask;
     private DownloadRequest downloadRequest;
 
-    private Request buildRequest(DownloadRequest downloadRequest) {
+    private DownloadConnection buildRequest(DownloadRequest downloadRequest) {
         String url = downloadRequest.getUrl();
-        Request.Builder builder = new Request.Builder()
-                .get()
-                .addHeader("Range", "bytes=0-0")
-                .url(url);
+        DownloadConnection connection = createConnection(url);
+        connection.addHeader("Range", "bytes=0-0");
         if (downloadRequest.getDownloadInfo().isFinished() && !downloadRequest.isForceReDownload()) {
             Provider.CacheBean cacheBean = DBService.getInstance().queryCache(url);
             if (cacheBean != null) {
                 String eTag = cacheBean.eTag;
                 String lastModified = cacheBean.lastModified;
                 if (!TextUtils.isEmpty(lastModified)) {
-                    builder.addHeader("If-Modified-Since", lastModified);
+                    connection.addHeader("If-Modified-Since", lastModified);
                 }
                 if (!TextUtils.isEmpty(eTag)) {
-                    builder.addHeader("If-None-Match", eTag);
+                    connection.addHeader("If-None-Match", eTag);
                 }
             }
         }
-        return builder.build();
+        return connection;
     }
 
     private int responseCode;
@@ -62,26 +61,25 @@ public class CheckCacheAction implements Action {
     private long contentLength;
     private String contentLengthField;
 
-    private boolean parseResponse(Request request) {
+    private boolean parseResponse(DownloadConnection connection) {
         boolean result = true;
-        Response response = null;
         String transferEncoding = null;
+        downloadTask.setSupportBreakpoint(true);
         try {
-            response = okHttpClient.newCall(request).execute();
-            Headers headers = response.headers();
-            transferEncoding = headers.get("Transfer-Encoding");
-            lastModified = headers.get("Last-Modified");
+            connection.connect();
+            transferEncoding = connection.getHeader("Transfer-Encoding");
+            lastModified = connection.getHeader("Last-Modified");
             if (downloadRequest.getFilePath() == null) {
-                String fileName = Util.guessFileName(downloadRequest.getUrl(), headers.get("Content-Disposition"), headers.get("Content-Type"));
+                String fileName = Util.guessFileName(downloadRequest.getUrl(), connection.getHeader("Content-Disposition"), connection.getHeader("Content-Type"));
                 downloadRequest.setFilePath(Util.getCachePath(PumpFactory.getService(IDownloadManager.class).getContext()) + "/" + fileName);
                 DBService.getInstance().updateInfo(downloadRequest.getDownloadInfo());
             }
-            eTag = headers.get("ETag");
-            contentLengthField = headers.get("Content-Length");
-            downloadRequest.setMd5(headers.get("Content-MD5"));
-            responseCode = response.code();
-            contentLength = getContentLength(headers);
-            long originalContentLength = Util.parseContentLength(headers.get("Content-Length"));
+            eTag = connection.getHeader("ETag");
+            contentLengthField = connection.getHeader("Content-Length");
+            downloadRequest.setMd5(connection.getHeader("Content-MD5"));
+            responseCode = connection.getResponseCode();
+            contentLength = getContentLength(connection);
+            long originalContentLength = Util.parseContentLength(connection.getHeader("Content-Length"));
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 contentLength = originalContentLength;
                 downloadTask.setSupportBreakpoint(false);
@@ -90,7 +88,7 @@ public class CheckCacheAction implements Action {
             e.printStackTrace();
             result = false;
         } finally {
-            Util.closeQuietly(response);
+            connection.close();
         }
         if (contentLength == -1 &&
                 isNeedHeadContentLength(transferEncoding)) {
@@ -102,10 +100,10 @@ public class CheckCacheAction implements Action {
         return result;
     }
 
-    private boolean executeRequest(Request request) {
+    private boolean executeRequest(DownloadConnection connection) {
         boolean result = true;
         DownloadDetailsInfo detailsInfo = downloadTask.getDownloadInfo();
-        if (parseResponse(request)) {
+        if (parseResponse(connection)) {
             if (responseCode >= 200 && responseCode < 300) {
                 if (contentLength > 0) {
                     long downloadDirUsableSpace = Util.getUsableSpace(new File(downloadRequest.getFilePath()));
@@ -147,9 +145,9 @@ public class CheckCacheAction implements Action {
         return result;
     }
 
-    private long getContentLength(Headers headers) {
+    private long getContentLength(DownloadConnection connection) {
         long contentLength = -1;
-        String contentRange = headers.get("Content-Range");
+        String contentRange = connection.getHeader("Content-Range");
         if (contentRange != null) {
             final String[] session = contentRange.split("/");
             if (session.length >= 2) {
@@ -182,19 +180,14 @@ public class CheckCacheAction implements Action {
     }
 
     private long headContentLength() {
-        String url = downloadRequest.getUrl();
-        Request.Builder builder = new Request.Builder()
-                .head()
-                .url(url);
-        Response response = null;
+        DownloadConnection connection = createConnection(downloadRequest.getUrl());
         try {
-            response = okHttpClient.newCall(builder.build()).execute();
-            Headers headers = response.headers();
-            return Util.parseContentLength(headers.get("Content-Length"));
+            connection.connect();
+            return Util.parseContentLength(connection.getHeader("Content-Length"));
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            Util.closeQuietly(response);
+            connection.close();
         }
         return -1;
     }
@@ -203,7 +196,11 @@ public class CheckCacheAction implements Action {
     public boolean proceed(DownloadChain chain) {
         downloadTask = chain.getDownloadTask();
         downloadRequest = downloadTask.getRequest();
-        Request request = buildRequest(downloadRequest);
-        return executeRequest(request);
+        return executeRequest(buildRequest(downloadRequest));
+    }
+
+    private DownloadConnection createConnection(String url) {
+        DownloadConnection connection = PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory().create(url);
+        return connection;
     }
 }

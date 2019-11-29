@@ -1,8 +1,10 @@
 package com.huxq17.download.config;
 
 
-import com.huxq17.download.DownloadConfig;
+import com.huxq17.download.OKHttpUtils;
 import com.huxq17.download.OnVerifyMd5Listener;
+import com.huxq17.download.connection.DownloadConnection;
+import com.huxq17.download.connection.OkHttpDownloadConnection;
 
 public class DownloadConfigService implements IDownloadConfigService {
     /**
@@ -14,6 +16,7 @@ public class DownloadConfigService implements IDownloadConfigService {
      */
     private long minUsableStorageSpace = 4 * 1024L;
     private DownloadConfig downloadConfig;
+    private DownloadConnection.Factory downloadConnectionFactory;
 
     private DownloadConfigService() {
     }
@@ -43,5 +46,18 @@ public class DownloadConfigService implements IDownloadConfigService {
             return null;
         }
         return downloadConfig.getOnVerifyMd5Listener();
+    }
+
+    @Override
+    public void setDownloadConnectionFactory(DownloadConnection.Factory factory) {
+        this.downloadConnectionFactory = factory;
+    }
+
+    @Override
+    public DownloadConnection.Factory getDownloadConnectionFactory() {
+        if (downloadConnectionFactory == null) {
+            downloadConnectionFactory = new OkHttpDownloadConnection.Factory(OKHttpUtils.get());
+        }
+        return downloadConnectionFactory;
     }
 }

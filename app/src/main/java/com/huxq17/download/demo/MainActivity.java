@@ -6,9 +6,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
-import com.huxq17.download.DownloadConfig;
+import com.huxq17.download.OKHttpUtils;
+import com.huxq17.download.config.DownloadConfig;
 import com.huxq17.download.Pump;
 import com.huxq17.download.Utils.LogUtil;
+import com.huxq17.download.connection.OkHttpDownloadConnection;
 import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.message.DownloadListener;
 
@@ -38,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
                 .setMaxRunningTaskNum(2)
                 //Optional,set the minimum available storage space size for downloading to avoid insufficient storage space during downloading, default is 4kb.
                 .setMinUsableStorageSpace(4 * 1024L)
+                .setDownloadConnectionFactory(new OkHttpDownloadConnection.Factory(OKHttpUtils.get()))//Optional
                 .build();
 //        Pump.subscribe(downloadObserver);
 //        try {
