@@ -9,7 +9,6 @@ import com.huxq17.download.DownloadChain;
 import com.huxq17.download.DownloadDetailsInfo;
 import com.huxq17.download.DownloadRequest;
 import com.huxq17.download.ErrorCode;
-import com.huxq17.download.OKHttpUtils;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.Utils.LogUtil;
 import com.huxq17.download.Utils.Util;
@@ -23,12 +22,6 @@ import com.huxq17.download.task.DownloadTask;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-
-import okhttp3.Connection;
-import okhttp3.Headers;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 
 public class CheckCacheAction implements Action {
@@ -200,7 +193,6 @@ public class CheckCacheAction implements Action {
     }
 
     private DownloadConnection createConnection(String url) {
-        DownloadConnection connection = PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory().create(url);
-        return connection;
+        return PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory().create(url);
     }
 }

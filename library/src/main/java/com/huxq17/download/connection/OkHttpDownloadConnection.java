@@ -14,11 +14,11 @@ import okio.BufferedSource;
 import okio.Okio;
 
 public class OkHttpDownloadConnection implements DownloadConnection {
-    private Response response = null;
+    private Response response;
     private Call call;
     private OkHttpClient okHttpClient;
-    private BufferedSink bufferedSink = null;
-    private BufferedSource bufferedSource = null;
+    private BufferedSink bufferedSink ;
+    private BufferedSource bufferedSource;
     private Request.Builder builder;
     private String url;
 
