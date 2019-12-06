@@ -11,12 +11,11 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.huxq17.download.DownloadDetailsInfo
-import com.huxq17.download.DownloadInfo
 import com.huxq17.download.Pump
-import com.huxq17.download.Utils.LogUtil
+import com.huxq17.download.core.DownloadInfo
 import com.huxq17.download.demo.installapk.APK
 import com.huxq17.download.message.DownloadListener
+import com.huxq17.download.utils.LogUtil
 import kotlinx.android.synthetic.main.activity_download_list.*
 import kotlinx.android.synthetic.main.item_download_list.view.*
 import java.util.*
@@ -40,7 +39,7 @@ class DownloadListActivity : AppCompatActivity() {
     }
     private val map = HashMap<DownloadViewHolder, DownloadInfo>()
     private var downloadAdapter: DownloadAdapter? = null
-    private lateinit var downloadInfoList: MutableList<out DownloadInfo>
+    private lateinit var downloadInfoList: MutableList<DownloadInfo>
     private var tag: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,7 +67,7 @@ class DownloadListActivity : AppCompatActivity() {
         Pump.shutdown()
     }
 
-    class DownloadAdapter(var map: HashMap<DownloadViewHolder, DownloadInfo>, var downloadInfoList: MutableList<out DownloadInfo>) : RecyclerView.Adapter<DownloadViewHolder>() {
+    class DownloadAdapter(var map: HashMap<DownloadViewHolder, DownloadInfo>, var downloadInfoList: MutableList<DownloadInfo>) : RecyclerView.Adapter<DownloadViewHolder>() {
 
         override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): DownloadViewHolder {
             val v = LayoutInflater.from(viewGroup.context).inflate(R.layout.item_download_list, viewGroup, false)
@@ -76,7 +75,7 @@ class DownloadListActivity : AppCompatActivity() {
         }
 
         override fun onBindViewHolder(viewHolder: DownloadViewHolder, i: Int) {
-            val downloadInfo = downloadInfoList[i] as DownloadDetailsInfo
+            val downloadInfo = downloadInfoList[i]
             viewHolder.bindData(downloadInfo, downloadInfo.status)
 
             downloadInfo.extraData = viewHolder

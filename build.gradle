@@ -18,6 +18,7 @@ buildscript {
         // in the individual module build.gradle files
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-android-extensions:$kotlin_version"
+        classpath "org.jacoco:org.jacoco.core:0.8.2"
     }
 }
 

@@ -3,13 +3,13 @@ package com.huxq17.download.provider;
 import android.content.Context;
 import android.net.Uri;
 
-import com.huxq17.download.OKHttpUtils;
+import com.huxq17.download.utils.OKHttpUtil;
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.Utils.ReflectUtil;
+import com.huxq17.download.utils.ReflectUtil;
 import com.huxq17.download.config.DownloadConfigService;
 import com.huxq17.download.config.IDownloadConfigService;
 import com.huxq17.download.db.DBService;
-import com.huxq17.download.manager.DownloadManager;
+import com.huxq17.download.core.DownloadManager;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.IMessageCenter;
 import com.huxq17.download.message.MessageCenter;
@@ -38,7 +38,7 @@ public class Provider {
         PumpFactory.addService(IMessageCenter.class, messageCenter);
         IDownloadConfigService downloadConfig = ReflectUtil.newInstance(DownloadConfigService.class);
         PumpFactory.addService(IDownloadConfigService.class, downloadConfig);
-        OKHttpUtils.init(context);
+        OKHttpUtil.init(context);
         //If DownloadService is running,pause it.
 //        Intent intent = new Intent(context, DownloadService.class);
 //        context.stopService(intent);

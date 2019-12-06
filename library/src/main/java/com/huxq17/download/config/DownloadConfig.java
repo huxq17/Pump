@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.huxq17.download.OnVerifyMd5Listener;
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.connection.DownloadConnection;
+import com.huxq17.download.core.connection.DownloadConnection;
 import com.huxq17.download.provider.Provider;
 
 public class DownloadConfig {

@@ -1,7 +1,7 @@
 package com.huxq17.download.config;
 
 import com.huxq17.download.OnVerifyMd5Listener;
-import com.huxq17.download.connection.DownloadConnection;
+import com.huxq17.download.core.connection.DownloadConnection;
 
 public interface IDownloadConfigService {
     void setConfig(DownloadConfig downloadConfig);

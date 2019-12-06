@@ -1,10 +1,10 @@
 package com.huxq17.download.config;
 
 
-import com.huxq17.download.OKHttpUtils;
+import com.huxq17.download.utils.OKHttpUtil;
 import com.huxq17.download.OnVerifyMd5Listener;
-import com.huxq17.download.connection.DownloadConnection;
-import com.huxq17.download.connection.OkHttpDownloadConnection;
+import com.huxq17.download.core.connection.DownloadConnection;
+import com.huxq17.download.core.connection.OkHttpDownloadConnection;
 
 public class DownloadConfigService implements IDownloadConfigService {
     /**
@@ -56,7 +56,7 @@ public class DownloadConfigService implements IDownloadConfigService {
     @Override
     public DownloadConnection.Factory getDownloadConnectionFactory() {
         if (downloadConnectionFactory == null) {
-            downloadConnectionFactory = new OkHttpDownloadConnection.Factory(OKHttpUtils.get());
+            downloadConnectionFactory = new OkHttpDownloadConnection.Factory(OKHttpUtil.get());
         }
         return downloadConnectionFactory;
     }

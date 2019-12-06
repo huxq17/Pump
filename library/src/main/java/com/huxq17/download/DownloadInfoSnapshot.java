@@ -1,5 +1,7 @@
 package com.huxq17.download;
 
+import com.huxq17.download.core.DownloadInfo;
+
 public class DownloadInfoSnapshot {
     public long completedSize;
     public DownloadInfo.Status status;

@@ -2,8 +2,7 @@ package com.huxq17.download.message;
 
 import android.content.Context;
 
-import com.huxq17.download.DownloadDetailsInfo;
-
+import com.huxq17.download.core.DownloadDetailsInfo;
 
 public interface IMessageCenter {
     void start(Context context);

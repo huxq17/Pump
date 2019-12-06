@@ -3,7 +3,7 @@ package com.huxq17.download;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.huxq17.download.task.Task;
+import com.huxq17.download.core.task.Task;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;

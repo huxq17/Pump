@@ -1,5 +1,7 @@
 package com.huxq17.download;
 
+import com.huxq17.download.core.SpeedMonitor;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

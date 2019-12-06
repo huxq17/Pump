@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
-import com.huxq17.download.DownloadDetailsInfo;
+import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.provider.Provider;
 
 import java.util.ArrayList;
@@ -117,12 +117,10 @@ public class DBService {
             cursor = db.query(Provider.DownloadTable.TABLE_NAME, null, Provider.DownloadTable.TAG + " = ?", new String[]{tag}, null, null, Provider.DownloadTable.CREATE_TIME, null);
         }
         while (cursor.moveToNext()) {
-            DownloadDetailsInfo info = new DownloadDetailsInfo(cursor.getString(0), cursor.getString(1), cursor.getString(6), cursor.getString(7));
+            DownloadDetailsInfo info = new DownloadDetailsInfo(cursor.getString(0), cursor.getString(1), cursor.getString(6), cursor.getString(7),cursor.getLong(5));
 //            info.threadNum = cursor.getInt(2);
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));
-            info.setCreateTime(cursor.getLong(5));
-            info.setId(cursor.getString(7));
             info.calculateDownloadProgress();
 //            LogUtil.d("table " + info);
             tasks.add(info);
@@ -140,10 +138,9 @@ public class DBService {
                 Provider.DownloadTable.ID + "=?", new String[]{id}, null, null, null, null);
         DownloadDetailsInfo info = null;
         while (cursor.moveToNext()) {
-            info = new DownloadDetailsInfo(cursor.getString(0), cursor.getString(1), cursor.getString(6), cursor.getString(7));
+            info = new DownloadDetailsInfo(cursor.getString(0), cursor.getString(1), cursor.getString(6), cursor.getString(7),cursor.getLong(5));
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));
-            info.setCreateTime(cursor.getLong(5));
             info.calculateDownloadProgress();
         }
         cursor.close();

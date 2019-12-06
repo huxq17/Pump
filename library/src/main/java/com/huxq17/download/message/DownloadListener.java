@@ -2,9 +2,8 @@ package com.huxq17.download.message;
 
 import android.text.TextUtils;
 
-import com.huxq17.download.DownloadInfo;
-import com.huxq17.download.DownloadInfoSnapshot;
 import com.huxq17.download.Pump;
+import com.huxq17.download.core.DownloadInfo;
 
 public class DownloadListener {
     private String id;
@@ -58,10 +57,9 @@ public class DownloadListener {
         return downloadInfo;
     }
 
-    final void downloading(DownloadInfoSnapshot downloadInfoSnapshot) {
-        DownloadInfo downloadInfo = downloadInfoSnapshot.downloadInfo;
-        long completedSize = downloadInfoSnapshot.completedSize;
-        DownloadInfo.Status status = downloadInfoSnapshot.status;
+    final void downloading(DownloadInfo downloadInfo) {
+        long completedSize = downloadInfo.getCompletedSize();
+        DownloadInfo.Status status = downloadInfo.getStatus();
         this.downloadInfo = downloadInfo;
         this.status = status;
         long contentLength = downloadInfo.getContentLength();

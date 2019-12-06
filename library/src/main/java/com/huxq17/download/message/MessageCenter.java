@@ -5,9 +5,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-import com.huxq17.download.DownloadDetailsInfo;
-import com.huxq17.download.DownloadInfoSnapshot;
 import com.huxq17.download.PumpFactory;
+import com.huxq17.download.core.DownloadDetailsInfo;
+import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.manager.IDownloadManager;
 
 import java.util.Iterator;
@@ -23,10 +23,7 @@ public class MessageCenter implements IMessageCenter {
             if (isShutdown()) {
                 return;
             }
-//            long high32Bit = (msg.arg1 & 0x00000000ffffffffL) << 32;
-//            int low32Bit = msg.arg2;
-//            downloadInfo.snapshotCompletedSize(high32Bit + low32Bit);
-            handleDownloadInfoSnapshot(getObserverIterator(), (DownloadInfoSnapshot) msg.obj);
+            handleDownloadInfoSnapshot(getObserverIterator(), (DownloadInfo) msg.obj);
         }
     };
 
@@ -39,18 +36,17 @@ public class MessageCenter implements IMessageCenter {
         return observers.iterator();
     }
 
-    void handleDownloadInfoSnapshot(Iterator<DownloadListener> iterator, DownloadInfoSnapshot snapshot) {
+    void handleDownloadInfoSnapshot(Iterator<DownloadListener> iterator, DownloadInfo snapshot) {
         while (iterator.hasNext()) {
             DownloadListener downloadListener = iterator.next();
             if (downloadListener != null && downloadListener.isEnable()) {
-                if (downloadListener.filter(snapshot.downloadInfo)) {
+                if (downloadListener.filter(snapshot)) {
                     downloadListener.downloading(snapshot);
                 }
             } else {
                 iterator.remove();
             }
         }
-        snapshot.recycle();
     }
 
     boolean isShutdown() {
@@ -63,11 +59,13 @@ public class MessageCenter implements IMessageCenter {
             return;
         }
         Message message = Message.obtain();
-        DownloadInfoSnapshot snapshot = DownloadInfoSnapshot.obtain();
-        message.obj = snapshot;
-        snapshot.downloadInfo = downloadInfo;
-        snapshot.completedSize = downloadInfo.getCompletedSize();
-        snapshot.status = downloadInfo.getStatus();
+        message.obj = downloadInfo.snapshot();
+//        DownloadInfoSnapshot snapshot = DownloadInfoSnapshot.obtain();
+//        message.obj = snapshot;
+//        snapshot.downloadInfo = downloadInfo;
+//        snapshot.completedSize = downloadInfo.getCompletedSize();
+//        snapshot.status = downloadInfo.getStatus();
+
 //        long completedSize = downloadInfo.getCompletedSize();
 //        //用arg1存高32位的long值
 //        message.arg1 = (int) ((completedSize & 0xffffffff00000000L) >> 32);
@@ -110,6 +108,9 @@ public class MessageCenter implements IMessageCenter {
 
     void setHandler(Handler handler) {
         this.handler = handler;
+    }
+    Handler getHandler(){
+        return handler;
     }
 
     int getObserverSize() {

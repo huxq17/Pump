@@ -2,13 +2,14 @@ package com.huxq17.download;
 
 import android.os.SystemClock;
 
-import com.huxq17.download.action.Action;
-import com.huxq17.download.action.CheckCacheAction;
-import com.huxq17.download.action.CorrectDownloadInfoAction;
-import com.huxq17.download.action.MergeFileAction;
-import com.huxq17.download.action.StartDownloadAction;
-import com.huxq17.download.action.VerifyResultAction;
-import com.huxq17.download.task.DownloadTask;
+import com.huxq17.download.core.DownloadRequest;
+import com.huxq17.download.core.action.Action;
+import com.huxq17.download.core.action.CacheCheckAction;
+import com.huxq17.download.core.action.DownloadInfoCorrectAction;
+import com.huxq17.download.core.action.FileMergeAction;
+import com.huxq17.download.core.action.DownloadExecuteAction;
+import com.huxq17.download.core.action.VerifyResultAction;
+import com.huxq17.download.core.task.DownloadTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,10 +27,10 @@ public class DownloadChain {
 
     public DownloadChain(DownloadTask downloadTask) {
         List<Action> actions = new ArrayList<>();
-        actions.add(new CheckCacheAction());
-        actions.add(new CorrectDownloadInfoAction());
-        actions.add(new StartDownloadAction());
-        actions.add(new MergeFileAction());
+        actions.add(new CacheCheckAction());
+        actions.add(new DownloadInfoCorrectAction());
+        actions.add(new DownloadExecuteAction());
+        actions.add(new FileMergeAction());
         this.downloadTask = downloadTask;
         this.actions = actions;
         index = 0;
@@ -52,7 +53,7 @@ public class DownloadChain {
         while (index != actionSize) {
             Action action = actions.get(index);
             boolean result ;
-            if(!downloadTask.shouldStop()){
+            if(downloadTask.isRunning()){
                 result = action.proceed(this);
             }else {
                 break;

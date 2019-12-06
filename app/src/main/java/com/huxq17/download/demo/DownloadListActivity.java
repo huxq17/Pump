@@ -15,11 +15,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-
-import com.huxq17.download.DownloadDetailsInfo;
-import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.Pump;
-import com.huxq17.download.Utils.LogUtil;
+import com.huxq17.download.core.DownloadInfo;
+import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.message.DownloadListener;
 
@@ -58,7 +56,7 @@ public class DownloadListActivity extends AppCompatActivity {
     private HashMap<DownloadViewHolder, DownloadInfo> map = new HashMap<>();
     private RecyclerView recyclerView;
     private DownloadAdapter downloadAdapter;
-    private List<? extends DownloadInfo> downloadInfoList;
+    private List<DownloadInfo> downloadInfoList;
     private String tag;
 
     @Override
@@ -98,7 +96,7 @@ public class DownloadListActivity extends AppCompatActivity {
         List<? extends DownloadInfo> downloadInfoList;
         HashMap<DownloadViewHolder, DownloadInfo> map;
 
-        public DownloadAdapter(HashMap<DownloadViewHolder, DownloadInfo> map, List<? extends DownloadInfo> downloadInfoList) {
+        public DownloadAdapter(HashMap<DownloadViewHolder, DownloadInfo> map, List<DownloadInfo> downloadInfoList) {
             this.downloadInfoList = downloadInfoList;
             this.map = map;
         }
@@ -112,11 +110,11 @@ public class DownloadListActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull DownloadViewHolder viewHolder, int i) {
-            DownloadDetailsInfo downloadInfo = (DownloadDetailsInfo) downloadInfoList.get(i);
-            viewHolder.bindData(downloadInfo, downloadInfo.getStatus());
-
+            DownloadInfo downloadInfo = downloadInfoList.get(i);
             downloadInfo.setExtraData(viewHolder);
             map.put(viewHolder, downloadInfo);
+
+            viewHolder.bindData(downloadInfo, downloadInfo.getStatus());
         }
 
         public void delete(DownloadViewHolder viewHolder) {

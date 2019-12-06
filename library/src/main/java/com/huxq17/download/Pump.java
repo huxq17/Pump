@@ -3,7 +3,9 @@ package com.huxq17.download;
 
 import android.support.annotation.NonNull;
 
-import com.huxq17.download.Utils.Util;
+import com.huxq17.download.callback.Func;
+import com.huxq17.download.core.DownloadInfo;
+import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.DownloadListener;
 import com.huxq17.download.message.IMessageCenter;
@@ -134,15 +136,15 @@ public class Pump {
      *
      * @return
      */
-    public static List<? extends DownloadInfo> getAllDownloadList() {
+    public static List<DownloadInfo> getAllDownloadList() {
         return PumpFactory.getService(IDownloadManager.class).getAllDownloadList();
     }
 
-    public static void getAllDownloadListOnMainThread(final Func<List<DownloadDetailsInfo>> func) {
+    public static void getAllDownloadListOnMainThread(final Func<List<DownloadInfo>> func) {
         TaskManager.execute(new Runnable() {
             @Override
             public void run() {
-                final List<DownloadDetailsInfo> downloadInfoList = PumpFactory.getService(IDownloadManager.class).getAllDownloadList();
+                final List<DownloadInfo> downloadInfoList = PumpFactory.getService(IDownloadManager.class).getAllDownloadList();
                 TaskManager.executeOnMainThread(new Runnable() {
                     @Override
                     public void run() {
@@ -154,11 +156,11 @@ public class Pump {
     }
 
 
-    public static List<? extends DownloadInfo> getDownloadingList() {
+    public static List<DownloadInfo> getDownloadingList() {
         return PumpFactory.getService(IDownloadManager.class).getDownloadingList();
     }
 
-    public static List<? extends DownloadInfo> getDownloadedList() {
+    public static List<DownloadInfo> getDownloadedList() {
         return PumpFactory.getService(IDownloadManager.class).getDownloadedList();
     }
 
@@ -168,7 +170,7 @@ public class Pump {
      * @param tag tag
      * @return
      */
-    public static List<DownloadDetailsInfo> getDownloadListByTag(String tag) {
+    public static List<DownloadInfo> getDownloadListByTag(String tag) {
         return PumpFactory.getService(IDownloadManager.class).getDownloadListByTag(tag);
     }
 
@@ -178,7 +180,7 @@ public class Pump {
      * @param id unique download id,default is download url.
      * @return
      */
-    public static DownloadDetailsInfo getDownloadInfoById(String id) {
+    public static DownloadInfo getDownloadInfoById(String id) {
         return PumpFactory.getService(IDownloadManager.class).getDownloadInfoById(id);
     }
 

@@ -2,22 +2,20 @@ package com.huxq17.download;
 
 import android.content.Context;
 
-import com.huxq17.download.listener.DownLoadLifeCycleObserver;
-import com.huxq17.download.message.MessageCenter;
+import com.huxq17.download.core.DownloadRequest;
+import com.huxq17.download.core.DownloadService;
+import com.huxq17.download.core.DownLoadLifeCycleObserver;
 import com.huxq17.download.provider.Provider;
-import com.huxq17.download.task.DownloadTask;
-import com.huxq17.download.task.Task;
+import com.huxq17.download.core.task.DownloadTask;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.shadows.ShadowPowerManager;
 
 import java.util.concurrent.ExecutorService;
 

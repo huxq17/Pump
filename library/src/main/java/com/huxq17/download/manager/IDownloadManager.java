@@ -2,10 +2,8 @@ package com.huxq17.download.manager;
 
 import android.content.Context;
 
-
-import com.huxq17.download.DownloadDetailsInfo;
-import com.huxq17.download.DownloadInfo;
-import com.huxq17.download.DownloadRequest;
+import com.huxq17.download.core.DownloadRequest;
+import com.huxq17.download.core.DownloadInfo;
 
 import java.io.File;
 import java.util.List;
@@ -27,15 +25,15 @@ public interface IDownloadManager {
 
     void resume(DownloadInfo downloadInfo);
 
-    List<DownloadDetailsInfo> getDownloadingList();
+    List<DownloadInfo> getDownloadingList();
 
-    List<DownloadDetailsInfo> getDownloadedList();
+    List<DownloadInfo> getDownloadedList();
 
-    List<DownloadDetailsInfo> getDownloadListByTag(String tag);
+    List<DownloadInfo> getDownloadListByTag(String tag);
 
-    List<DownloadDetailsInfo> getAllDownloadList();
+    List<DownloadInfo> getAllDownloadList();
 
-    DownloadDetailsInfo getDownloadInfoById(String id);
+    DownloadInfo getDownloadInfoById(String id);
 
     boolean hasDownloadSucceed(String id);
 

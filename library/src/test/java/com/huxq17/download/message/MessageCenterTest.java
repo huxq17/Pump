@@ -5,7 +5,7 @@ import android.os.Handler;
 import android.os.Message;
 
 import com.huxq17.download.DownloadDetailsInfo;
-import com.huxq17.download.DownloadInfoSnapshot;
+import com.huxq17.download.DownloadInfo;
 import com.huxq17.download.provider.Provider;
 
 import org.junit.Assert;
@@ -15,18 +15,16 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.robolectric.RobolectricTestRunner;
 
 import java.util.Iterator;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
 public class MessageCenterTest {
@@ -48,28 +46,27 @@ public class MessageCenterTest {
     }
 
     @Test
+    public void notifyProgressChanged_isShutdown() {
+        Mockito.when(messageCenter.isShutdown()).thenReturn(true);
+        final Handler handler = mock(Handler.class);
+        messageCenter.setHandler(handler);
+        final DownloadDetailsInfo downloadDetailsInfo = Mockito.spy(new DownloadDetailsInfo(null, null));
+        messageCenter.notifyProgressChanged(downloadDetailsInfo);
+        verify(handler,never()).sendMessage(any(Message.class));
+    }
+    @Test
     public void notifyProgressChanged() {
-        final DownloadDetailsInfo downloadDetailsInfo = Mockito.spy(new DownloadDetailsInfo(null, null, null, null));
         Mockito.when(messageCenter.isShutdown()).thenReturn(false);
-        Handler handler = mock(Handler.class);
-        when(handler.sendMessage(any(Message.class))).thenAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocation) {
-                Message message = invocation.getArgument(0);
-//                message.getCallback().run();
-                DownloadInfoSnapshot downloadInfoSnapshot = (DownloadInfoSnapshot) message.obj;
-                Assert.assertEquals(downloadInfoSnapshot.downloadInfo.getCompletedSize(), downloadDetailsInfo.getCompletedSize());
-                Assert.assertEquals(downloadInfoSnapshot.downloadInfo.getStatus(), downloadDetailsInfo.getStatus());
-                return null;
-            }
-        });
+        final DownloadDetailsInfo downloadDetailsInfo = Mockito.spy(new DownloadDetailsInfo(null, null));
+        final Handler handler = mock(Handler.class);
         messageCenter.setHandler(handler);
         messageCenter.notifyProgressChanged(downloadDetailsInfo);
+        verify(handler).sendMessage(any(Message.class));
     }
 
     @Test
     public void notifyProgressChangedWhenShutdown() {
-        final DownloadDetailsInfo downloadDetailsInfo = Mockito.spy(new DownloadDetailsInfo(null, null, null, null));
+        final DownloadDetailsInfo downloadDetailsInfo = Mockito.spy(new DownloadDetailsInfo(null, null));
         Mockito.when(messageCenter.isShutdown()).thenReturn(true);
         Handler handler = mock(Handler.class);
         messageCenter.setHandler(handler);
@@ -86,9 +83,8 @@ public class MessageCenterTest {
         messageCenter.register(new DownloadListener());
         Iterator<DownloadListener> iterator = messageCenter.getObserverIterator();
         messageCenter.unRegister(downloadListener);
-        DownloadDetailsInfo downloadDetailsInfo = new DownloadDetailsInfo(null, null, null, null);
-        DownloadInfoSnapshot snapshot = DownloadInfoSnapshot.obtain();
-        snapshot.downloadInfo = downloadDetailsInfo;
+        DownloadDetailsInfo downloadDetailsInfo = new DownloadDetailsInfo(null, null);
+        DownloadInfo snapshot = downloadDetailsInfo.snapshot();
         messageCenter.handleDownloadInfoSnapshot(iterator, snapshot);
     }
 
