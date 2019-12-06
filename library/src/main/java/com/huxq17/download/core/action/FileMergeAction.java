@@ -11,8 +11,7 @@ import com.huxq17.download.utils.LogUtil;
 import java.io.File;
 import java.io.FilenameFilter;
 
-import static com.huxq17.download.DownloadBatch.DOWNLOAD_PART;
-
+import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
 
 public class FileMergeAction implements Action {
     @Override

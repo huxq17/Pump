@@ -8,7 +8,7 @@ import com.huxq17.download.core.action.CacheCheckAction;
 import com.huxq17.download.core.action.DownloadInfoCorrectAction;
 import com.huxq17.download.core.action.FileMergeAction;
 import com.huxq17.download.core.action.DownloadExecuteAction;
-import com.huxq17.download.core.action.VerifyResultAction;
+import com.huxq17.download.core.action.ResultVerifyAction;
 import com.huxq17.download.core.task.DownloadTask;
 
 import java.util.ArrayList;
@@ -74,6 +74,6 @@ public class DownloadChain {
                 }
             }
         }
-        new VerifyResultAction().proceed(this);
+        new ResultVerifyAction().proceed(this);
     }
 }

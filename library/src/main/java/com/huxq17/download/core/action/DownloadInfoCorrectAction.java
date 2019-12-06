@@ -10,7 +10,7 @@ import com.huxq17.download.utils.FileUtil;
 import java.io.File;
 import java.io.FilenameFilter;
 
-import static com.huxq17.download.DownloadBatch.DOWNLOAD_PART;
+import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
 
 public class DownloadInfoCorrectAction implements Action {
     @Override

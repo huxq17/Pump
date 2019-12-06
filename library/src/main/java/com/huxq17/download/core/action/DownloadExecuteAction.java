@@ -1,17 +1,15 @@
 package com.huxq17.download.core.action;
 
 
-import com.huxq17.download.DownloadBatch;
 import com.huxq17.download.DownloadChain;
-import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.TaskManager;
 import com.huxq17.download.core.DownloadDetailsInfo;
+import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.task.DownloadBlockTask;
 import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.core.task.SimpleDownloadTask;
 
-import java.io.File;
 import java.util.concurrent.CountDownLatch;
 
 public class DownloadExecuteAction implements Action {
@@ -19,9 +17,6 @@ public class DownloadExecuteAction implements Action {
     private DownloadChain downloadChain;
     private DownloadTask downloadTask;
     private DownloadDetailsInfo downloadInfo;
-    private long fileLength;
-    private File tempDir;
-    private String url;
 
     @Override
     public boolean proceed(DownloadChain chain) {
@@ -30,9 +25,6 @@ public class DownloadExecuteAction implements Action {
         downloadTask = chain.getDownloadTask();
         downloadInfo = downloadTask.getDownloadInfo();
         downloadRequest = downloadTask.getRequest();
-        url = downloadInfo.getUrl();
-        fileLength = downloadInfo.getContentLength();
-        tempDir = downloadInfo.getTempDir();
         if (downloadTask.isRunning()) {
             if (downloadTask.isSupportBreakpoint()) {
                 result = downloadWithBreakpoint();
@@ -62,13 +54,8 @@ public class DownloadExecuteAction implements Action {
         countDownLatch = new CountDownLatch(threadNum);
         synchronized (downloadTask.getLock()) {
             for (int i = 0; i < threadNum; i++) {
-                DownloadBatch batch = new DownloadBatch();
-                batch.threadId = i;
-                batch.calculateStartPos(fileLength, threadNum);
-                batch.calculateEndPos(fileLength, threadNum);
-                completedSize += batch.calculateCompletedPartSize(tempDir);
-                batch.url = url;
-                DownloadBlockTask task = new DownloadBlockTask(batch, countDownLatch, downloadChain);
+                DownloadBlockTask task = new DownloadBlockTask(downloadChain, countDownLatch, i);
+                completedSize += task.getCompletedSize();
                 downloadTask.addBlockTask(task);
                 TaskManager.execute(task);
             }
@@ -76,8 +63,7 @@ public class DownloadExecuteAction implements Action {
         downloadInfo.setCompletedSize(completedSize);
         try {
             countDownLatch.await();
-        } catch (InterruptedException e) {
-            //ignore.
+        } catch (InterruptedException ignore) {
             return false;
         }
         return true;

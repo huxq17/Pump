@@ -17,7 +17,7 @@ import com.huxq17.download.utils.FileUtil;
 
 import java.io.File;
 
-public class VerifyResultAction implements Action {
+public class ResultVerifyAction implements Action {
     @Override
     public boolean proceed(DownloadChain chain) {
         DownloadTask downloadTask = chain.getDownloadTask();

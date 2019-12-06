@@ -10,25 +10,19 @@ import android.os.storage.StorageManager;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
-import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.MessageDigest;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import okio.BufferedSink;
-import okio.BufferedSource;
-import okio.Okio;
-
 public class Util {
+    public static final String DOWNLOAD_PART = "DOWNLOAD_PART-";
+
     private Util() {
     }
 
