@@ -1,13 +1,12 @@
-package com.huxq17.download;
+package com.huxq17.download.core;
 
 import android.os.SystemClock;
 
-import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.action.Action;
 import com.huxq17.download.core.action.CacheCheckAction;
+import com.huxq17.download.core.action.DownloadExecuteAction;
 import com.huxq17.download.core.action.DownloadInfoCorrectAction;
 import com.huxq17.download.core.action.FileMergeAction;
-import com.huxq17.download.core.action.DownloadExecuteAction;
 import com.huxq17.download.core.action.ResultVerifyAction;
 import com.huxq17.download.core.task.DownloadTask;
 
@@ -40,7 +39,7 @@ public class DownloadChain {
         retryDelay = request.getRetryDelay();
     }
 
-    public boolean isRetryable() {
+       public boolean isRetryable() {
         return  downloadTask.getDownloadInfo().getErrorCode() == NETWORK_UNAVAILABLE && retryUpperLimit > tryCount;
     }
 

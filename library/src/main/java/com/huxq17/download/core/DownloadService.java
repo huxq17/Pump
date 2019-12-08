@@ -7,16 +7,17 @@ import android.text.format.Formatter;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.TaskManager;
-import com.huxq17.download.utils.LogUtil;
-import com.huxq17.download.utils.Util;
 import com.huxq17.download.config.IDownloadConfigService;
+import com.huxq17.download.core.task.DownloadTask;
+import com.huxq17.download.core.task.Task;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.IMessageCenter;
-import com.huxq17.download.core.task.DownloadTask;
-import com.huxq17.download.core.task.Task;
+import com.huxq17.download.utils.LogUtil;
+import com.huxq17.download.utils.Util;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -29,14 +30,17 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
     private AtomicBoolean isRunning = new AtomicBoolean();
     private AtomicBoolean isCanceled = new AtomicBoolean();
     private ConcurrentLinkedQueue<DownloadRequest> requestQueue;
-    private ConcurrentLinkedQueue<DownloadTask> waitingTaskQueue;
 
     private Lock lock = new ReentrantLock();
     private Condition consumer = lock.newCondition();
-    /**
-     * 正在下载的任务
-     */
-    private ConcurrentLinkedQueue<DownloadTask> runningTaskQueue;
+    private HashSet<DownloadSemaphore> semaphoreList = new HashSet<>(1);
+    private DownloadSemaphore defaultDownloadSemaphore = new DownloadSemaphore() {
+
+        @Override
+        public int getPermits() {
+            return PumpFactory.getService(IDownloadConfigService.class).getMaxRunningTaskNumber();
+        }
+    };
 
     public DownloadService(DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
@@ -45,10 +49,9 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
     public void start() {
         isRunning.set(true);
         isCanceled.set(false);
-        waitingTaskQueue = new ConcurrentLinkedQueue<>();
         requestQueue = new ConcurrentLinkedQueue<>();
-        runningTaskQueue = new ConcurrentLinkedQueue<>();
         TaskManager.execute(this);
+        semaphoreList.add(defaultDownloadSemaphore);
     }
 
     public void enqueueRequest(DownloadRequest request) {
@@ -87,30 +90,48 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
                 downloadInfo.setCompletedSize(0);
             }
             downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
-            DownloadTask downloadTask = new DownloadTask(downloadRequest, this);
-            waitingTaskQueue.offer(downloadTask);
+            DownloadSemaphore downloadSemaphore = downloadRequest.getDownloadSemaphore();
+            if (downloadSemaphore == null) {
+                downloadSemaphore = defaultDownloadSemaphore;
+            }
+            semaphoreList.add(downloadSemaphore);
+            DownloadTask downloadTask = new DownloadTask(downloadRequest, downloadSemaphore, this);
+            downloadSemaphore.offer(downloadTask);
             LogUtil.d("Task " + downloadTask.getName() + " is ready.");
             downLoadLifeCycleObserver.onDownloadStart(downloadTask);
         }
     }
 
     void consumeTask() {
-        while (isBlockForConsumeTask()) {
-            LogUtil.d("running " + runningTaskQueue.size() + " tasks;but max allow run " + getMaxRunningTaskNumber() + " tasks.");
-            waitForConsumer();
-        }
-        if (runningTaskQueue.size() < getMaxRunningTaskNumber() && isRunning()) {
-            DownloadTask downloadTask = waitingTaskQueue.poll();
-            if (downloadTask != null) {
-                LogUtil.d("start run " + downloadTask.getName());
-                runningTaskQueue.offer(downloadTask);
+        for (DownloadSemaphore downloadSemaphore : semaphoreList) {
+            int availablePermits = downloadSemaphore.availablePermits();
+            if (availablePermits > 0 && isRunnable()) {
+                DownloadTask downloadTask = downloadSemaphore.poll();
                 executeDownloadTask(downloadTask);
+            } else if (downloadSemaphore.availablePermits() <= 0) {
+                LogUtil.d("Running " + (downloadSemaphore.getPermits() - downloadSemaphore.availablePermits())
+                        + " tasks;but max allow run " + downloadSemaphore.getPermits() + " tasks.");
             }
+        }
+        while (getAvailablePermits() == 0 && requestQueue.isEmpty() && isRunnable()) {
+            waitForConsumer();
         }
     }
 
+    int getAvailablePermits() {
+        int result = 0;
+        for (DownloadSemaphore downloadSemaphore : semaphoreList) {
+            result += downloadSemaphore.availablePermits();
+        }
+        return result;
+    }
+
     void executeDownloadTask(DownloadTask downloadTask) {
-        TaskManager.execute(downloadTask);
+        if (downloadTask != null) {
+            LogUtil.d("start run " + downloadTask.getName());
+            downloadTask.getDownloadSemaphore().execute(downloadTask);
+            TaskManager.execute(downloadTask);
+        }
     }
 
     @Override
@@ -153,11 +174,18 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
     }
 
     boolean isBlockForConsumeRequest() {
-        return requestQueue.isEmpty() && waitingTaskQueue.isEmpty();
+        boolean isWaitQueueEmpty = true;
+        for (DownloadSemaphore downloadSemaphore : semaphoreList) {
+            if (!downloadSemaphore.isWaitingQueueEmpty()) {
+                isWaitQueueEmpty = false;
+                break;
+            }
+        }
+        return requestQueue.isEmpty() && isWaitQueueEmpty;
     }
 
-    boolean isBlockForConsumeTask() {
-        return requestQueue.isEmpty() && runningTaskQueue.size() >= getMaxRunningTaskNumber() && isRunning();
+    boolean isBlockForConsumeTask(DownloadSemaphore downloadSemaphore) {
+        return requestQueue.isEmpty() && downloadSemaphore.availablePermits() <= 0 && isRunning();
     }
 
     boolean isRunnable() {
@@ -186,8 +214,9 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
 
     @Override
     public void onDownloadEnd(DownloadTask downloadTask) {
-        runningTaskQueue.remove(downloadTask);
-        waitingTaskQueue.remove(downloadTask);
+        for (DownloadSemaphore downloadSemaphore : semaphoreList) {
+            downloadSemaphore.remove(downloadTask);
+        }
         downLoadLifeCycleObserver.onDownloadEnd(downloadTask);
         signalConsumer();
     }
@@ -198,18 +227,10 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
 
     boolean taskIsExists(String id) {
         boolean exists = false;
-        for (DownloadTask task : waitingTaskQueue) {
-            if (task.getId().equals(id)) {
+        for (DownloadSemaphore downloadSemaphore : semaphoreList) {
+            if (downloadSemaphore.contains(id)) {
                 exists = true;
                 break;
-            }
-        }
-        if (!exists) {
-            for (DownloadTask task : runningTaskQueue) {
-                if (task.getId().equals(id)) {
-                    exists = true;
-                    break;
-                }
             }
         }
         return exists;
@@ -236,10 +257,6 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
             return false;
         }
         return true;
-    }
-
-    int getMaxRunningTaskNumber() {
-        return PumpFactory.getService(IDownloadConfigService.class).getMaxRunningTaskNumber();
     }
 
     long getMinUsableStorageSpace() {

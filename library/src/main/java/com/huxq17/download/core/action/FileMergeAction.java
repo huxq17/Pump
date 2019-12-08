@@ -1,7 +1,7 @@
 package com.huxq17.download.core.action;
 
 
-import com.huxq17.download.DownloadChain;
+import com.huxq17.download.core.DownloadChain;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.task.DownloadTask;

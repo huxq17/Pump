@@ -5,7 +5,7 @@ import android.os.Environment;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 
-import com.huxq17.download.DownloadChain;
+import com.huxq17.download.core.DownloadChain;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.PumpFactory;

@@ -1,7 +1,7 @@
 package com.huxq17.download.core.task;
 
 
-import com.huxq17.download.DownloadChain;
+import com.huxq17.download.core.DownloadChain;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.config.IDownloadConfigService;

@@ -3,7 +3,7 @@ package com.huxq17.download.core.action;
 
 import android.text.TextUtils;
 
-import com.huxq17.download.DownloadChain;
+import com.huxq17.download.core.DownloadChain;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.OnVerifyMd5Listener;
 import com.huxq17.download.PumpFactory;

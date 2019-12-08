@@ -25,24 +25,23 @@ public final class DownloadRequest {
     private final OnDownloadSuccessListener onDownloadSuccessListener;
     //Maybe use in the future
     private final DownloadListener downloadListener;
+    private final DownloadSemaphore downloadSemaphore;
 
     private DownloadDetailsInfo downloadInfo;
 
-    DownloadRequest(String id, String url, String filePath, int threadNum, String tag,
-                    boolean forceReDownload, int retryCount, DownloadListener downloadListener,
-                    OnVerifyMd5Listener onVerifyMd5Listener, int retryDelay,
-                    OnDownloadSuccessListener onDownloadSuccessListener) {
-        this.id = id;
-        this.url = url;
-        this.filePath = filePath;
-        this.threadNum = threadNum;
-        this.tag = tag;
-        this.forceReDownload = forceReDownload;
-        this.retryCount = retryCount;
-        this.retryDelay = retryDelay;
-        this.onVerifyMd5Listener = onVerifyMd5Listener;
-        this.onDownloadSuccessListener = onDownloadSuccessListener;
-        this.downloadListener = downloadListener;
+    DownloadRequest(DownloadGenerator downloadGenerator) {
+        this.id = downloadGenerator.id;
+        this.url = downloadGenerator.url;
+        this.filePath = downloadGenerator.filePath;
+        this.threadNum = downloadGenerator.threadNum;
+        this.tag = downloadGenerator.tag;
+        this.forceReDownload = downloadGenerator.forceReDownload;
+        this.retryCount = downloadGenerator.retryCount;
+        this.retryDelay = downloadGenerator.retryDelay;
+        this.onVerifyMd5Listener = downloadGenerator.onVerifyMd5Listener;
+        this.onDownloadSuccessListener = downloadGenerator.onDownloadSuccessListener;
+        this.downloadListener = downloadGenerator.downloadListener;
+        this.downloadSemaphore = downloadGenerator.downloadSemaphore;
     }
 
     void setDownloadInfo(DownloadDetailsInfo downloadInfo) {
@@ -74,7 +73,6 @@ public final class DownloadRequest {
         return getId();
     }
 
-
     public int getRetryCount() {
         return retryCount;
     }
@@ -103,6 +101,10 @@ public final class DownloadRequest {
         return forceReDownload;
     }
 
+    public DownloadSemaphore getDownloadSemaphore() {
+        return downloadSemaphore;
+    }
+
     public static DownloadGenerator newRequest(String url, String filePath) {
         return new DownloadGenerator(url, filePath);
     }
@@ -121,6 +123,7 @@ public final class DownloadRequest {
         private DownloadListener downloadListener;
 
         private static final int DEFAULT_RETRY_DELAY = 200;
+        private DownloadSemaphore downloadSemaphore;
 
         public DownloadGenerator(String url, String filePath) {
             this.url = url;
@@ -206,6 +209,11 @@ public final class DownloadRequest {
             return this;
         }
 
+        public DownloadGenerator setDownloadSemaphore(DownloadSemaphore downloadSemaphore) {
+            this.downloadSemaphore = downloadSemaphore;
+            return this;
+        }
+
         public void submit() {
             id = TextUtils.isEmpty(this.id) ? url : this.id;
             if (threadNum <= 0) {
@@ -215,9 +223,7 @@ public final class DownloadRequest {
                 this.downloadListener.enable(id);
             }
             PumpFactory.getService(IDownloadManager.class).
-                    submit(new DownloadRequest(id, url, filePath, threadNum, tag, forceReDownload,
-                            retryCount, downloadListener, onVerifyMd5Listener, retryDelay,
-                            onDownloadSuccessListener));
+                    submit(new DownloadRequest(this));
         }
     }
 

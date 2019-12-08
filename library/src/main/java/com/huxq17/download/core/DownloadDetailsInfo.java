@@ -36,7 +36,6 @@ public class DownloadDetailsInfo {
     private Provider.CacheBean cacheBean;
     private String md5;
 
-
     public DownloadDetailsInfo(String url, String filePath) {
         this(url, filePath, null, url, System.currentTimeMillis());
     }

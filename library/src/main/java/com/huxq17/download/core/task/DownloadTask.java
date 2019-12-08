@@ -3,12 +3,13 @@ package com.huxq17.download.core.task;
 
 import android.text.TextUtils;
 
-import com.huxq17.download.DownloadChain;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.core.DownLoadLifeCycleObserver;
+import com.huxq17.download.core.DownloadChain;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadRequest;
+import com.huxq17.download.core.DownloadSemaphore;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.message.IMessageCenter;
 import com.huxq17.download.utils.LogUtil;
@@ -34,9 +35,11 @@ public class DownloadTask implements Task {
     private volatile boolean isCanceled;
     private volatile boolean isDeleted;
     private boolean supportBreakpoint = true;
+    private final DownloadSemaphore downloadSemaphore;
 
-    public DownloadTask(DownloadRequest downloadRequest, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
+    public DownloadTask(DownloadRequest downloadRequest, DownloadSemaphore downloadSemaphore, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
         this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
+        this.downloadSemaphore = downloadSemaphore;
         if (downloadRequest != null) {
             this.downloadRequest = downloadRequest;
             this.downloadInfo = downloadRequest.getDownloadInfo();
@@ -88,6 +91,10 @@ public class DownloadTask implements Task {
         return name;
     }
 
+    public DownloadSemaphore getDownloadSemaphore() {
+        return downloadSemaphore;
+    }
+
     @Override
     public void run() {
         thread = Thread.currentThread();
@@ -98,10 +105,12 @@ public class DownloadTask implements Task {
             long startTime = System.currentTimeMillis();
             downloadWithDownloadChain();
             LogUtil.d("download " + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime));
+            downLoadLifeCycleObserver.onDownloadEnd(this);
         }
+        downloadSemaphore.release();
         isRunning.set(false);
         thread = null;
-        downLoadLifeCycleObserver.onDownloadEnd(this);
+
         synchronized (downloadBlockTasks) {
             downloadBlockTasks.clear();
         }
