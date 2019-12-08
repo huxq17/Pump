@@ -128,9 +128,7 @@ public class DownloadService implements Task, DownLoadLifeCycleObserver {
 
     void executeDownloadTask(DownloadTask downloadTask) {
         if (downloadTask != null) {
-            LogUtil.d("start run " + downloadTask.getName());
             downloadTask.getDownloadSemaphore().execute(downloadTask);
-            TaskManager.execute(downloadTask);
         }
     }
 

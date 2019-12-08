@@ -1,6 +1,8 @@
 package com.huxq17.download.core;
 
+import com.huxq17.download.TaskManager;
 import com.huxq17.download.core.task.DownloadTask;
+import com.huxq17.download.utils.LogUtil;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,6 +15,8 @@ public abstract class DownloadSemaphore {
     public final void execute(DownloadTask downloadTask) {
         runningTaskCount.incrementAndGet();
         runningTaskQueue.offer(downloadTask);
+        TaskManager.execute(downloadTask);
+        LogUtil.d("start run " + downloadTask.getName());
     }
 
     void offer(DownloadTask downloadTask) {
