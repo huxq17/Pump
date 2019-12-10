@@ -25,8 +25,8 @@ public final class DownloadRequest {
     private final OnDownloadSuccessListener onDownloadSuccessListener;
     //Maybe use in the future
     private final DownloadListener downloadListener;
-    private final DownloadDispatcher downloadDispatcher;
 
+    private final DownloadTaskExecutor downloadTaskExecutor;
     private DownloadDetailsInfo downloadInfo;
 
     DownloadRequest(DownloadGenerator downloadGenerator) {
@@ -41,7 +41,7 @@ public final class DownloadRequest {
         this.onVerifyMd5Listener = downloadGenerator.onVerifyMd5Listener;
         this.onDownloadSuccessListener = downloadGenerator.onDownloadSuccessListener;
         this.downloadListener = downloadGenerator.downloadListener;
-        this.downloadDispatcher = downloadGenerator.downloadDispatcher;
+        this.downloadTaskExecutor = downloadGenerator.downloadTaskExecutor;
     }
 
     void setDownloadInfo(DownloadDetailsInfo downloadInfo) {
@@ -101,8 +101,8 @@ public final class DownloadRequest {
         return forceReDownload;
     }
 
-    public DownloadDispatcher getDownloadDispatcher() {
-        return downloadDispatcher;
+    public DownloadTaskExecutor getDownloadDispatcher() {
+        return downloadTaskExecutor;
     }
 
     public static DownloadGenerator newRequest(String url, String filePath) {
@@ -123,7 +123,7 @@ public final class DownloadRequest {
         private DownloadListener downloadListener;
 
         private static final int DEFAULT_RETRY_DELAY = 200;
-        private DownloadDispatcher downloadDispatcher;
+        private DownloadTaskExecutor downloadTaskExecutor;
 
         public DownloadGenerator(String url, String filePath) {
             this.url = url;
@@ -162,7 +162,8 @@ public final class DownloadRequest {
         }
 
         /**
-         * Tag download task, can use {@link Pump#getDownloadListByTag(String)} to get download list filter by tag,and use {@link DownloadInfo#getTag()} to get tag.
+         * Tag download task, can use {@link Pump#getDownloadListByTag(String)} to get download list
+         * filter by tag,and use {@link DownloadInfo#getTag()} to get tag.
          *
          * @param tag tag
          * @return
@@ -209,8 +210,8 @@ public final class DownloadRequest {
             return this;
         }
 
-        public DownloadGenerator setDownloadDispatcher(DownloadDispatcher downloadDispatcher) {
-            this.downloadDispatcher = downloadDispatcher;
+        public DownloadGenerator setDownloadTaskExecutor(DownloadTaskExecutor downloadTaskExecutor) {
+            this.downloadTaskExecutor = downloadTaskExecutor;
             return this;
         }
 

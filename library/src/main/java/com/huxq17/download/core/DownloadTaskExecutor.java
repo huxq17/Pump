@@ -1,45 +1,42 @@
 package com.huxq17.download.core;
 
-import com.huxq17.download.core.task.DownloadTask;
+public interface DownloadTaskExecutor {
+    /**
+     * Do some initialization and it will only be called once
+     */
+    void init();
 
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+    /**
+     * Executes the given task sometime in the future.
+     *
+     * @param downloadTask Download task
+     */
+    void execute(Runnable downloadTask);
 
-public abstract class DownloadTaskExecutor<Task extends DownloadTask> extends ThreadPoolExecutor {
-    private static final int DEFAULT_THREAD_COUNT = 3;
-    public DownloadTaskExecutor(ThreadFactory threadFactory) {
-        super(DEFAULT_THREAD_COUNT, DEFAULT_THREAD_COUNT, 0, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(), threadFactory, new CustomRejectedExecutionHandler());
-    }
-    public void setThreadCount(int threadCount) {
-        setCorePoolSize(threadCount);
-        setMaximumPoolSize(threadCount);
-    }
-    public void execute(Task command) {
-        super.execute(command);
-    }
+    /**
+     * Return the maximum number of download to execute concurrently.
+     *
+     * @return The maximum number of download to execute concurrently
+     */
+    int getMaxDownloadNumber();
 
-    protected final void beforeExecute(Thread t, Runnable r) {
-        onExecuteStart((Task) r);
-    }
+    /**
+     * Return the name of this executor,use for logging.
+     *
+     * @return The name of this executor,use for logging.
+     */
+    String getName();
 
-    @Override
-    protected final void afterExecute(Runnable r, Throwable t) {
-        onExecuteEnd((Task) r);
-    }
+    /**
+     * Return the tag of this executor, use for tag all tasks that are executed
+     * by current executor,and will cover {@link com.huxq17.download.core.DownloadRequest.DownloadGenerator#tag(String)}
+     *
+     * @return The tag of current executor.
+     */
+    String getTag();
 
-    protected abstract void onExecuteStart(Task task);
-
-    protected abstract void onExecuteEnd(Task task);
-
-    private static class CustomRejectedExecutionHandler implements RejectedExecutionHandler {
-        @Override
-        public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-            if (executor.isShutdown()) return;
-            executor.getQueue().offer(r);
-        }
-    }
+    /**
+     * Release executor resource.
+     */
+    void release();
 }

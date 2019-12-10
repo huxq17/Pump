@@ -98,12 +98,12 @@ public class MainActivity extends AppCompatActivity {
                 Pump.newRequest(url, file1.getAbsolutePath())
                         .tag(TAG)
                         .forceReDownload(true)
-                        .setDownloadDispatcher(DemoApplication.getInstance().musicDownloadDispatcher)
+                        .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
                         .submit();
                 Pump.newRequest(url4)
                         .tag(TAG)
                         .forceReDownload(true)
-                        .setDownloadDispatcher(DemoApplication.getInstance().musicDownloadDispatcher)
+                        .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
                         .submit();
                 Pump.newRequest(url5)
                         .tag(TAG)

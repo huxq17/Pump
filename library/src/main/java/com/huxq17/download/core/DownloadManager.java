@@ -17,19 +17,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObserver {
+public class DownloadManager implements IDownloadManager {
     private Context context;
     private ConcurrentHashMap<String, DownloadTask> taskMap;
     private ConcurrentHashMap<String, DownloadDetailsInfo> downloadInfoMap;
 
-    private DownloadDispatcherThread downloadDispatcherThread;
+    private DownloadDispatcher downloadDispatcher;
 
     private boolean hasFetchDownloadList;
 
     private DownloadManager() {
         taskMap = new ConcurrentHashMap<>();
         downloadInfoMap = new ConcurrentHashMap<>();
-        downloadDispatcherThread = new DownloadDispatcherThread(this);
+        downloadDispatcher = new DownloadDispatcher();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         if (downloadInfo != null) {
             downloadRequest.setDownloadInfo(downloadInfo);
         }
-        downloadDispatcherThread.enqueueRequest(downloadRequest);
+        downloadDispatcher.enqueueRequest(downloadRequest);
     }
 
     public void deleteById(String id) {
@@ -227,7 +227,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public void shutdown() {
-        downloadDispatcherThread.cancel();
+        downloadDispatcher.cancel();
         for (DownloadTask downloadTask : taskMap.values()) {
             if (downloadTask != null)
                 downloadTask.stop();
@@ -237,7 +237,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     }
 
     public boolean isShutdown() {
-        return !downloadDispatcherThread.isRunning();
+        return !downloadDispatcher.isRunning();
     }
 
     @Override

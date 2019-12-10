@@ -3,8 +3,8 @@ package com.huxq17.download;
 import android.content.Context;
 
 import com.huxq17.download.core.DownloadRequest;
-import com.huxq17.download.core.DownloadDispatcherThread;
-import com.huxq17.download.core.DownLoadLifeCycleObserver;
+import com.huxq17.download.core.DownloadDispatcher;
+import com.huxq17.download.core.DownLoadLifeCycleCallback;
 import com.huxq17.download.provider.Provider;
 import com.huxq17.download.core.task.DownloadTask;
 
@@ -36,18 +36,18 @@ import static org.mockito.Mockito.when;
 @RunWith(RobolectricTestRunner.class)
 public class DownloadServiceTest {
     @Mock
-    private DownLoadLifeCycleObserver lifeCycleObserver;
+    private DownLoadLifeCycleCallback lifeCycleObserver;
     @Mock
     private Context context;
     @Mock
     private ExecutorService customThreadPool;
-    private DownloadDispatcherThread downloadService;
+    private DownloadDispatcher downloadService;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
         Provider.init(context);
-        downloadService = spy(new DownloadDispatcherThread(lifeCycleObserver));
+        downloadService = spy(new DownloadDispatcher(lifeCycleObserver));
         TaskManager.setThreadPool(customThreadPool);
     }
 
