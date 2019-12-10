@@ -9,10 +9,8 @@ import com.huxq17.download.core.DownloadChain;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadRequest;
-import com.huxq17.download.core.DownloadSemaphore;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.message.IMessageCenter;
-import com.huxq17.download.utils.LogUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +21,6 @@ public class DownloadTask implements Task {
     private DBService dbService;
     private AtomicBoolean isRunning;
     private IMessageCenter messageCenter;
-    private DownLoadLifeCycleObserver downLoadLifeCycleObserver;
     private Thread thread;
     private final List<Task> downloadBlockTasks = new ArrayList<>();
     private int lastProgress;
@@ -35,11 +32,8 @@ public class DownloadTask implements Task {
     private volatile boolean isCanceled;
     private volatile boolean isDeleted;
     private boolean supportBreakpoint = true;
-    private final DownloadSemaphore downloadSemaphore;
 
-    public DownloadTask(DownloadRequest downloadRequest, DownloadSemaphore downloadSemaphore, DownLoadLifeCycleObserver downLoadLifeCycleObserver) {
-        this.downLoadLifeCycleObserver = downLoadLifeCycleObserver;
-        this.downloadSemaphore = downloadSemaphore;
+    public DownloadTask(DownloadRequest downloadRequest) {
         if (downloadRequest != null) {
             this.downloadRequest = downloadRequest;
             this.downloadInfo = downloadRequest.getDownloadInfo();
@@ -91,23 +85,14 @@ public class DownloadTask implements Task {
         return name;
     }
 
-    public DownloadSemaphore getDownloadSemaphore() {
-        return downloadSemaphore;
-    }
-
     @Override
     public void run() {
         thread = Thread.currentThread();
         if (isRunning.get()) {
             downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
             notifyProgressChanged(downloadInfo);
-            downLoadLifeCycleObserver.onDownloadStart(this);
-            long startTime = System.currentTimeMillis();
             downloadWithDownloadChain();
-            LogUtil.d("download " + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime));
-            downLoadLifeCycleObserver.onDownloadEnd(this);
         }
-        downloadSemaphore.release();
         isRunning.set(false);
         thread = null;
 
@@ -177,8 +162,6 @@ public class DownloadTask implements Task {
     void cancelBlockTasks() {
         if (thread != null) {
             thread.interrupt();
-        } else {
-            downLoadLifeCycleObserver.onDownloadEnd(this);
         }
         synchronized (downloadBlockTasks) {
             for (Task task : downloadBlockTasks) {

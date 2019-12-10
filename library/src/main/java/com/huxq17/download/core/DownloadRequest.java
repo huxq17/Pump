@@ -25,7 +25,7 @@ public final class DownloadRequest {
     private final OnDownloadSuccessListener onDownloadSuccessListener;
     //Maybe use in the future
     private final DownloadListener downloadListener;
-    private final DownloadSemaphore downloadSemaphore;
+    private final DownloadDispatcher downloadDispatcher;
 
     private DownloadDetailsInfo downloadInfo;
 
@@ -41,7 +41,7 @@ public final class DownloadRequest {
         this.onVerifyMd5Listener = downloadGenerator.onVerifyMd5Listener;
         this.onDownloadSuccessListener = downloadGenerator.onDownloadSuccessListener;
         this.downloadListener = downloadGenerator.downloadListener;
-        this.downloadSemaphore = downloadGenerator.downloadSemaphore;
+        this.downloadDispatcher = downloadGenerator.downloadDispatcher;
     }
 
     void setDownloadInfo(DownloadDetailsInfo downloadInfo) {
@@ -66,7 +66,7 @@ public final class DownloadRequest {
     }
 
     public String getId() {
-        return id;
+        return id == null ? url : id;
     }
 
     public String getName() {
@@ -101,8 +101,8 @@ public final class DownloadRequest {
         return forceReDownload;
     }
 
-    public DownloadSemaphore getDownloadSemaphore() {
-        return downloadSemaphore;
+    public DownloadDispatcher getDownloadDispatcher() {
+        return downloadDispatcher;
     }
 
     public static DownloadGenerator newRequest(String url, String filePath) {
@@ -123,7 +123,7 @@ public final class DownloadRequest {
         private DownloadListener downloadListener;
 
         private static final int DEFAULT_RETRY_DELAY = 200;
-        private DownloadSemaphore downloadSemaphore;
+        private DownloadDispatcher downloadDispatcher;
 
         public DownloadGenerator(String url, String filePath) {
             this.url = url;
@@ -209,8 +209,8 @@ public final class DownloadRequest {
             return this;
         }
 
-        public DownloadGenerator setDownloadSemaphore(DownloadSemaphore downloadSemaphore) {
-            this.downloadSemaphore = downloadSemaphore;
+        public DownloadGenerator setDownloadDispatcher(DownloadDispatcher downloadDispatcher) {
+            this.downloadDispatcher = downloadDispatcher;
             return this;
         }
 

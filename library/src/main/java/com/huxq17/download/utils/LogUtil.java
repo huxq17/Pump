@@ -24,9 +24,9 @@ public class LogUtil {
         }
     }
 
-    public static void v(String content) {
+    public static void w(String content) {
         if (mEnableLog) {
-            Log.v(TAG, "Pump " + content);
+            Log.w(TAG, "Pump " + content);
         }
     }
 }

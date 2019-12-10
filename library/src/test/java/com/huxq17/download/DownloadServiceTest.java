@@ -3,7 +3,7 @@ package com.huxq17.download;
 import android.content.Context;
 
 import com.huxq17.download.core.DownloadRequest;
-import com.huxq17.download.core.DownloadService;
+import com.huxq17.download.core.DownloadDispatcherThread;
 import com.huxq17.download.core.DownLoadLifeCycleObserver;
 import com.huxq17.download.provider.Provider;
 import com.huxq17.download.core.task.DownloadTask;
@@ -41,13 +41,13 @@ public class DownloadServiceTest {
     private Context context;
     @Mock
     private ExecutorService customThreadPool;
-    private DownloadService downloadService;
+    private DownloadDispatcherThread downloadService;
 
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
         Provider.init(context);
-        downloadService = spy(new DownloadService(lifeCycleObserver));
+        downloadService = spy(new DownloadDispatcherThread(lifeCycleObserver));
         TaskManager.setThreadPool(customThreadPool);
     }
 

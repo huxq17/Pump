@@ -39,4 +39,5 @@ dependencies {
     testImplementation 'org.robolectric:robolectric:3.5.1'
 //    implementation "com.huxq17.pump:download:${VERSION_NAME}"
     implementation project(':library')
+    implementation 'com.squareup.picasso:picasso:2.71828'
 }

@@ -22,14 +22,14 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     private ConcurrentHashMap<String, DownloadTask> taskMap;
     private ConcurrentHashMap<String, DownloadDetailsInfo> downloadInfoMap;
 
-    private DownloadService downloadService;
+    private DownloadDispatcherThread downloadDispatcherThread;
 
     private boolean hasFetchDownloadList;
 
     private DownloadManager() {
         taskMap = new ConcurrentHashMap<>();
         downloadInfoMap = new ConcurrentHashMap<>();
-        downloadService = new DownloadService(this);
+        downloadDispatcherThread = new DownloadDispatcherThread(this);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         if (downloadInfo != null) {
             downloadRequest.setDownloadInfo(downloadInfo);
         }
-        downloadService.enqueueRequest(downloadRequest);
+        downloadDispatcherThread.enqueueRequest(downloadRequest);
     }
 
     public void deleteById(String id) {
@@ -77,7 +77,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
             if (downloadInfo.getDownloadFile() != null) {
                 downloadInfo.getDownloadFile().delete();
             }
-            if(downloadInfo.getTempDir()!=null){
+            if (downloadInfo.getTempDir() != null) {
                 FileUtil.deleteDir(downloadInfo.getTempDir());
             }
             DBService.getInstance().deleteInfo(downloadInfo.getId());
@@ -212,6 +212,10 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
         return info != null && info.isFinished();
     }
 
+    public boolean isTaskRunning(String id) {
+        return taskMap.get(id) != null;
+    }
+
     @Override
     public File getFileIfSucceed(String id) {
         if (hasDownloadSucceed(id)) {
@@ -223,7 +227,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
 
     @Override
     public void shutdown() {
-        downloadService.cancel();
+        downloadDispatcherThread.cancel();
         for (DownloadTask downloadTask : taskMap.values()) {
             if (downloadTask != null)
                 downloadTask.stop();
@@ -233,7 +237,7 @@ public class DownloadManager implements IDownloadManager, DownLoadLifeCycleObser
     }
 
     public boolean isShutdown() {
-        return !downloadService.isRunning();
+        return !downloadDispatcherThread.isRunning();
     }
 
     @Override

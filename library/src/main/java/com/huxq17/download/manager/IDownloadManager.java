@@ -37,6 +37,8 @@ public interface IDownloadManager {
 
     boolean hasDownloadSucceed(String id);
 
+    boolean isTaskRunning(String id);
+
     File getFileIfSucceed(String id);
 
     void shutdown();
