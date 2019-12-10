@@ -96,12 +96,10 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
                 Pump.newRequest(url, file1.getAbsolutePath())
-                        .tag(TAG)
                         .forceReDownload(true)
                         .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
                         .submit();
                 Pump.newRequest(url4)
-                        .tag(TAG)
                         .forceReDownload(true)
                         .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
                         .submit();
