@@ -26,7 +26,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 
-public class DownloadDispatcher implements Task, DownLoadLifeCycleCallback {
+public class DownloadDispatcher implements Task {
     private IDownloadManager downloadManager;
     private AtomicBoolean isRunning = new AtomicBoolean();
     private AtomicBoolean isCanceled = new AtomicBoolean();
@@ -98,7 +98,6 @@ public class DownloadDispatcher implements Task, DownLoadLifeCycleCallback {
             if (downloadTask != null) {
                 LogUtil.d("Task " + downloadTask.getName() + " is ready.");
                 downloadTaskExecutor.execute(downloadTask);
-                downloadManager.onDownloadStart(downloadTask);
             }
         }
     }
@@ -158,16 +157,6 @@ public class DownloadDispatcher implements Task, DownLoadLifeCycleCallback {
         } finally {
             lock.unlock();
         }
-    }
-
-    @Override
-    public void onDownloadStart(DownloadTask downloadTask) {
-
-    }
-
-    @Override
-    public void onDownloadEnd(DownloadTask downloadTask) {
-        downloadManager.onDownloadEnd(downloadTask);
     }
 
     void printExistRequestWarning(DownloadRequest request) {

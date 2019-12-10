@@ -254,7 +254,8 @@ public class DownloadManager implements IDownloadManager {
 
     @Override
     public void onDownloadEnd(DownloadTask downloadTask) {
-        LogUtil.d("Task " + downloadTask.getName() + " is stopped.");
+        LogUtil.e("1onEnd"+taskMap.containsKey(downloadTask.getId())+";size="+taskMap.size());
         taskMap.remove(downloadTask.getId());
+        LogUtil.e("onEnd"+taskMap.containsKey(downloadTask.getId())+";size="+taskMap.size());
     }
 }

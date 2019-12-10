@@ -63,6 +63,7 @@ public abstract class SimpleDownloadTaskExecutor extends ThreadPoolExecutor impl
 
     protected final void beforeExecute(Thread t, Runnable r) {
         DownloadTask downloadTask = (DownloadTask) r;
+        downLoadLifeCycleCallback.onDownloadStart(downloadTask);
         LogUtil.d("start run " + downloadTask.getName());
         times.put(downloadTask.getId(), System.currentTimeMillis());
     }
@@ -73,7 +74,7 @@ public abstract class SimpleDownloadTaskExecutor extends ThreadPoolExecutor impl
         downLoadLifeCycleCallback.onDownloadEnd(downloadTask);
         Long startTime = times.remove(downloadTask.getId());
         if (startTime != null) {
-            LogUtil.d("download " + downloadTask.getName() + " spend=" + (System.currentTimeMillis() - startTime));
+            LogUtil.d("download " + downloadTask.getName() + " is stopped,and spend=" + (System.currentTimeMillis() - startTime));
         }
     }
 
