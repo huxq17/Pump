@@ -18,7 +18,6 @@ import com.huxq17.download.utils.Util;
 
 import java.io.File;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -27,7 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 
 public class DownloadDispatcher implements Task {
-    private IDownloadManager downloadManager;
+    private DownloadManager downloadManager;
     private AtomicBoolean isRunning = new AtomicBoolean();
     private AtomicBoolean isCanceled = new AtomicBoolean();
     private ConcurrentLinkedQueue<DownloadRequest> requestQueue;
@@ -35,30 +34,36 @@ public class DownloadDispatcher implements Task {
     private Lock lock = new ReentrantLock();
     private Condition consumer = lock.newCondition();
     private HashSet<DownloadTaskExecutor> downloadTaskExecutors = new HashSet<>(1);
-    private DownloadTaskExecutor downloadTaskExecutor = new SimpleDownloadTaskExecutor() {
+    private DownloadTaskExecutor downloadTaskExecutor;
+    private DownloadInfoManager downloadInfoManager;
 
-        @Override
-        public int getMaxDownloadNumber() {
-            return PumpFactory.getService(IDownloadConfigService.class).getMaxRunningTaskNumber();
-        }
-
-        @Override
-        public String getName() {
-            return "DefaultDownloadTaskExecutor";
-        }
-
-        @Override
-        public String getTag() {
-            return null;
-        }
-    };
+    DownloadDispatcher(DownloadManager downloadManager) {
+        this.downloadManager = downloadManager;
+    }
 
     public void start() {
         isRunning.set(true);
         isCanceled.set(false);
         requestQueue = new ConcurrentLinkedQueue<>();
         TaskManager.execute(this);
-        downloadManager = PumpFactory.getService(IDownloadManager.class);
+        downloadInfoManager = DownloadInfoManager.getInstance();
+        downloadTaskExecutor = new SimpleDownloadTaskExecutor() {
+
+            @Override
+            public int getMaxDownloadNumber() {
+                return PumpFactory.getService(IDownloadConfigService.class).getMaxRunningTaskNumber();
+            }
+
+            @Override
+            public String getName() {
+                return "DefaultDownloadTaskExecutor";
+            }
+
+            @Override
+            public String getTag() {
+                return null;
+            }
+        };
     }
 
     public void enqueueRequest(DownloadRequest request) {
@@ -85,18 +90,13 @@ public class DownloadDispatcher implements Task {
             if (downloadTaskExecutor == null) {
                 downloadTaskExecutor = this.downloadTaskExecutor;
             }
-            String tag = downloadTaskExecutor.getTag();
-            if (tag == null || tag.length() == 0) {
-                tag = downloadRequest.getTag();
-            }
             if (!downloadTaskExecutors.contains(downloadTaskExecutor)) {
                 downloadTaskExecutor.init();
                 downloadTaskExecutors.add(downloadTaskExecutor);
             }
 
-            DownloadTask downloadTask = getTaskFromRequest(downloadRequest, tag);
+            DownloadTask downloadTask = getTaskFromRequest(downloadRequest);
             if (downloadTask != null) {
-                LogUtil.d("Task " + downloadTask.getName() + " is ready.");
                 downloadTaskExecutor.execute(downloadTask);
             }
         }
@@ -123,12 +123,8 @@ public class DownloadDispatcher implements Task {
     public void cancel() {
         isCanceled.set(true);
         signalConsumer();
-        Iterator<DownloadTaskExecutor> iterator = downloadTaskExecutors.iterator();
-        while (iterator.hasNext()) {
-            DownloadTaskExecutor downloadTaskExecutor = iterator.next();
-            downloadTaskExecutor.release();
-            iterator.remove();
-        }
+        downloadTaskExecutors.clear();
+        downloadTaskExecutor.shutdown();
     }
 
     boolean isBlockForConsumeRequest() {
@@ -163,10 +159,11 @@ public class DownloadDispatcher implements Task {
         LogUtil.w("task " + request.getName() + " already enqueue,we need do nothing.");
     }
 
-    DownloadTask getTaskFromRequest(DownloadRequest downloadRequest, String tag) {
+    DownloadTask getTaskFromRequest(DownloadRequest downloadRequest) {
         String url = downloadRequest.getUrl();
-        String filePath = downloadRequest.getFilePath();
         String id = downloadRequest.getId();
+        String tag = downloadRequest.getTag();
+        String filePath = downloadRequest.getFilePath();
         if (!isUsableSpaceEnough(downloadRequest)) {
             return null;
         }
@@ -198,7 +195,8 @@ public class DownloadDispatcher implements Task {
             String dataFileAvailableSize = Formatter.formatFileSize(context, dataFileUsableSpace);
             String downloadFileAvailableSize = Formatter.formatFileSize(context, downloadDirUsableSpace);
             LogUtil.e("Data directory usable space is " + dataFileAvailableSize + " and download directory usable space is " + downloadFileAvailableSize);
-            DownloadDetailsInfo downloadInfo = new DownloadDetailsInfo(downloadRequest.getUrl(), filePath, downloadRequest.getTag(), downloadRequest.getId(), System.currentTimeMillis());
+            DownloadDetailsInfo downloadInfo = downloadInfoManager.createDownloadInfo(downloadRequest.getUrl(),
+                    filePath, downloadRequest.getTag(), downloadRequest.getId(), System.currentTimeMillis(), false);
             downloadInfo.setErrorCode(ErrorCode.USABLE_SPACE_NOT_ENOUGH);
             PumpFactory.getService(IMessageCenter.class).notifyProgressChanged(downloadInfo);
             return false;
@@ -216,7 +214,7 @@ public class DownloadDispatcher implements Task {
             return downloadInfo;
         }
         //create a new instance if not found.
-        downloadInfo = new DownloadDetailsInfo(url, filePath, tag, id, System.currentTimeMillis());
+        downloadInfo = downloadInfoManager.createDownloadInfo(url, filePath, tag, id, System.currentTimeMillis());
         DBService.getInstance().updateInfo(downloadInfo);
         return downloadInfo;
     }

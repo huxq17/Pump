@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DownloadManager implements IDownloadManager {
     private Context context;
     private ConcurrentHashMap<String, DownloadTask> taskMap;
-    private ConcurrentHashMap<String, DownloadDetailsInfo> downloadInfoMap;
+    private DownloadInfoManager downloadInfoManager;
 
     private DownloadDispatcher downloadDispatcher;
 
@@ -28,8 +28,8 @@ public class DownloadManager implements IDownloadManager {
 
     private DownloadManager() {
         taskMap = new ConcurrentHashMap<>();
-        downloadInfoMap = new ConcurrentHashMap<>();
-        downloadDispatcher = new DownloadDispatcher();
+        downloadInfoManager  = DownloadInfoManager.getInstance();
+        downloadDispatcher = new DownloadDispatcher(this);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class DownloadManager implements IDownloadManager {
             LogUtil.e("task " + downloadRequest.getName() + " is running,we need do nothing.");
             return;
         }
-        DownloadDetailsInfo downloadInfo = downloadInfoMap.get(id);
+        DownloadDetailsInfo downloadInfo = downloadInfoManager.get(id);
         if (downloadInfo != null) {
             downloadRequest.setDownloadInfo(downloadInfo);
         }
@@ -63,7 +63,7 @@ public class DownloadManager implements IDownloadManager {
                 deleteDownloadInfo(downloadInfo);
             }
         } else {
-            DownloadDetailsInfo downloadInfo = downloadInfoMap.get(id);
+            DownloadDetailsInfo downloadInfo = downloadInfoManager.get(id);
             if (downloadInfo == null) {
                 downloadInfo = DBService.getInstance().getDownloadInfo(id);
             }
@@ -73,7 +73,7 @@ public class DownloadManager implements IDownloadManager {
 
     private void deleteDownloadInfo(DownloadDetailsInfo downloadInfo) {
         if (downloadInfo != null) {
-            downloadInfoMap.remove(downloadInfo.getId());
+            downloadInfoManager.remove(downloadInfo.getId());
             if (downloadInfo.getDownloadFile() != null) {
                 downloadInfo.getDownloadFile().delete();
             }
@@ -177,18 +177,12 @@ public class DownloadManager implements IDownloadManager {
             hasFetchDownloadList = true;
             List<DownloadDetailsInfo> list = DBService.getInstance().getDownloadList();
             for (DownloadDetailsInfo downloadDetailsInfo : list) {
-                String id = downloadDetailsInfo.getId();
-                if (downloadInfoMap.get(id) == null) {
-                    downloadInfoMap.put(id, downloadDetailsInfo);
-                } else {
-                    downloadDetailsInfo = downloadInfoMap.get(id);
-                }
                 if (filter == null || filter.filter(downloadDetailsInfo)) {
                     downloadList.add(downloadDetailsInfo.snapshot());
                 }
             }
         } else {
-            for (DownloadDetailsInfo downloadDetailsInfo : downloadInfoMap.values()) {
+            for (DownloadDetailsInfo downloadDetailsInfo : downloadInfoManager.getAll()) {
                 if (filter == null || filter.filter(downloadDetailsInfo)) {
                     downloadList.add(downloadDetailsInfo.snapshot());
                 }
@@ -199,7 +193,7 @@ public class DownloadManager implements IDownloadManager {
 
     public DownloadInfo getDownloadInfoById(String id) {
         DownloadDetailsInfo downloadDetailsInfo;
-        downloadDetailsInfo = downloadInfoMap.get(id);
+        downloadDetailsInfo = downloadInfoManager.get(id);
         if (downloadDetailsInfo == null) {
             downloadDetailsInfo = DBService.getInstance().getDownloadInfo(id);
         }
@@ -232,6 +226,8 @@ public class DownloadManager implements IDownloadManager {
             if (downloadTask != null)
                 downloadTask.stop();
         }
+        taskMap.clear();
+        downloadInfoManager.clear();
         DownloadInfoSnapshot.release();
         DBService.getInstance().close();
     }
@@ -247,15 +243,12 @@ public class DownloadManager implements IDownloadManager {
 
     @Override
     public void onDownloadStart(DownloadTask downloadTask) {
-        downloadInfoMap.put(downloadTask.getId(), downloadTask.getDownloadInfo());
         taskMap.put(downloadTask.getId(), downloadTask);
 
     }
 
     @Override
     public void onDownloadEnd(DownloadTask downloadTask) {
-        LogUtil.e("1onEnd"+taskMap.containsKey(downloadTask.getId())+";size="+taskMap.size());
         taskMap.remove(downloadTask.getId());
-        LogUtil.e("onEnd"+taskMap.containsKey(downloadTask.getId())+";size="+taskMap.size());
     }
 }

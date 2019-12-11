@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DownloadTask implements Task {
     private final DownloadDetailsInfo downloadInfo;
+    private final Object lock;
     private DBService dbService;
     private AtomicBoolean isRunning;
     private IMessageCenter messageCenter;
@@ -27,7 +28,6 @@ public class DownloadTask implements Task {
      * True indicate that not support breakpoint download.
      */
     private DownloadRequest downloadRequest;
-    private final Object lock;
     private volatile boolean isCanceled;
     private volatile boolean isDeleted;
     private boolean supportBreakpoint = true;

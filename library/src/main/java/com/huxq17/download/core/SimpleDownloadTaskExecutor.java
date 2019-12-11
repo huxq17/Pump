@@ -31,13 +31,12 @@ public abstract class SimpleDownloadTaskExecutor extends ThreadPoolExecutor impl
         downLoadLifeCycleCallback = PumpFactory.getService(IDownloadManager.class);
     }
 
-    public void execute(Runnable runnable) {
-        if (runnable == null) {
+    public void execute(DownloadTask downloadTask) {
+        if (downloadTask == null) {
             throw new NullPointerException();
         }
-        checkIsDownloadTask(runnable);
-        DownloadTask downloadTask = (DownloadTask) runnable;
         super.execute(downloadTask);
+        LogUtil.d("Task " + downloadTask.getName() + " is ready.");
         if (getQueue().size() + getActiveCount() > getMaxDownloadNumber()) {
             String printName = getSafeName();
             LogUtil.w(printName + " only " + getMaxDownloadNumber()
@@ -62,6 +61,7 @@ public abstract class SimpleDownloadTaskExecutor extends ThreadPoolExecutor impl
     }
 
     protected final void beforeExecute(Thread t, Runnable r) {
+        checkIsDownloadTask(r);
         DownloadTask downloadTask = (DownloadTask) r;
         downLoadLifeCycleCallback.onDownloadStart(downloadTask);
         LogUtil.d("start run " + downloadTask.getName());
@@ -70,6 +70,7 @@ public abstract class SimpleDownloadTaskExecutor extends ThreadPoolExecutor impl
 
     @Override
     protected final void afterExecute(Runnable r, Throwable t) {
+        checkIsDownloadTask(r);
         DownloadTask downloadTask = (DownloadTask) r;
         downLoadLifeCycleCallback.onDownloadEnd(downloadTask);
         Long startTime = times.remove(downloadTask.getId());
@@ -78,7 +79,7 @@ public abstract class SimpleDownloadTaskExecutor extends ThreadPoolExecutor impl
         }
     }
 
-    public void release() {
+    public void shutdown() {
         shutdownNow();
     }
 
@@ -97,6 +98,7 @@ public abstract class SimpleDownloadTaskExecutor extends ThreadPoolExecutor impl
     private static class DownloadRejectedExecutionHandler implements RejectedExecutionHandler {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+            LogUtil.e("rejectedExecution");
             if (executor.isShutdown()) return;
             executor.getQueue().offer(r);
         }

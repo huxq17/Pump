@@ -7,7 +7,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
 
 import com.huxq17.download.core.DownloadDetailsInfo;
+import com.huxq17.download.core.DownloadInfoManager;
 import com.huxq17.download.provider.Provider;
+import com.huxq17.download.utils.LogUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.List;
 public class DBService {
     private DBOpenHelper helper;
     private static DBService instance;
+    private DownloadInfoManager downloadInfoManager;
 
     public static void init(Context context) {
         instance = new DBService(context);
@@ -22,6 +25,7 @@ public class DBService {
 
     private DBService(Context context) {
         helper = new DBOpenHelper(context);
+        downloadInfoManager = DownloadInfoManager.getInstance();
     }
 
     public static DBService getInstance() {
@@ -117,12 +121,7 @@ public class DBService {
             cursor = db.query(Provider.DownloadTable.TABLE_NAME, null, Provider.DownloadTable.TAG + " = ?", new String[]{tag}, null, null, Provider.DownloadTable.CREATE_TIME, null);
         }
         while (cursor.moveToNext()) {
-            DownloadDetailsInfo info = new DownloadDetailsInfo(cursor.getString(0), cursor.getString(1), cursor.getString(6), cursor.getString(7),cursor.getLong(5));
-//            info.threadNum = cursor.getInt(2);
-            info.setContentLength(cursor.getLong(3));
-            info.setFinished(cursor.getShort(4));
-            info.calculateDownloadProgress();
-//            LogUtil.d("table " + info);
+            DownloadDetailsInfo info = downloadInfoManager.createInfoByCursor(cursor);
             tasks.add(info);
         }
         cursor.close();
@@ -130,18 +129,15 @@ public class DBService {
     }
 
     public synchronized DownloadDetailsInfo getDownloadInfo(String id) {
-        if (TextUtils.isEmpty(id)) {
+        if (id == null || id.length() == 0) {
             throw new IllegalArgumentException("id is empty.");
         }
+        DownloadDetailsInfo info = null;
         SQLiteDatabase db = getWritableDatabase();
         Cursor cursor = db.query(Provider.DownloadTable.TABLE_NAME, null,
                 Provider.DownloadTable.ID + "=?", new String[]{id}, null, null, null, null);
-        DownloadDetailsInfo info = null;
         while (cursor.moveToNext()) {
-            info = new DownloadDetailsInfo(cursor.getString(0), cursor.getString(1), cursor.getString(6), cursor.getString(7),cursor.getLong(5));
-            info.setContentLength(cursor.getLong(3));
-            info.setFinished(cursor.getShort(4));
-            info.calculateDownloadProgress();
+            info = downloadInfoManager.createInfoByCursor(cursor);
         }
         cursor.close();
         return info;

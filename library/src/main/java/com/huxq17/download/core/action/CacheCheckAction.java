@@ -21,6 +21,7 @@ import com.huxq17.download.core.task.DownloadTask;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 
 

@@ -94,6 +94,12 @@ public final class DownloadRequest {
     }
 
     public String getTag() {
+        if(downloadTaskExecutor!=null){
+            String tag = downloadTaskExecutor.getTag();
+            if (tag!= null && tag.length() >0) {
+              return tag;
+            }
+        }
         return tag == null ? "" : tag;
     }
 
