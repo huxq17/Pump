@@ -28,7 +28,7 @@ public class DownloadManager implements IDownloadManager {
 
     private DownloadManager() {
         taskMap = new ConcurrentHashMap<>();
-        downloadInfoManager  = DownloadInfoManager.getInstance();
+        downloadInfoManager = DownloadInfoManager.getInstance();
         downloadDispatcher = new DownloadDispatcher(this);
     }
 
@@ -85,9 +85,6 @@ public class DownloadManager implements IDownloadManager {
     }
 
     public void deleteByTag(String tag) {
-        if (TextUtils.isEmpty(tag)) {
-            throw new IllegalArgumentException("Tag is empty.");
-        }
         List<DownloadInfo> tasks = getDownloadListByTag(tag);
         for (DownloadInfo info : tasks) {
             delete(info);
@@ -192,8 +189,7 @@ public class DownloadManager implements IDownloadManager {
     }
 
     public DownloadInfo getDownloadInfoById(String id) {
-        DownloadDetailsInfo downloadDetailsInfo;
-        downloadDetailsInfo = downloadInfoManager.get(id);
+        DownloadDetailsInfo downloadDetailsInfo = downloadInfoManager.get(id);
         if (downloadDetailsInfo == null) {
             downloadDetailsInfo = DBService.getInstance().getDownloadInfo(id);
         }

@@ -1,6 +1,7 @@
 package com.huxq17.download.core;
 
 import com.huxq17.download.PumpFactory;
+import com.huxq17.download.config.IDownloadConfigService;
 import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.utils.LogUtil;
@@ -13,14 +14,15 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class SimpleDownloadTaskExecutor extends ThreadPoolExecutor implements DownloadTaskExecutor {
+public class SimpleDownloadTaskExecutor extends ThreadPoolExecutor implements DownloadTaskExecutor {
     private static final int DEFAULT_THREAD_COUNT = 3;
-    private ConcurrentHashMap<String, Long> times = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Long> countTimeMap = new ConcurrentHashMap<>();
     private DownLoadLifeCycleCallback downLoadLifeCycleCallback;
 
     public SimpleDownloadTaskExecutor() {
-        super(DEFAULT_THREAD_COUNT, DEFAULT_THREAD_COUNT, 0, TimeUnit.MILLISECONDS,
+        super(DEFAULT_THREAD_COUNT, DEFAULT_THREAD_COUNT, 60, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>(), new DownloadRejectedExecutionHandler());
+        allowCoreThreadTimeOut(true);
     }
 
     @Override
@@ -64,8 +66,8 @@ public abstract class SimpleDownloadTaskExecutor extends ThreadPoolExecutor impl
         checkIsDownloadTask(r);
         DownloadTask downloadTask = (DownloadTask) r;
         downLoadLifeCycleCallback.onDownloadStart(downloadTask);
-        LogUtil.d("start run " + downloadTask.getName());
-        times.put(downloadTask.getId(), System.currentTimeMillis());
+        LogUtil.d("start run " + downloadTask.getName() + " at thread name=" + t.getName() + ";id=" + t);
+        countTimeMap.put(downloadTask.getId(), System.currentTimeMillis());
     }
 
     @Override
@@ -73,10 +75,25 @@ public abstract class SimpleDownloadTaskExecutor extends ThreadPoolExecutor impl
         checkIsDownloadTask(r);
         DownloadTask downloadTask = (DownloadTask) r;
         downLoadLifeCycleCallback.onDownloadEnd(downloadTask);
-        Long startTime = times.remove(downloadTask.getId());
+        Long startTime = countTimeMap.remove(downloadTask.getId());
         if (startTime != null) {
             LogUtil.d("download " + downloadTask.getName() + " is stopped,and spend=" + (System.currentTimeMillis() - startTime));
         }
+    }
+
+    @Override
+    public int getMaxDownloadNumber() {
+        return PumpFactory.getService(IDownloadConfigService.class).getMaxRunningTaskNumber();
+    }
+
+    @Override
+    public String getName() {
+        return "SimpleDownloadTaskExecutor";
+    }
+
+    @Override
+    public String getTag() {
+        return null;
     }
 
     public void shutdown() {

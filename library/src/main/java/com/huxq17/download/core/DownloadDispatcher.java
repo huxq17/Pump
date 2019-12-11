@@ -47,23 +47,7 @@ public class DownloadDispatcher implements Task {
         requestQueue = new ConcurrentLinkedQueue<>();
         TaskManager.execute(this);
         downloadInfoManager = DownloadInfoManager.getInstance();
-        downloadTaskExecutor = new SimpleDownloadTaskExecutor() {
-
-            @Override
-            public int getMaxDownloadNumber() {
-                return PumpFactory.getService(IDownloadConfigService.class).getMaxRunningTaskNumber();
-            }
-
-            @Override
-            public String getName() {
-                return "DefaultDownloadTaskExecutor";
-            }
-
-            @Override
-            public String getTag() {
-                return null;
-            }
-        };
+        downloadTaskExecutor = new SimpleDownloadTaskExecutor();
     }
 
     public void enqueueRequest(DownloadRequest request) {
