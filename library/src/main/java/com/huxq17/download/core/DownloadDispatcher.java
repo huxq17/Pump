@@ -34,7 +34,7 @@ public class DownloadDispatcher implements Task {
     private Lock lock = new ReentrantLock();
     private Condition consumer = lock.newCondition();
     private HashSet<DownloadTaskExecutor> downloadTaskExecutors = new HashSet<>(1);
-    private DownloadTaskExecutor downloadTaskExecutor;
+    private DownloadTaskExecutor defaultTaskExecutor;
     private DownloadInfoManager downloadInfoManager;
 
     DownloadDispatcher(DownloadManager downloadManager) {
@@ -47,7 +47,7 @@ public class DownloadDispatcher implements Task {
         requestQueue = new ConcurrentLinkedQueue<>();
         TaskManager.execute(this);
         downloadInfoManager = DownloadInfoManager.getInstance();
-        downloadTaskExecutor = new SimpleDownloadTaskExecutor();
+        defaultTaskExecutor = new SimpleDownloadTaskExecutor();
     }
 
     public void enqueueRequest(DownloadRequest request) {
@@ -72,7 +72,7 @@ public class DownloadDispatcher implements Task {
         if (downloadRequest != null && !downloadManager.isTaskRunning(downloadRequest.getId())) {
             DownloadTaskExecutor downloadTaskExecutor = downloadRequest.getDownloadDispatcher();
             if (downloadTaskExecutor == null) {
-                downloadTaskExecutor = this.downloadTaskExecutor;
+                downloadTaskExecutor = this.defaultTaskExecutor;
             }
             if (!downloadTaskExecutors.contains(downloadTaskExecutor)) {
                 downloadTaskExecutor.init();
@@ -108,7 +108,9 @@ public class DownloadDispatcher implements Task {
         isCanceled.set(true);
         signalConsumer();
         downloadTaskExecutors.clear();
-        downloadTaskExecutor.shutdown();
+        if (defaultTaskExecutor != null) {
+            defaultTaskExecutor.shutdown();
+        }
     }
 
     boolean isBlockForConsumeRequest() {

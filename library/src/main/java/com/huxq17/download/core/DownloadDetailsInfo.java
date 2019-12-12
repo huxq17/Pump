@@ -8,10 +8,12 @@ import com.huxq17.download.utils.FileUtil;
 import com.huxq17.download.utils.Util;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+
+import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
 
 public class DownloadDetailsInfo {
     private WeakReference<Object> wfExtraData;
@@ -48,6 +50,7 @@ public class DownloadDetailsInfo {
             this.id = id;
         }
         this.tag = tag;
+        this.filePath = filePath;
         this.createTime = createTime;
         if (filePath != null) {
             downloadFile = new File(filePath);
@@ -156,10 +159,18 @@ public class DownloadDetailsInfo {
     private void loadDownloadFiles() {
         if (this.filePath == null) return;
         File tempDir = Util.getTempDir(this.filePath);
-        File[] listFiles = tempDir.listFiles();
-        if (listFiles != null && listFiles.length > 0) {
-            downloadPartFiles.addAll(Arrays.asList(listFiles));
-        }
+        tempDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                if (name.startsWith(DOWNLOAD_PART)) {
+                    File file = new File(dir, name);
+                    downloadPartFiles.add(file);
+                    completedSize += file.length();
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     public void calculateDownloadProgress() {
@@ -171,14 +182,9 @@ public class DownloadDetailsInfo {
         } else {
             //Only load once.
             if (downloadPartFiles.size() == 0) {
+                this.completedSize = 0;
                 loadDownloadFiles();
             }
-//            int completedSize = 0;
-//            int size = downloadPartFiles.size();
-//            for (int i = 0; i < size; i++) {
-//                completedSize += downloadPartFiles.get(i).length();
-//            }
-//            this.completedSize = completedSize;
             if (this.status == null) {
                 setStatus(DownloadInfo.Status.STOPPED);
             }

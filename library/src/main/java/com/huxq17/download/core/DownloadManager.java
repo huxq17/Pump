@@ -223,7 +223,7 @@ public class DownloadManager implements IDownloadManager {
                 downloadTask.stop();
         }
         taskMap.clear();
-        downloadInfoManager.clear();
+//        downloadInfoManager.clear();
         DownloadInfoSnapshot.release();
         DBService.getInstance().close();
     }

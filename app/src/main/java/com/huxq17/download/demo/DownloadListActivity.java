@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
 import com.huxq17.download.Pump;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.utils.LogUtil;
@@ -138,8 +139,6 @@ public class DownloadListActivity extends AppCompatActivity {
         TextView tvDownload;
         DownloadInfo downloadInfo;
         DownloadInfo.Status status;
-        private String totalSizeString;
-        long totalSize;
         AlertDialog dialog;
 
         public DownloadViewHolder(@NonNull View itemView, final DownloadAdapter adapter) {
@@ -202,11 +201,8 @@ public class DownloadListActivity extends AppCompatActivity {
             }
             tvSpeed.setText(speed);
             long completedSize = downloadInfo.getCompletedSize();
-            if (totalSize == 0) {
-                long totalSize = downloadInfo.getContentLength();
-                totalSizeString = "/" + Util.getDataSize(totalSize);
-            }
-            tvDownload.setText(Util.getDataSize(completedSize) + totalSizeString);
+            long totalSize = downloadInfo.getContentLength();
+            tvDownload.setText(Util.getDataSize(completedSize) + "/" + Util.getDataSize(totalSize));
         }
 
         @Override
@@ -214,7 +210,7 @@ public class DownloadListActivity extends AppCompatActivity {
             if (v == tvStatus) {
                 switch (status) {
                     case STOPPED:
-                        Pump.newRequest(downloadInfo.getUrl(),downloadInfo.getFilePath())
+                        Pump.newRequest(downloadInfo.getUrl(), downloadInfo.getFilePath())
                                 .setId(downloadInfo.getId())
                                 .submit();
                         break;
