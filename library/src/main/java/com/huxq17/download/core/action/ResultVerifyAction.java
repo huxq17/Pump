@@ -14,6 +14,7 @@ import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.provider.Provider;
 import com.huxq17.download.utils.FileUtil;
+import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
 
@@ -31,10 +32,8 @@ public class ResultVerifyAction implements Action {
                 FileUtil.deleteFile(downloadInfo.getDownloadFile());
                 downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
                 DBService.getInstance().deleteInfo(downloadInfo.getId());
-            } else if (downloadTask.isCanceled()) {
-                downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
-                downloadTask.notifyProgressChanged(downloadInfo);
-            } else {
+            }  else {
+                LogUtil.e("verify status="+downloadInfo.getStatus());
                 long completedSize = downloadInfo.getCompletedSize();
                 long contentLength = downloadInfo.getContentLength();
                 File downloadFile = downloadInfo.getDownloadFile();

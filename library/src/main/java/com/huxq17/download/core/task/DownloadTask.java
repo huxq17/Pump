@@ -151,9 +151,9 @@ public class DownloadTask implements Task {
     public void stop() {
         synchronized (lock) {
             if (isRunning.get()) {
-                downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
-                downloadInfo.setDownloadTask(null);
                 cancel();
+                downloadInfo.setDownloadTask(null);
+                downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
             }
         }
     }
@@ -213,6 +213,6 @@ public class DownloadTask implements Task {
     }
 
     public boolean isRunning() {
-        return isRunning.get();
+        return isRunning.get() && !isCanceled;
     }
 }
