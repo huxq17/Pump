@@ -26,7 +26,7 @@ public class DownloadDetailsInfo {
     private long completedSize;
     private long contentLength;
     private int finished;
-    protected DownloadInfo.Status status;
+    protected volatile DownloadInfo.Status status;
     private String speed;
     private int errorCode;
     private File tempDir;

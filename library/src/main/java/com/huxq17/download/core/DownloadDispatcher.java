@@ -70,7 +70,7 @@ public class DownloadDispatcher implements Task {
         }
         DownloadRequest downloadRequest = requestQueue.poll();
         if (downloadRequest != null && !downloadManager.isTaskRunning(downloadRequest.getId())) {
-            DownloadTaskExecutor downloadTaskExecutor = downloadRequest.getDownloadDispatcher();
+            DownloadTaskExecutor downloadTaskExecutor = downloadRequest.getDownloadExecutor();
             if (downloadTaskExecutor == null) {
                 downloadTaskExecutor = this.defaultTaskExecutor;
             }

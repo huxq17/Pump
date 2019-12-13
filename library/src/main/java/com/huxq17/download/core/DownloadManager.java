@@ -15,19 +15,16 @@ import com.huxq17.download.utils.LogUtil;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DownloadManager implements IDownloadManager {
     private Context context;
-    private ConcurrentHashMap<String, DownloadTask> taskMap;
     private DownloadInfoManager downloadInfoManager;
 
     private DownloadDispatcher downloadDispatcher;
 
-    private boolean hasFetchDownloadList;
+    private volatile boolean hasFetchDownloadList;
 
     private DownloadManager() {
-        taskMap = new ConcurrentHashMap<>();
         downloadInfoManager = DownloadInfoManager.getInstance();
         downloadDispatcher = new DownloadDispatcher(this);
     }
@@ -39,7 +36,7 @@ public class DownloadManager implements IDownloadManager {
 
     public void submit(DownloadRequest downloadRequest) {
         String id = downloadRequest.getId();
-        if (taskMap.get(id) != null) {
+        if (isTaskRunning(id)) {
             //The task is running,we need do nothing.
             LogUtil.e("task " + downloadRequest.getName() + " is running,we need do nothing.");
             return;
@@ -55,7 +52,7 @@ public class DownloadManager implements IDownloadManager {
         if (TextUtils.isEmpty(id)) {
             throw new IllegalArgumentException("Id is empty.");
         }
-        DownloadTask downloadTask = taskMap.get(id);
+        DownloadTask downloadTask = getDownloadTaskById(id);
         if (downloadTask != null) {
             synchronized (downloadTask.getLock()) {
                 downloadTask.delete();
@@ -99,7 +96,7 @@ public class DownloadManager implements IDownloadManager {
     @Override
     public void stop(DownloadInfo downloadInfo) {
         checkDownloadInfo(downloadInfo);
-        DownloadTask downloadTask = taskMap.get(downloadInfo.getId());
+        DownloadTask downloadTask = getDownloadTaskById(downloadInfo.getId());
         if (downloadTask != null) {
             downloadTask.stop();
         }
@@ -108,7 +105,7 @@ public class DownloadManager implements IDownloadManager {
     @Override
     public void pause(DownloadInfo downloadInfo) {
         checkDownloadInfo(downloadInfo);
-        DownloadTask downloadTask = taskMap.get(downloadInfo.getId());
+        DownloadTask downloadTask = getDownloadTaskById(downloadInfo.getId());
         if (downloadTask != null) {
             downloadTask.pause();
         }
@@ -203,7 +200,16 @@ public class DownloadManager implements IDownloadManager {
     }
 
     public boolean isTaskRunning(String id) {
-        return taskMap.get(id) != null;
+        DownloadTask downloadTask = getDownloadTaskById(id);
+        return downloadTask != null && downloadTask.isRunning();
+    }
+
+    public DownloadTask getDownloadTaskById(String id) {
+        DownloadDetailsInfo downloadDetailsInfo = downloadInfoManager.get(id);
+        if (downloadDetailsInfo != null) {
+            return downloadDetailsInfo.getDownloadTask();
+        }
+        return null;
     }
 
     @Override
@@ -218,14 +224,10 @@ public class DownloadManager implements IDownloadManager {
     @Override
     public void shutdown() {
         downloadDispatcher.cancel();
-        for (DownloadTask downloadTask : taskMap.values()) {
-            if (downloadTask != null)
-                downloadTask.stop();
-        }
-        taskMap.clear();
-//        downloadInfoManager.clear();
+        downloadInfoManager.clear();
         DownloadInfoSnapshot.release();
         DBService.getInstance().close();
+        hasFetchDownloadList = false;
     }
 
     public boolean isShutdown() {
@@ -239,12 +241,10 @@ public class DownloadManager implements IDownloadManager {
 
     @Override
     public void onDownloadStart(DownloadTask downloadTask) {
-        taskMap.put(downloadTask.getId(), downloadTask);
 
     }
 
     @Override
     public void onDownloadEnd(DownloadTask downloadTask) {
-        taskMap.remove(downloadTask.getId());
     }
 }

@@ -5,23 +5,22 @@ import android.os.Environment;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 
-import com.huxq17.download.core.DownloadChain;
-import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.core.DownloadDetailsInfo;
-import com.huxq17.download.utils.LogUtil;
-import com.huxq17.download.utils.Util;
 import com.huxq17.download.config.IDownloadConfigService;
+import com.huxq17.download.core.DownloadChain;
+import com.huxq17.download.core.DownloadDetailsInfo;
+import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.connection.DownloadConnection;
+import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.provider.Provider;
-import com.huxq17.download.core.task.DownloadTask;
+import com.huxq17.download.utils.LogUtil;
+import com.huxq17.download.utils.Util;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.net.HttpURLConnection;
 
 
@@ -83,7 +82,7 @@ public class CacheCheckAction implements Action {
         } finally {
             connection.close();
         }
-        if (contentLength == -1 &&
+        if (result && contentLength == -1 &&
                 isNeedHeadContentLength(transferEncoding)) {
             contentLength = headContentLength();
         }
@@ -104,7 +103,7 @@ public class CacheCheckAction implements Action {
                     long dataFileUsableSpace = Util.getUsableSpace(Environment.getDataDirectory());
                     long minUsableStorageSpace = PumpFactory.getService(IDownloadConfigService.class).getMinUsableSpace();
                     if (downloadDirUsableSpace < contentLength * 2 || dataFileUsableSpace <= minUsableStorageSpace) {
-                        detailsInfo.setErrorCode(ErrorCode.USABLE_SPACE_NOT_ENOUGH);
+                        downloadTask.setErrorCode(ErrorCode.USABLE_SPACE_NOT_ENOUGH);
                         result = false;
 
                         Context context = PumpFactory.getService(IDownloadManager.class).getContext();
@@ -126,14 +125,14 @@ public class CacheCheckAction implements Action {
                 }
             } else {
                 if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                    detailsInfo.setErrorCode(ErrorCode.FILE_NOT_FOUND);
+                    downloadTask.setErrorCode(ErrorCode.FILE_NOT_FOUND);
                 } else {
-                    detailsInfo.setErrorCode(ErrorCode.UNKNOWN_SERVER_ERROR);
+                    downloadTask.setErrorCode(ErrorCode.UNKNOWN_SERVER_ERROR);
                 }
                 result = false;
             }
         } else {
-            detailsInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
+            downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
             result = false;
         }
         return result;

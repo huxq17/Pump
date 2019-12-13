@@ -4,9 +4,9 @@ package com.huxq17.download.core;
 import java.io.File;
 
 public class DownloadInfo {
-    protected final String url;
+    private final String url;
     private final File downloadFile;
-    protected final String id;
+    private final String id;
 
     private final long completedSize;
     private final long contentLength;

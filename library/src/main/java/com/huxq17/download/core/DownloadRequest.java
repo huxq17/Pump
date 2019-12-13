@@ -107,7 +107,7 @@ public final class DownloadRequest {
         return forceReDownload;
     }
 
-    public DownloadTaskExecutor getDownloadDispatcher() {
+    public DownloadTaskExecutor getDownloadExecutor() {
         return downloadTaskExecutor;
     }
 

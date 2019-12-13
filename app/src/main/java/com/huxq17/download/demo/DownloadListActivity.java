@@ -90,7 +90,7 @@ public class DownloadListActivity extends AppCompatActivity {
         for (DownloadInfo downloadInfo : downloadInfoList) {
             Pump.stop(downloadInfo);
         }
-        Pump.shutdown();
+//        Pump.shutdown();
     }
 
     public static class DownloadAdapter extends RecyclerView.Adapter<DownloadViewHolder> {
@@ -210,11 +210,8 @@ public class DownloadListActivity extends AppCompatActivity {
             if (v == tvStatus) {
                 switch (status) {
                     case STOPPED:
-                        Pump.newRequest(downloadInfo.getUrl(), downloadInfo.getFilePath())
-                                .setId(downloadInfo.getId())
-                                .submit();
-                        break;
                     case PAUSED:
+                    case FAILED:
                         Pump.resume(downloadInfo);
                         break;
                     case WAIT:
@@ -227,9 +224,6 @@ public class DownloadListActivity extends AppCompatActivity {
                         APK.with(itemView.getContext())
                                 .from(downloadInfo.getFilePath())
                                 .install();
-                        break;
-                    case FAILED:
-                        Pump.resume(downloadInfo);
                         break;
                 }
             }

@@ -66,7 +66,7 @@ public class SimpleDownloadTaskExecutor extends ThreadPoolExecutor implements Do
         checkIsDownloadTask(r);
         DownloadTask downloadTask = (DownloadTask) r;
         downLoadLifeCycleCallback.onDownloadStart(downloadTask);
-        LogUtil.d("start run " + downloadTask.getName() + " at thread name=" + t.getName() + ";id=" + t);
+        LogUtil.d("start run " + downloadTask.getName() + " at thread name=" + t.getName());
         countTimeMap.put(downloadTask.getId(), System.currentTimeMillis());
     }
 
