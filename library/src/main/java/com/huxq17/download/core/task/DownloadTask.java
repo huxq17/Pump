@@ -155,7 +155,7 @@ public class DownloadTask implements Task {
 
     public void stop() {
         synchronized (lock) {
-            if (downloadInfo.getStatus() != DownloadInfo.Status.FINISHED) {
+            if (downloadInfo.getStatus().shouldStop()) {
                 downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
             }
             if (isRunning.get()) {
@@ -196,7 +196,7 @@ public class DownloadTask implements Task {
     }
 
     public void setErrorCode(int errorCode) {
-        if (downloadInfo.getStatus() != DownloadInfo.Status.PAUSING) {
+        if (downloadInfo.getStatus().shouldStop() && !isCanceled) {
             downloadInfo.setErrorCode(errorCode);
         }
     }

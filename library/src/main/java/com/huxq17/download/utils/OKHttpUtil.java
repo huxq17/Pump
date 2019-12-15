@@ -26,7 +26,6 @@ public class OKHttpUtil {
                 .writeTimeout(20, TimeUnit.SECONDS)
                 .readTimeout(20, TimeUnit.SECONDS)
                 .connectTimeout(15, TimeUnit.SECONDS)
-                .retryOnConnectionFailure(false)
                 .build();
     }
 

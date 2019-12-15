@@ -43,7 +43,7 @@ public class DownloadListActivity extends AppCompatActivity {
             if (viewHolder != null) {
                 DownloadInfo tag = map.get(viewHolder);
                 if (tag != null && tag.getId().equals(downloadInfo.getId())) {
-                    viewHolder.bindData(downloadInfo, getStatus());
+                    viewHolder.bindData(downloadInfo);
                 }
             }
         }
@@ -88,13 +88,13 @@ public class DownloadListActivity extends AppCompatActivity {
         super.onDestroy();
         downloadObserver.disable();
         for (DownloadInfo downloadInfo : downloadInfoList) {
-            Pump.stop(downloadInfo);
+            Pump.stop(downloadInfo.getId());
         }
-//        Pump.shutdown();
+        Pump.shutdown();
     }
 
     public static class DownloadAdapter extends RecyclerView.Adapter<DownloadViewHolder> {
-        List<? extends DownloadInfo> downloadInfoList;
+        List<DownloadInfo> downloadInfoList;
         HashMap<DownloadViewHolder, DownloadInfo> map;
 
         public DownloadAdapter(HashMap<DownloadViewHolder, DownloadInfo> map, List<DownloadInfo> downloadInfoList) {
@@ -115,7 +115,7 @@ public class DownloadListActivity extends AppCompatActivity {
             downloadInfo.setExtraData(viewHolder);
             map.put(viewHolder, downloadInfo);
 
-            viewHolder.bindData(downloadInfo, downloadInfo.getStatus());
+            viewHolder.bindData(downloadInfo);
         }
 
         public void delete(DownloadViewHolder viewHolder) {
@@ -156,7 +156,7 @@ public class DownloadListActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             adapter.delete(DownloadViewHolder.this);
-                            Pump.delete(downloadInfo);
+                            Pump.deleteById(downloadInfo.getId());
                         }
                     })
                     .setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -168,9 +168,9 @@ public class DownloadListActivity extends AppCompatActivity {
                     .create();
         }
 
-        public void bindData(DownloadInfo downloadInfo, DownloadInfo.Status status) {
+        public void bindData(DownloadInfo downloadInfo) {
             this.downloadInfo = downloadInfo;
-            this.status = status;
+            this.status = downloadInfo.getStatus();
             tvName.setText(downloadInfo.getName());
             String speed = "";
             int progress = downloadInfo.getProgress();
@@ -212,13 +212,13 @@ public class DownloadListActivity extends AppCompatActivity {
                     case STOPPED:
                     case PAUSED:
                     case FAILED:
-                        Pump.resume(downloadInfo);
+                        Pump.resume(downloadInfo.getId());
                         break;
                     case WAIT:
                         //do nothing.
                         break;
                     case RUNNING:
-                        Pump.pause(downloadInfo);
+                        Pump.pause(downloadInfo.getId());
                         break;
                     case FINISHED:
                         APK.with(itemView.getContext())

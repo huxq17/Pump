@@ -25,5 +25,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="View download list" />
+    <Button
+        android:id="@+id/jump_remote_download_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="View remote download list" />
 
 </LinearLayout>

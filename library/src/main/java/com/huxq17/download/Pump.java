@@ -76,34 +76,25 @@ public class Pump {
     /**
      * Pause a download task by {@link DownloadInfo}
      *
-     * @param downloadInfo get from {@link DownloadListener#getDownloadInfo()}
+     * @param id unique download id,default is download url.
      */
-    public static void pause(DownloadInfo downloadInfo) {
-        PumpFactory.getService(IDownloadManager.class).pause(downloadInfo);
+    public static void pause(String id) {
+        PumpFactory.getService(IDownloadManager.class).pause(id);
     }
 
     /**
-     * Stop a download task by {@link DownloadInfo}
+     * Stop a download task by id
      *
-     * @param downloadInfo get from {@link DownloadListener#getDownloadInfo()}
+     * @param id unique download id,default is download url.
      */
-    public static void stop(DownloadInfo downloadInfo) {
-        PumpFactory.getService(IDownloadManager.class).stop(downloadInfo);
-    }
-
-    /**
-     * Delete a download info by {@link DownloadInfo}
-     *
-     * @param downloadInfo get from {@link DownloadListener#getDownloadInfo()}
-     */
-    public static void delete(DownloadInfo downloadInfo) {
-        PumpFactory.getService(IDownloadManager.class).delete(downloadInfo);
+    public static void stop(String id) {
+        PumpFactory.getService(IDownloadManager.class).stop(id);
     }
 
     /**
      * Delete a download info by Tag
      *
-     * @param tag tag
+     * @param tag tag th tag of group.
      */
     public static void deleteByTag(String tag) {
         PumpFactory.getService(IDownloadManager.class).deleteByTag(tag);
@@ -121,10 +112,10 @@ public class Pump {
     /**
      * Continue a download info by {@link DownloadInfo}
      *
-     * @param downloadInfo get from {@link DownloadListener#getDownloadInfo()}
+     * @param id unique download id,default is download url.
      */
-    public static void resume(DownloadInfo downloadInfo) {
-        PumpFactory.getService(IDownloadManager.class).resume(downloadInfo);
+    public static void resume(String id) {
+        PumpFactory.getService(IDownloadManager.class).resume(id);
     }
 
     public static void shutdown() {

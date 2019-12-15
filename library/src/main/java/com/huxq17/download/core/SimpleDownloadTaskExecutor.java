@@ -3,7 +3,6 @@ package com.huxq17.download.core;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.config.IDownloadConfigService;
 import com.huxq17.download.core.task.DownloadTask;
-import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.utils.LogUtil;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,7 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class SimpleDownloadTaskExecutor extends ThreadPoolExecutor implements DownloadTaskExecutor {
     private static final int DEFAULT_THREAD_COUNT = 3;
     private ConcurrentHashMap<String, Long> countTimeMap = new ConcurrentHashMap<>();
-    private DownLoadLifeCycleCallback downLoadLifeCycleCallback;
 
     public SimpleDownloadTaskExecutor() {
         super(DEFAULT_THREAD_COUNT, DEFAULT_THREAD_COUNT, 60, TimeUnit.SECONDS,
@@ -30,7 +28,6 @@ public class SimpleDownloadTaskExecutor extends ThreadPoolExecutor implements Do
         setCorePoolSize(getSafeThreadCount());
         setMaximumPoolSize(getSafeThreadCount());
         setThreadFactory(new DownloadDisPatcherThreadFactory());
-        downLoadLifeCycleCallback = PumpFactory.getService(IDownloadManager.class);
     }
 
     public void execute(DownloadTask downloadTask) {
@@ -65,7 +62,6 @@ public class SimpleDownloadTaskExecutor extends ThreadPoolExecutor implements Do
     protected final void beforeExecute(Thread t, Runnable r) {
         checkIsDownloadTask(r);
         DownloadTask downloadTask = (DownloadTask) r;
-        downLoadLifeCycleCallback.onDownloadStart(downloadTask);
         LogUtil.d("start run " + downloadTask.getName() + " at thread name=" + t.getName());
         countTimeMap.put(downloadTask.getId(), System.currentTimeMillis());
     }
@@ -74,7 +70,6 @@ public class SimpleDownloadTaskExecutor extends ThreadPoolExecutor implements Do
     protected final void afterExecute(Runnable r, Throwable t) {
         checkIsDownloadTask(r);
         DownloadTask downloadTask = (DownloadTask) r;
-        downLoadLifeCycleCallback.onDownloadEnd(downloadTask);
         Long startTime = countTimeMap.remove(downloadTask.getId());
         if (startTime != null) {
             LogUtil.d("download " + downloadTask.getName() + " is stopped,and spend=" + (System.currentTimeMillis() - startTime));
@@ -115,7 +110,6 @@ public class SimpleDownloadTaskExecutor extends ThreadPoolExecutor implements Do
     private static class DownloadRejectedExecutionHandler implements RejectedExecutionHandler {
         @Override
         public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-            LogUtil.e("rejectedExecution");
             if (executor.isShutdown()) return;
             executor.getQueue().offer(r);
         }

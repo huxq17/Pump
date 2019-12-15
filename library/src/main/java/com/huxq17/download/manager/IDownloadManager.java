@@ -2,29 +2,26 @@ package com.huxq17.download.manager;
 
 import android.content.Context;
 
-import com.huxq17.download.core.DownLoadLifeCycleCallback;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadRequest;
 
 import java.io.File;
 import java.util.List;
 
-public interface IDownloadManager  extends DownLoadLifeCycleCallback {
+public interface IDownloadManager {
     void start(Context context);
 
     void submit(DownloadRequest downloadRequest);
-
-    void delete(DownloadInfo downloadInfo);
 
     void deleteById(String id);
 
     void deleteByTag(String tag);
 
-    void pause(DownloadInfo downloadInfo);
+    void pause(String id);
 
-    void stop(DownloadInfo downloadInfo);
+    void stop(String id);
 
-    void resume(DownloadInfo downloadInfo);
+    void resume(String id);
 
     List<DownloadInfo> getDownloadingList();
 

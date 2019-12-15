@@ -84,49 +84,45 @@ public class DownloadManager implements IDownloadManager {
     public void deleteByTag(String tag) {
         List<DownloadInfo> tasks = getDownloadListByTag(tag);
         for (DownloadInfo info : tasks) {
-            delete(info);
+            deleteById(info.getId());
         }
     }
 
-    public void delete(DownloadInfo downloadInfo) {
-        checkDownloadInfo(downloadInfo);
-        deleteById(downloadInfo.getId());
-    }
-
     @Override
-    public void stop(DownloadInfo downloadInfo) {
-        checkDownloadInfo(downloadInfo);
-        DownloadTask downloadTask = getDownloadTaskById(downloadInfo.getId());
+    public void stop(String id) {
+        checkId(id);
+        DownloadTask downloadTask = getDownloadTaskById(id);
         if (downloadTask != null) {
             downloadTask.stop();
         }
     }
 
     @Override
-    public void pause(DownloadInfo downloadInfo) {
-        checkDownloadInfo(downloadInfo);
-        DownloadTask downloadTask = getDownloadTaskById(downloadInfo.getId());
+    public void pause(String id) {
+        checkId(id);
+        DownloadTask downloadTask = getDownloadTaskById(id);
         if (downloadTask != null) {
             downloadTask.pause();
         }
     }
 
+    private void checkId(String id) {
+        if (id == null || id.length() == 0) {
+            throw new IllegalArgumentException("id is empty.");
+        }
+    }
+
     @Override
-    public void resume(DownloadInfo downloadInfo) {
-        checkDownloadInfo(downloadInfo);
-        DownloadDetailsInfo transferInfo = downloadInfo.getDownloadDetailsInfo();
+    public void resume(String id) {
+        checkId(id);
+        DownloadDetailsInfo transferInfo = DownloadInfoManager.getInstance().get(id);
+        if (transferInfo == null) return;
         DownloadTask downloadTask = transferInfo.getDownloadTask();
         if (downloadTask != null && downloadTask.getRequest() != null) {
             DownloadRequest downloadRequest = downloadTask.getRequest();
             submit(downloadRequest);
         } else {
             DownloadRequest.newRequest(transferInfo.getUrl(), transferInfo.getFilePath()).submit();
-        }
-    }
-
-    private void checkDownloadInfo(DownloadInfo downloadInfo) {
-        if (downloadInfo == null) {
-            throw new IllegalArgumentException("downloadInfo is null.");
         }
     }
 
@@ -237,14 +233,5 @@ public class DownloadManager implements IDownloadManager {
     @Override
     public Context getContext() {
         return context;
-    }
-
-    @Override
-    public void onDownloadStart(DownloadTask downloadTask) {
-
-    }
-
-    @Override
-    public void onDownloadEnd(DownloadTask downloadTask) {
     }
 }

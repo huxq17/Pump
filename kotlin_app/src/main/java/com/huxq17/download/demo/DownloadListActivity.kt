@@ -62,7 +62,7 @@ class DownloadListActivity : AppCompatActivity() {
         super.onDestroy()
         downloadObserver.disable()
         for (downloadInfo in downloadInfoList) {
-            Pump.stop(downloadInfo)
+            Pump.stop(downloadInfo.id)
         }
         Pump.shutdown()
     }
@@ -108,7 +108,7 @@ class DownloadListActivity : AppCompatActivity() {
                     .setTitle("Confirm delete?")
                     .setPositiveButton("Yes") { _, _ ->
                         adapter.delete(this@DownloadViewHolder)
-                        Pump.delete(downloadInfo)
+                        Pump.deleteById(downloadInfo.id)
                     }
                     .setNegativeButton("No") { _, _ -> }
                     .create()
@@ -148,14 +148,14 @@ class DownloadListActivity : AppCompatActivity() {
                     DownloadInfo.Status.STOPPED -> Pump.newRequest(downloadInfo.url, downloadInfo.filePath)
                             .setId(downloadInfo.id)
                             .submit()
-                    DownloadInfo.Status.PAUSED -> Pump.resume(downloadInfo)
+                    DownloadInfo.Status.PAUSED -> Pump.resume(downloadInfo.id)
                     DownloadInfo.Status.WAIT -> {
                     }
-                    DownloadInfo.Status.RUNNING -> Pump.pause(downloadInfo)
+                    DownloadInfo.Status.RUNNING -> Pump.pause(downloadInfo.id)
                     DownloadInfo.Status.FINISHED -> APK.with(itemView.context)
                             .from(downloadInfo.filePath)
                             .install()
-                    DownloadInfo.Status.FAILED -> Pump.resume(downloadInfo)
+                    DownloadInfo.Status.FAILED -> Pump.resume(downloadInfo.id)
                 }//do nothing.
             }
 

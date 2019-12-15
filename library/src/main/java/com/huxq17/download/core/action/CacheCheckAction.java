@@ -82,12 +82,14 @@ public class CacheCheckAction implements Action {
         } finally {
             connection.close();
         }
-        if (result && contentLength == -1 &&
-                isNeedHeadContentLength(transferEncoding)) {
-            contentLength = headContentLength();
-        }
-        if (contentLength == -1 && responseCode != HttpURLConnection.HTTP_NOT_MODIFIED) {
-            downloadTask.setSupportBreakpoint(false);
+        if (result) {
+            if (contentLength == -1 &&
+                    isNeedHeadContentLength(transferEncoding)) {
+                contentLength = headContentLength();
+            }
+            if (contentLength == -1 && responseCode != HttpURLConnection.HTTP_NOT_MODIFIED) {
+                downloadTask.setSupportBreakpoint(false);
+            }
         }
         return result;
     }
