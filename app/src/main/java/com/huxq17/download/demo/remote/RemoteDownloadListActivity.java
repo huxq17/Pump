@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -111,8 +110,8 @@ public class RemoteDownloadListActivity extends AppCompatActivity {
         Observable<Map<String, DownloadInfo>> downloadList = RxPump.getAllDownloadList()
                 .concatMap(new Function<List<DownloadInfo>, ObservableSource<DownloadInfo>>() {
                     @Override
-                    public ObservableSource<DownloadInfo> apply(List<DownloadInfo> downloadInfos) {
-                        return Observable.fromIterable(downloadInfos);
+                    public ObservableSource<DownloadInfo> apply(List<DownloadInfo> downloadInfoList) {
+                        return Observable.fromIterable(downloadInfoList);
                     }
                 })
                 .toMap(new Function<DownloadInfo, String>() {
@@ -150,7 +149,6 @@ public class RemoteDownloadListActivity extends AppCompatActivity {
 
     private void resumeDownloadTask() {
         for (String id : downloadingMusicList) {
-            LogUtil.e("resume task id=" + id);
             Pump.newRequest(id).submit();
         }
     }
