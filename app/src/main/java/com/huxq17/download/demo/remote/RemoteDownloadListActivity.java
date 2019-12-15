@@ -98,7 +98,7 @@ public class RemoteDownloadListActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private DownloadAdapter downloadAdapter;
     private Disposable disposable;
-    private Set<String> downloadingMusicList = new LinkedHashSet<>();
+    private LinkedHashSet<String> downloadingMusicList = new LinkedHashSet<>();
 
     @SuppressLint("CheckResult")
     @Override
