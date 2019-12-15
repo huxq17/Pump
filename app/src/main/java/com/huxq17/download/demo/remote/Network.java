@@ -13,10 +13,10 @@ public class Network {
             @Override
             public void subscribe(ObservableEmitter<List<Music>> e) {
                 final List<Music> list = new ArrayList<>();
-                list.add(new Music("http://fdfs.xmcdn.com/group14/M01/92/B4/wKgDY1dfi2XQQz6rAB_-0pTygW4326.mp3","music1"));
-                list.add(new Music("http://sc.sycdn.kuwo.cn/9615b1de6fd8dfada85683377456a00a/5df608c0/resource/n1/91/12/3997614833.mp3","music2"));
-                list.add(new Music("http://m10.music.126.net/20191215183725/ba6252fe123dfae67e6099937d7b08d5/ymusic/0bec/75a9/a09c/e37e93fe58eac7ae44df445d2f8874f0.mp3","music3"));
-                list.add(new Music("http://m10.music.126.net/20191215184001/b1cc8a9236c1376ee1341e06444a7c2a/ymusic/0158/030b/0458/62b59ab6574ab87d462532e90a964d3c.mp3","music4"));
+                list.add(new Music("https://raw.githubusercontent.com/huxq17/Pump/master/music/East%20Of%20Eden.mp3","East of Eden.mp3"));
+                list.add(new Music("https://raw.githubusercontent.com/huxq17/Pump/master/music/Glad%20You%20Came.mp3","Glad You Came.mp3"));
+                list.add(new Music("https://raw.githubusercontent.com/huxq17/Pump/master/music/Road%20Trip.mp3","Road Trip.mp3"));
+                list.add(new Music("https://raw.githubusercontent.com/huxq17/Pump/master/music/Stuttering.mp3","Stuttering.mp3"));
                 e.onNext(list);
             }
         });
