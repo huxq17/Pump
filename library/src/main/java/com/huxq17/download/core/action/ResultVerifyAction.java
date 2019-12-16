@@ -3,18 +3,17 @@ package com.huxq17.download.core.action;
 
 import android.text.TextUtils;
 
-import com.huxq17.download.core.DownloadChain;
-import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.OnVerifyMd5Listener;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.config.IDownloadConfigService;
+import com.huxq17.download.core.DownloadChain;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
+import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.provider.Provider;
 import com.huxq17.download.utils.FileUtil;
-import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
 
@@ -26,14 +25,12 @@ public class ResultVerifyAction implements Action {
         DownloadRequest downloadRequest = downloadTask.getRequest();
         synchronized (downloadTask.getLock()) {
             DownloadInfo.Status status = downloadInfo.getStatus();
-            downloadTask.destroy();
             if (downloadTask.isDeleted()) {
                 FileUtil.deleteDir(downloadInfo.getTempDir());
                 FileUtil.deleteFile(downloadInfo.getDownloadFile());
                 downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
                 DBService.getInstance().deleteInfo(downloadInfo.getId());
-            }  else {
-                LogUtil.e("verify status="+downloadInfo.getStatus());
+            } else {
                 long completedSize = downloadInfo.getCompletedSize();
                 long contentLength = downloadInfo.getContentLength();
                 File downloadFile = downloadInfo.getDownloadFile();

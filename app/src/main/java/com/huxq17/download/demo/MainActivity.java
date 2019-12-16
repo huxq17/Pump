@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
+import com.huxq17.download.demo.remote.RemoteDownloadListActivity;
 import com.huxq17.download.utils.OKHttpUtil;
 import com.huxq17.download.config.DownloadConfig;
 import com.huxq17.download.Pump;
@@ -116,6 +117,13 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         boolean groupByTag = false;
                         DownloadListActivity.start(v.getContext(), groupByTag ? TAG : "");
+                    }
+                });
+        findViewById(R.id.jump_remote_download_list).
+                setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        RemoteDownloadListActivity.start(v.getContext());
                     }
                 });
     }

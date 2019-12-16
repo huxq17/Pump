@@ -25,6 +25,7 @@ public class OkHttpDownloadConnection implements DownloadConnection {
     public OkHttpDownloadConnection(OkHttpClient okHttpClient,String url) {
         this.okHttpClient = okHttpClient;
         builder = new Request.Builder();
+//        builder.addHeader("Connection","close");
         this.url = url;
     }
 

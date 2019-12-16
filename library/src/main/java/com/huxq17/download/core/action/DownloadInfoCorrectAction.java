@@ -27,8 +27,6 @@ public class DownloadInfoCorrectAction implements Action {
             FileUtil.deleteDir(tempDir);
         }
         downloadInfo.setFinished(0);
-        downloadInfo.setCompletedSize(0);
-        downloadTask.updateInfo();
 //        downloadInfo.threadNum = tempDir.exists() ? downloadInfo.threadNum : oldThreadNum;
         String[] childList = tempDir.list(new FilenameFilter() {
             @Override

@@ -4,9 +4,9 @@ package com.huxq17.download.core;
 import java.io.File;
 
 public class DownloadInfo {
-    protected final String url;
+    private final String url;
     private final File downloadFile;
-    protected final String id;
+    private final String id;
 
     private final long completedSize;
     private final long contentLength;
@@ -105,10 +105,15 @@ public class DownloadInfo {
     }
 
     public enum Status {
-        STOPPED, WAIT, PAUSED, PAUSING, RUNNING, FINISHED, FAILED;
+        STOPPED, WAIT, PAUSED, PAUSING, RUNNING, FAILED, FINISHED;
 
         public boolean isRunning() {
             return this == WAIT || this == RUNNING;
+        }
+
+        public boolean shouldStop() {
+            return this.ordinal() > STOPPED.ordinal() && this.ordinal() < FAILED.ordinal();
+
         }
     }
 }

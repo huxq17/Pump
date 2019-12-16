@@ -15,7 +15,6 @@ import com.huxq17.download.utils.LogUtil;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DownloadManager implements IDownloadManager {
     private Context context;
@@ -23,7 +22,7 @@ public class DownloadManager implements IDownloadManager {
 
     private DownloadDispatcher downloadDispatcher;
 
-    private boolean hasFetchDownloadList;
+    private volatile boolean hasFetchDownloadList;
 
     private DownloadManager() {
         downloadInfoManager = DownloadInfoManager.getInstance();
@@ -85,49 +84,45 @@ public class DownloadManager implements IDownloadManager {
     public void deleteByTag(String tag) {
         List<DownloadInfo> tasks = getDownloadListByTag(tag);
         for (DownloadInfo info : tasks) {
-            delete(info);
+            deleteById(info.getId());
         }
     }
 
-    public void delete(DownloadInfo downloadInfo) {
-        checkDownloadInfo(downloadInfo);
-        deleteById(downloadInfo.getId());
-    }
-
     @Override
-    public void stop(DownloadInfo downloadInfo) {
-        checkDownloadInfo(downloadInfo);
-        DownloadTask downloadTask = getDownloadTaskById(downloadInfo.getId());
+    public void stop(String id) {
+        checkId(id);
+        DownloadTask downloadTask = getDownloadTaskById(id);
         if (downloadTask != null) {
             downloadTask.stop();
         }
     }
 
     @Override
-    public void pause(DownloadInfo downloadInfo) {
-        checkDownloadInfo(downloadInfo);
-        DownloadTask downloadTask = getDownloadTaskById(downloadInfo.getId());
+    public void pause(String id) {
+        checkId(id);
+        DownloadTask downloadTask = getDownloadTaskById(id);
         if (downloadTask != null) {
             downloadTask.pause();
         }
     }
 
+    private void checkId(String id) {
+        if (id == null || id.length() == 0) {
+            throw new IllegalArgumentException("id is empty.");
+        }
+    }
+
     @Override
-    public void resume(DownloadInfo downloadInfo) {
-        checkDownloadInfo(downloadInfo);
-        DownloadDetailsInfo transferInfo = downloadInfo.getDownloadDetailsInfo();
+    public void resume(String id) {
+        checkId(id);
+        DownloadDetailsInfo transferInfo = DownloadInfoManager.getInstance().get(id);
+        if (transferInfo == null) return;
         DownloadTask downloadTask = transferInfo.getDownloadTask();
         if (downloadTask != null && downloadTask.getRequest() != null) {
             DownloadRequest downloadRequest = downloadTask.getRequest();
             submit(downloadRequest);
         } else {
             DownloadRequest.newRequest(transferInfo.getUrl(), transferInfo.getFilePath()).submit();
-        }
-    }
-
-    private void checkDownloadInfo(DownloadInfo downloadInfo) {
-        if (downloadInfo == null) {
-            throw new IllegalArgumentException("downloadInfo is null.");
         }
     }
 
@@ -205,6 +200,14 @@ public class DownloadManager implements IDownloadManager {
         return downloadTask != null && downloadTask.isRunning();
     }
 
+    public DownloadTask getDownloadTaskById(String id) {
+        DownloadDetailsInfo downloadDetailsInfo = downloadInfoManager.get(id);
+        if (downloadDetailsInfo != null) {
+            return downloadDetailsInfo.getDownloadTask();
+        }
+        return null;
+    }
+
     @Override
     public File getFileIfSucceed(String id) {
         if (hasDownloadSucceed(id)) {
@@ -217,40 +220,18 @@ public class DownloadManager implements IDownloadManager {
     @Override
     public void shutdown() {
         downloadDispatcher.cancel();
-        for (DownloadDetailsInfo downloadDetailsInfo : downloadInfoManager.getAll()) {
-            DownloadTask downloadTask = downloadDetailsInfo.getDownloadTask();
-            if (downloadTask != null)
-                downloadTask.stop();
-        }
-        hasFetchDownloadList = false;
         downloadInfoManager.clear();
         DownloadInfoSnapshot.release();
         DBService.getInstance().close();
+        hasFetchDownloadList = false;
     }
 
     public boolean isShutdown() {
         return !downloadDispatcher.isRunning();
     }
 
-    private DownloadTask getDownloadTaskById(String id) {
-        DownloadDetailsInfo downloadDetailsInfo = downloadInfoManager.get(id);
-        if (downloadDetailsInfo != null) {
-            return downloadDetailsInfo.getDownloadTask();
-        }
-        return null;
-    }
-
     @Override
     public Context getContext() {
         return context;
-    }
-
-    @Override
-    public void onDownloadStart(DownloadTask downloadTask) {
-
-    }
-
-    @Override
-    public void onDownloadEnd(DownloadTask downloadTask) {
     }
 }

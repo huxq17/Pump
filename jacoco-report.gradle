@@ -32,3 +32,18 @@ task jacocoCoverageTestReport(type: JacocoReport, dependsOn: ['testCoverageDebug
             'jacoco/testCoverageDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
     ])
 }
+android {
+    testOptions {
+        unitTests.all {
+            jacoco {
+                includeNoLocationClasses = true
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            testCoverageEnabled true
+        }
+    }
+}
