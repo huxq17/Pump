@@ -4,17 +4,6 @@ tasks.withType(Test) {
     jacoco.includeNoLocationClasses = true
 }
 
-/**
- * buildTypes {
- *     debug {
- *         minifyEnabled false
- *     }
- *     coverageDebug {
- *         minifyEnabled false
- *         testCoverageEnabled true
- *     }
- * }
- */
 task jacocoCoverageTestReport(type: JacocoReport, dependsOn: ['testCoverageDebugUnitTest', 'createCoverageDebugCoverageReport']) {
     reports {
         xml.enabled = true
@@ -34,15 +23,16 @@ task jacocoCoverageTestReport(type: JacocoReport, dependsOn: ['testCoverageDebug
 }
 android {
     testOptions {
-        unitTests.all {
-            jacoco {
-                includeNoLocationClasses = true
-            }
-        }
+        unitTests.returnDefaultValues = true
     }
 
     buildTypes {
         debug {
+            minifyEnabled false
+            testCoverageEnabled true
+        }
+        coverageDebug {
+            minifyEnabled false
             testCoverageEnabled true
         }
     }

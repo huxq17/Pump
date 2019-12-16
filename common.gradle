@@ -21,8 +21,8 @@ def getLocalProperties() {
 }
 def getDebugMode() {
     try {
-        def rapid = getLocalProperty("DEBUG_MODE")
-        return Boolean.valueOf(rapid)
+        def debugMode = getLocalProperty("DEBUG_MODE")
+        return Boolean.valueOf(debugMode)
     } catch (e) {
         e.printStackTrace()
         return false
