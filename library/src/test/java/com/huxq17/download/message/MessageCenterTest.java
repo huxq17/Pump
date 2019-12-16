@@ -4,8 +4,8 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 
-import com.huxq17.download.DownloadDetailsInfo;
-import com.huxq17.download.DownloadInfo;
+import com.huxq17.download.core.DownloadDetailsInfo;
+import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.provider.Provider;
 
 import org.junit.Assert;

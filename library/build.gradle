@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-apply from: '../jacoco-report.gradle'
 android {
     compileSdkVersion 28
 
@@ -50,3 +49,6 @@ buildscript {
     }
 }
 apply from: 'gradle-jcenter-push.gradle'
+if(DEBUG_MODE){
+    apply from: '../jacoco-report.gradle'
+}

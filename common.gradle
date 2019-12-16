@@ -19,9 +19,19 @@ def getLocalProperties() {
         return properties
     }
 }
-
+def getDebugMode() {
+    try {
+        def rapid = getLocalProperty("DEBUG_MODE")
+        return Boolean.valueOf(rapid)
+    } catch (e) {
+        e.printStackTrace()
+        return false
+    }
+}
 
 ext {
+    DEBUG_MODE = getDebugMode()
+
     getLocalProperty = this.&getLocalProperty
     getLocalProperties = this.&getLocalProperties
 }
