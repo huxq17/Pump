@@ -1,5 +1,5 @@
 apply plugin: 'com.android.library'
-
+apply from: '../jacoco-report.gradle'
 android {
     compileSdkVersion 28
 
@@ -18,9 +18,22 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            minifyEnabled false
+            testCoverageEnabled true
+        }
+        coverageDebug {
+            minifyEnabled false
+            testCoverageEnabled true
+        }
     }
     lintOptions {
         abortOnError false
+    }
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
     }
 }
 

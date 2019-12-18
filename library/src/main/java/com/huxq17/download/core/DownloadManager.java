@@ -191,7 +191,7 @@ public class DownloadManager implements IDownloadManager {
 
     @Override
     public boolean hasDownloadSucceed(String id) {
-        DownloadDetailsInfo info = DBService.getInstance().getDownloadInfo(id);
+        DownloadInfo info = getDownloadInfoById(id);
         return info != null && info.isFinished();
     }
 
@@ -211,7 +211,7 @@ public class DownloadManager implements IDownloadManager {
     @Override
     public File getFileIfSucceed(String id) {
         if (hasDownloadSucceed(id)) {
-            DownloadDetailsInfo info = DBService.getInstance().getDownloadInfo(id);
+            DownloadDetailsInfo info = downloadInfoManager.get(id);
             return info.getDownloadFile();
         }
         return null;

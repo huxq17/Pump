@@ -46,17 +46,6 @@ public class DownloadConfig {
         }
 
         /**
-         * Set how many threads are used when downloading,default 3.
-         *
-         * @param threadNum
-         * @return
-         */
-        @Deprecated
-        public Builder setThreadNum(int threadNum) {
-            return this;
-        }
-
-        /**
          * Set the maximum number of tasks to run, default 3.
          *
          * @param maxRunningTaskNumber maximum number of tasks to run

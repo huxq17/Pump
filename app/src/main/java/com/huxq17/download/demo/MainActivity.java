@@ -6,14 +6,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
-import com.huxq17.download.demo.remote.RemoteDownloadListActivity;
-import com.huxq17.download.utils.OKHttpUtil;
-import com.huxq17.download.config.DownloadConfig;
 import com.huxq17.download.Pump;
-import com.huxq17.download.utils.LogUtil;
-import com.huxq17.download.core.connection.OkHttpDownloadConnection;
 import com.huxq17.download.demo.installapk.APK;
+import com.huxq17.download.demo.remote.RemoteDownloadListActivity;
 import com.huxq17.download.message.DownloadListener;
+import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
 
@@ -35,14 +32,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initProgressDialog();
-        //只要在第一次提交下载任务之前设置就可以。建议在application的onCreate里做
-        DownloadConfig.newBuilder(getApplicationContext())
-                //Optional,set the maximum number of tasks to run, default 3.
-                .setMaxRunningTaskNum(2)
-                //Optional,set the minimum available storage space size for downloading to avoid insufficient storage space during downloading, default is 4kb.
-                .setMinUsableStorageSpace(4 * 1024L)
-                .setDownloadConnectionFactory(new OkHttpDownloadConnection.Factory(OKHttpUtil.get()))//Optional
-                .build();
+
 //        Pump.subscribe(downloadObserver);
 //        try {
 //            File httpCacheDir = new File(getCacheDir(), "http");
@@ -58,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
                 progressDialog.setProgress(0);
                 progressDialog.show();
                 Pump.newRequest(url2)
-                        .listener(new DownloadListener() {
+                        .listener(new DownloadListener(MainActivity.this) {
 
                             @Override
                             public void onProgress(int progress) {
@@ -136,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        Pump.unSubscribe(url2);
+//        Pump.unSubscribe(url2);
     }
 
     private void initProgressDialog() {
@@ -153,7 +143,8 @@ public class MainActivity extends AppCompatActivity {
         if (progressDialog != null) {
             progressDialog.dismiss();
         }
+        LogUtil.e("onDestroy");
         //shutdown will stop all tasks and release some resource.
-        Pump.shutdown();
+//        Pump.shutdown();
     }
 }

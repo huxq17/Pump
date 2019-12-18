@@ -15,6 +15,9 @@ import android.webkit.MimeTypeMap;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -115,6 +118,34 @@ public class Util {
         }
 
         return -1;
+    }
+
+    /**
+     * Return list of all normal files under the given directory, traversing
+     * directories recursively.
+     *
+     * @param exclude ignore dirs with this name, or {@code null} to ignore.
+     */
+    static List<File> listFilesRecursive(File startDir, String exclude) {
+        final ArrayList<File> files = new ArrayList<>();
+        final LinkedList<File> dirs = new LinkedList<>();
+        dirs.add(startDir);
+        while (!dirs.isEmpty()) {
+            final File dir = dirs.removeFirst();
+            if (exclude != null && exclude.equals(dir.getName())) continue;
+
+            final File[] children = dir.listFiles();
+            if (children == null) continue;
+
+            for (File child : children) {
+                if (child.isDirectory()) {
+                    dirs.add(child);
+                } else if (child.isFile()) {
+                    files.add(child);
+                }
+            }
+        }
+        return files;
     }
 
     public static String guessFileName(

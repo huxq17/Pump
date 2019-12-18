@@ -1,16 +1,26 @@
 package com.huxq17.download.message;
 
+import android.app.Activity;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.huxq17.download.Pump;
 import com.huxq17.download.core.DownloadInfo;
 
+import java.lang.ref.WeakReference;
+
 public class DownloadListener {
     private String id;
     private DownloadInfo.Status status;
     private boolean enable;
+    private final WeakReference<Object> reference;
 
     public DownloadListener() {
+        this(null);
+    }
+
+    public DownloadListener(Activity reference) {
+        this.reference = new WeakReference<Object>(reference);
     }
 
     /**
@@ -18,6 +28,10 @@ public class DownloadListener {
      */
     public final void disable() {
         Pump.unSubscribe(this);
+    }
+
+    public WeakReference getReference() {
+        return reference;
     }
 
     void setEnable(boolean enable) {
@@ -105,6 +119,12 @@ public class DownloadListener {
             return id.hashCode();
         }
         return super.hashCode();
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "Listener for " + id + " download task.";
     }
 
     @Override
