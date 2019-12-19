@@ -4,23 +4,27 @@ package com.huxq17.download.core.task;
 import android.text.TextUtils;
 
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.core.DownloadChain;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
+import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.DownloadRequest;
+import com.huxq17.download.core.RealDownloadChain;
+import com.huxq17.download.core.interceptor.CheckCacheInterceptor;
+import com.huxq17.download.core.interceptor.DownloadFetchInterceptor;
+import com.huxq17.download.core.interceptor.MergeFileInterceptor;
+import com.huxq17.download.core.interceptor.RetryInterceptor;
+import com.huxq17.download.core.interceptor.VerifyResultInterceptor;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.message.IMessageCenter;
 import com.huxq17.download.utils.FileUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DownloadTask implements Task {
     private final DownloadDetailsInfo downloadInfo;
     private final Object lock;
     private DBService dbService;
-    private AtomicBoolean isRunning;
     private IMessageCenter messageCenter;
     private Thread thread;
     private final List<Task> downloadBlockTasks = new ArrayList<>();
@@ -29,9 +33,7 @@ public class DownloadTask implements Task {
      * True indicate that not support breakpoint download.
      */
     private DownloadRequest downloadRequest;
-    private volatile boolean isCanceled;
     private volatile boolean isDeleted;
-    private boolean supportBreakpoint = true;
 
     public DownloadTask(DownloadRequest downloadRequest) {
         if (downloadRequest != null) {
@@ -39,7 +41,6 @@ public class DownloadTask implements Task {
             this.downloadInfo = downloadRequest.getDownloadInfo();
             lock = downloadInfo;
             downloadInfo.setDownloadTask(this);
-            isRunning = new AtomicBoolean(true);
             dbService = DBService.getInstance();
             messageCenter = PumpFactory.getService(IMessageCenter.class);
             downloadInfo.setErrorCode(0);
@@ -56,14 +57,6 @@ public class DownloadTask implements Task {
             downloadInfo = null;
             lock = null;
         }
-    }
-
-    public boolean isSupportBreakpoint() {
-        return supportBreakpoint;
-    }
-
-    public void setSupportBreakpoint(boolean supportBreakpoint) {
-        this.supportBreakpoint = supportBreakpoint;
     }
 
     public Object getLock() {
@@ -93,25 +86,30 @@ public class DownloadTask implements Task {
     @Override
     public void run() {
         thread = Thread.currentThread();
-        if (isRunning.get()) {
+        if (isRunning()) {
             downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
             notifyProgressChanged(downloadInfo);
             downloadWithDownloadChain();
         }
-        isRunning.set(false);
         synchronized (downloadBlockTasks) {
             downloadBlockTasks.clear();
         }
     }
 
     private void downloadWithDownloadChain() {
-        DownloadChain chain = new DownloadChain(this);
-        chain.proceed();
+         List<DownloadInterceptor> interceptors = new ArrayList<>();
+        interceptors.add(new RetryInterceptor());
+        interceptors.add(new CheckCacheInterceptor());
+        interceptors.add(new DownloadFetchInterceptor());
+        interceptors.add(new MergeFileInterceptor());
+        interceptors.add(new VerifyResultInterceptor());
+        RealDownloadChain realDownloadChain = new RealDownloadChain(interceptors,downloadRequest,0);
+        realDownloadChain.proceed(downloadRequest);
     }
 
     boolean onDownload(int length) {
         synchronized (lock) {
-            if (!isRunning.get()) {
+            if (!isRunning()) {
                 return false;
             }
             downloadInfo.download(length);
@@ -144,8 +142,7 @@ public class DownloadTask implements Task {
 
     public void pause() {
         synchronized (lock) {
-            if (isRunning.get()) {
-                isCanceled = true;
+            if (isRunning()) {
                 downloadInfo.setStatus(DownloadInfo.Status.PAUSING);
                 notifyProgressChanged(downloadInfo);
                 cancel();
@@ -158,10 +155,22 @@ public class DownloadTask implements Task {
             if (downloadInfo.getStatus().shouldStop()) {
                 downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
             }
-            if (isRunning.get()) {
+            cancel();
+        }
+    }
+
+    public void delete() {
+        synchronized (lock) {
+            if (isRunning()) {
+                isDeleted = true;
                 cancel();
             }
         }
+    }
+
+    public void cancel() {
+        if (!isRunning()) return;
+        cancelBlockTasks();
     }
 
     void cancelBlockTasks() {
@@ -176,29 +185,8 @@ public class DownloadTask implements Task {
         }
     }
 
-    public void cancel() {
-        if (!isRunning()) return;
-        destroy();
-        cancelBlockTasks();
-    }
-
-    public void delete() {
-        synchronized (lock) {
-            if (isRunning.get()) {
-                isDeleted = true;
-                cancel();
-            }
-        }
-    }
-
     public boolean isDeleted() {
         return isDeleted;
-    }
-
-    public void setErrorCode(int errorCode) {
-        if (downloadInfo.getStatus().shouldStop() && !isCanceled) {
-            downloadInfo.setErrorCode(errorCode);
-        }
     }
 
     public void updateInfo() {
@@ -209,11 +197,7 @@ public class DownloadTask implements Task {
         }
     }
 
-    public void destroy() {
-        isRunning.set(false);
-    }
-
     public boolean isRunning() {
-        return isRunning.get();
+        return downloadInfo != null && downloadInfo.isRunning();
     }
 }

@@ -1,12 +1,11 @@
 package com.huxq17.download.core.task;
 
 
-import com.huxq17.download.core.DownloadChain;
-import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.config.IDownloadConfigService;
 import com.huxq17.download.core.DownloadDetailsInfo;
+import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.connection.DownloadConnection;
 import com.huxq17.download.utils.FileUtil;
 import com.huxq17.download.utils.Util;
@@ -16,22 +15,21 @@ import java.io.IOException;
 
 
 public class SimpleDownloadTask implements Task {
-    private DownloadChain downloadChain;
     private boolean isCanceled;
     private DownloadRequest downloadRequest;
+    private DownloadDetailsInfo downloadInfo;
     private DownloadConnection connection;
 
-    public SimpleDownloadTask(DownloadChain downloadChain) {
-        this.downloadChain = downloadChain;
-        downloadRequest = downloadChain.getDownloadTask().getRequest();
+    public SimpleDownloadTask(DownloadRequest downloadRequest) {
+        this.downloadRequest = downloadRequest;
+        downloadInfo = downloadRequest.getDownloadInfo();
         connection = PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory().create(downloadRequest.getUrl());
     }
 
     @Override
     public void run() {
         isCanceled = false;
-        DownloadTask downloadTask = downloadChain.getDownloadTask();
-        DownloadDetailsInfo downloadInfo = downloadTask.getDownloadInfo();
+        DownloadTask downloadTask = downloadInfo.getDownloadTask();
         File downloadFile = new File(downloadInfo.getFilePath());
         FileUtil.deleteFile(downloadFile);
 
@@ -60,7 +58,7 @@ public class SimpleDownloadTask implements Task {
         } catch (IOException e) {
             if (!connection.isCanceled()) {
                 e.printStackTrace();
-                downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
+                downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
             }
         } finally {
             connection.close();

@@ -37,6 +37,7 @@ public class DownloadDetailsInfo {
 
     private Provider.CacheBean cacheBean;
     private String md5;
+    private boolean supportBreakpoint = true;
 
     public DownloadDetailsInfo(String url, String filePath) {
         this(url, filePath, null, url, System.currentTimeMillis());
@@ -58,6 +59,15 @@ public class DownloadDetailsInfo {
         speedMonitor = new SpeedMonitor();
 
     }
+
+    public boolean isSupportBreakpoint() {
+        return supportBreakpoint;
+    }
+
+    public void setSupportBreakpoint(boolean supportBreakpoint) {
+        this.supportBreakpoint = supportBreakpoint;
+    }
+
 
     public void setFilePath(String filePath) {
         if (filePath != null && !filePath.equals(this.filePath)) {
@@ -101,7 +111,6 @@ public class DownloadDetailsInfo {
     public void download(int length) {
         this.completedSize += length;
         speedMonitor.download(length);
-        this.status = DownloadInfo.Status.RUNNING;
     }
 
     public void computeSpeed() {
@@ -122,7 +131,7 @@ public class DownloadDetailsInfo {
 
     public void setErrorCode(int code) {
         this.errorCode = code;
-        this.status = DownloadInfo.Status.FAILED;
+        setStatus(DownloadInfo.Status.FAILED);
     }
 
     public DownloadInfo.Status getStatus() {
@@ -247,5 +256,9 @@ public class DownloadDetailsInfo {
 
     public Object getWfExtraData() {
         return wfExtraData == null ? null : wfExtraData.get();
+    }
+
+    public boolean isRunning() {
+        return status != null && status.isRunning();
     }
 }

@@ -58,7 +58,7 @@ public final class DownloadRequest {
     }
 
     public int getRetryDelay() {
-        return retryDelay;
+        return retryDelay < 0 ? 0 : retryDelay;
     }
 
     public DownloadDetailsInfo getDownloadInfo() {
@@ -74,7 +74,7 @@ public final class DownloadRequest {
     }
 
     public int getRetryCount() {
-        return retryCount;
+        return retryCount < 0 ? 0 : retryCount;
     }
 
     public String getUrl() {
@@ -94,10 +94,10 @@ public final class DownloadRequest {
     }
 
     public String getTag() {
-        if(downloadTaskExecutor!=null){
+        if (downloadTaskExecutor != null) {
             String tag = downloadTaskExecutor.getTag();
-            if (tag!= null && tag.length() >0) {
-              return tag;
+            if (tag != null && tag.length() > 0) {
+                return tag;
             }
         }
         return tag == null ? "" : tag;

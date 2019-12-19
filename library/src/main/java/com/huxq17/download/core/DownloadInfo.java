@@ -104,16 +104,24 @@ public class DownloadInfo {
         return status;
     }
 
+    public boolean isRunning() {
+        return status.isRunning();
+    }
+
     public enum Status {
-        STOPPED, WAIT, PAUSED, PAUSING, RUNNING, FAILED, FINISHED;
+        STOPPED, WAIT, RUNNING, PAUSING, PAUSED, FAILED, FINISHED;
 
         public boolean isRunning() {
-            return this == WAIT || this == RUNNING;
+            return this.ordinal() >= WAIT.ordinal() && this.ordinal() <= RUNNING.ordinal();
         }
 
         public boolean shouldStop() {
             return this.ordinal() > STOPPED.ordinal() && this.ordinal() < FAILED.ordinal();
 
+        }
+
+        public boolean isCanceled() {
+            return ordinal() >= PAUSING.ordinal() && ordinal() <= PAUSED.ordinal();
         }
     }
 }

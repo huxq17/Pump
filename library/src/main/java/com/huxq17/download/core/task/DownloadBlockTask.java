@@ -1,10 +1,11 @@
 package com.huxq17.download.core.task;
 
 
-import com.huxq17.download.core.DownloadChain;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.config.IDownloadConfigService;
+import com.huxq17.download.core.DownloadDetailsInfo;
+import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.connection.DownloadConnection;
 
 import java.io.File;
@@ -20,13 +21,15 @@ public class DownloadBlockTask implements Task {
     private volatile boolean isCanceled;
     private DownloadConnection connection;
     private int blockId;
-    private DownloadTask downloadTask;
     private long completedSize;
     private File tempFile;
+    private DownloadRequest downloadRequest;
+    private DownloadDetailsInfo downloadInfo;
 
-    public DownloadBlockTask(DownloadChain downloadChain, CountDownLatch countDownLatch, int blockId) {
-        downloadTask = downloadChain.getDownloadTask();
-        connection = PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory().create(downloadTask.getUrl());
+    public DownloadBlockTask(DownloadRequest downloadRequest, CountDownLatch countDownLatch, int blockId) {
+        this.downloadRequest = downloadRequest;
+        downloadInfo = downloadRequest.getDownloadInfo();
+        connection = PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory().create(downloadRequest.getUrl());
         this.countDownLatch = countDownLatch;
         this.blockId = blockId;
         calculateCompletedSize();
@@ -34,8 +37,9 @@ public class DownloadBlockTask implements Task {
 
     @Override
     public void run() {
-        long threadNum = downloadTask.getRequest().getThreadNum();
-        long fileLength = downloadTask.getDownloadInfo().getContentLength();
+        DownloadTask downloadTask = downloadInfo.getDownloadTask();
+        long threadNum = downloadRequest.getThreadNum();
+        long fileLength = downloadRequest.getDownloadInfo().getContentLength();
         long startPosition = blockId * fileLength / threadNum + completedSize;
         long endPosition;
         if (threadNum == blockId + 1) {
@@ -61,14 +65,14 @@ public class DownloadBlockTask implements Task {
                         }
                         connection.flushDownload();
                     } else {
-                        downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
+                        downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
                         downloadTask.cancelBlockTasks();
                     }
                 }
             } catch (IOException e) {
                 if (!connection.isCanceled()) {
                     e.printStackTrace();
-                    downloadTask.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
+                    downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
                     downloadTask.cancelBlockTasks();
                 }
             } finally {
@@ -79,7 +83,7 @@ public class DownloadBlockTask implements Task {
     }
 
     private void calculateCompletedSize() {
-        File tempDir = downloadTask.getDownloadInfo().getTempDir();
+        File tempDir = downloadInfo.getTempDir();
         tempFile = new File(tempDir, DOWNLOAD_PART + blockId);
         if (tempFile.exists()) {
             completedSize = tempFile.length();
