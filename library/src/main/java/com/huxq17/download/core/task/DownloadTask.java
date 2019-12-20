@@ -4,19 +4,19 @@ package com.huxq17.download.core.task;
 import android.text.TextUtils;
 
 import com.huxq17.download.PumpFactory;
+import com.huxq17.download.core.DownloadChain;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.DownloadRequest;
-import com.huxq17.download.core.RealDownloadChain;
 import com.huxq17.download.core.interceptor.CheckCacheInterceptor;
 import com.huxq17.download.core.interceptor.DownloadFetchInterceptor;
 import com.huxq17.download.core.interceptor.MergeFileInterceptor;
 import com.huxq17.download.core.interceptor.RetryInterceptor;
-import com.huxq17.download.core.interceptor.VerifyResultInterceptor;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.message.IMessageCenter;
 import com.huxq17.download.utils.FileUtil;
+import com.huxq17.download.utils.LogUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,11 +85,13 @@ public class DownloadTask implements Task {
 
     @Override
     public void run() {
+        LogUtil.e("downloadtask run");
         thread = Thread.currentThread();
         if (isRunning()) {
             downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
             notifyProgressChanged(downloadInfo);
             downloadWithDownloadChain();
+            notifyProgressChanged(downloadInfo);
         }
         synchronized (downloadBlockTasks) {
             downloadBlockTasks.clear();
@@ -97,14 +99,25 @@ public class DownloadTask implements Task {
     }
 
     private void downloadWithDownloadChain() {
-         List<DownloadInterceptor> interceptors = new ArrayList<>();
+        List<DownloadInterceptor> interceptors = new ArrayList<>();
         interceptors.add(new RetryInterceptor());
         interceptors.add(new CheckCacheInterceptor());
         interceptors.add(new DownloadFetchInterceptor());
         interceptors.add(new MergeFileInterceptor());
-        interceptors.add(new VerifyResultInterceptor());
-        RealDownloadChain realDownloadChain = new RealDownloadChain(interceptors,downloadRequest,0);
+//        interceptors.add(new VerifyResultInterceptor());
+        DownloadChain realDownloadChain = new DownloadChain(interceptors, downloadRequest, 0);
         realDownloadChain.proceed(downloadRequest);
+        synchronized (lock) {
+            if (downloadInfo.getStatus() == DownloadInfo.Status.PAUSING) {
+                downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
+            } else if (isDeleted) {
+                FileUtil.deleteDir(downloadInfo.getTempDir());
+                FileUtil.deleteFile(downloadInfo.getDownloadFile());
+                downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
+                DBService.getInstance().deleteInfo(downloadInfo.getId());
+            }
+        }
+
     }
 
     boolean onDownload(int length) {
@@ -152,10 +165,11 @@ public class DownloadTask implements Task {
 
     public void stop() {
         synchronized (lock) {
+            LogUtil.e("stop downloadInfo.getStatus().shouldStop()="+downloadInfo.getStatus().shouldStop());
             if (downloadInfo.getStatus().shouldStop()) {
                 downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
+                cancel();
             }
-            cancel();
         }
     }
 
@@ -169,15 +183,11 @@ public class DownloadTask implements Task {
     }
 
     public void cancel() {
-        if (!isRunning()) return;
-        cancelBlockTasks();
-    }
-
-    void cancelBlockTasks() {
-        if (thread != null) {
-            thread.interrupt();
-        }
+        LogUtil.e("cancel downloadBlockTasks.size="+downloadBlockTasks.size());
         synchronized (downloadBlockTasks) {
+            if (thread != null) {
+                thread.interrupt();
+            }
             for (Task task : downloadBlockTasks) {
                 task.cancel();
             }

@@ -1,10 +1,18 @@
 package com.huxq17.download.core.interceptor;
 
+import android.text.TextUtils;
+
+import com.huxq17.download.DownloadProvider;
+import com.huxq17.download.ErrorCode;
+import com.huxq17.download.OnVerifyMd5Listener;
+import com.huxq17.download.PumpFactory;
+import com.huxq17.download.config.IDownloadConfigService;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.task.DownloadTask;
+import com.huxq17.download.db.DBService;
 import com.huxq17.download.utils.FileUtil;
 import com.huxq17.download.utils.LogUtil;
 
@@ -22,21 +30,24 @@ public class MergeFileInterceptor implements DownloadInterceptor {
         downloadRequest = chain.request();
         downloadInfo = downloadRequest.getDownloadInfo();
         DownloadTask downloadTask = downloadInfo.getDownloadTask();
-        if (!downloadInfo.isSupportBreakpoint()) {
-            return chain.proceed(downloadRequest);
-        }
-        synchronized (downloadTask.getLock()) {
-            long fileLength = downloadInfo.getContentLength();
-            File tempDir = downloadInfo.getTempDir();
 
+        synchronized (downloadTask.getLock()) {
+            long contentLength = downloadInfo.getContentLength();
             long completedSize = downloadInfo.getCompletedSize();
+            if (!downloadInfo.isSupportBreakpoint()) {
+                checkDownloadResult(contentLength, completedSize);
+                return downloadInfo.snapshot();
+            }
+
+            File tempDir = downloadInfo.getTempDir();
             File[] downloadPartFiles = tempDir.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
                     return name.startsWith(DOWNLOAD_PART);
                 }
             });
-            if (fileLength > 0 && completedSize == fileLength && downloadPartFiles != null && downloadPartFiles.length == downloadTask.getRequest().getThreadNum()) {
+            if (contentLength > 0 && completedSize == contentLength && downloadPartFiles != null
+                    && downloadPartFiles.length == downloadTask.getRequest().getThreadNum()) {
                 File file = downloadInfo.getDownloadFile();
                 FileUtil.deleteFile(file);
                 long startTime = System.currentTimeMillis();
@@ -52,16 +63,44 @@ public class MergeFileInterceptor implements DownloadInterceptor {
                 }
                 FileUtil.deleteDir(tempDir);
                 if (mergeSuccess) {
-                    LogUtil.d("Merge " + downloadInfo.getName() + " spend=" + (System.currentTimeMillis() - startTime) + "; file.length=" + file.length());
-                    downloadInfo.setFinished(1);
-                    downloadInfo.setCompletedSize(completedSize);
-                    downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
+                    LogUtil.d("Merge " + downloadInfo.getName() + " spend=" +
+                            (System.currentTimeMillis() - startTime) + "; file.length=" + file.length());
+                    checkDownloadResult(contentLength, completedSize);
                 } else {
-                    LogUtil.e("Merge to " + file.getPath() + " failed.");
+                    downloadInfo.setErrorCode(ErrorCode.MERGE_FILE_FAIELD);
                 }
-
             }
         }
-        return chain.proceed(downloadRequest);
+        return downloadInfo.snapshot();
+    }
+
+    private void checkDownloadResult(long contentLength, long completedSize) {
+        File downloadFile = downloadInfo.getDownloadFile();
+        long downloadFileLength = downloadFile == null ? 0 : downloadFile.length();
+        if (downloadFileLength == contentLength &&
+                isMd5Equals(downloadInfo.getMd5(), downloadInfo.getDownloadFile(), downloadRequest.getOnVerifyMd5Listener())) {
+            DownloadProvider.CacheBean cacheBean = downloadInfo.getCacheBean();
+            if (cacheBean != null) {
+                DBService.getInstance().updateCache(cacheBean);
+            }
+            if (downloadRequest.getOnDownloadSuccessListener() != null) {
+                downloadRequest.getOnDownloadSuccessListener().onDownloadSuccess(downloadInfo.getDownloadFile(), downloadRequest);
+            }
+            downloadInfo.setFinished(1);
+            downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
+            downloadInfo.setCompletedSize(completedSize);
+        } else {
+            downloadInfo.setStatus(DownloadInfo.Status.FAILED);
+        }
+    }
+
+    private boolean isMd5Equals(String md5, File downloadFile, OnVerifyMd5Listener listener) {
+        if (listener == null) {
+            listener = PumpFactory.getService(IDownloadConfigService.class).getOnVerifyMd5Listener();
+        }
+        if (!TextUtils.isEmpty(md5) && listener != null) {
+            return listener.onVerifyMd5(md5, downloadFile);
+        }
+        return true;
     }
 }

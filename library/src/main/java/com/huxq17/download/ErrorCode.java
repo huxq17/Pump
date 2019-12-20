@@ -21,4 +21,8 @@ public class ErrorCode {
      * Usable space is not enough.
      */
     public static final int USABLE_SPACE_NOT_ENOUGH = 1005;
+    /**
+     * Merge file failed.
+     */
+    public static final int MERGE_FILE_FAIELD = 1006;
 }

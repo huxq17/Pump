@@ -65,6 +65,7 @@ public class DownloadDispatcher implements Task {
     }
 
     void consumeRequest() {
+        LogUtil.e("consumeRequest isBlockForConsumeRequest()="+isBlockForConsumeRequest());
         if (isBlockForConsumeRequest()) {
             waitForConsumer();
         }

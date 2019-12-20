@@ -1,20 +1,29 @@
-package com.huxq17.download.provider;
+package com.huxq17.download;
 
+import android.annotation.SuppressLint;
+import android.content.ContentProvider;
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.SQLException;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-import com.huxq17.download.utils.OKHttpUtil;
-import com.huxq17.download.PumpFactory;
-import com.huxq17.download.utils.ReflectUtil;
 import com.huxq17.download.config.DownloadConfigService;
 import com.huxq17.download.config.IDownloadConfigService;
-import com.huxq17.download.db.DBService;
 import com.huxq17.download.core.DownloadManager;
+import com.huxq17.download.db.DBService;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.IMessageCenter;
 import com.huxq17.download.message.MessageCenter;
+import com.huxq17.download.utils.OKHttpUtil;
+import com.huxq17.download.utils.ReflectUtil;
 
-public class Provider {
+public class DownloadProvider extends ContentProvider {
+    @SuppressLint("StaticFieldLeak")
+    public static Context context;
     public static final String AUTHORITY_URI = "content://%s.huxq17.download-provider";
     public static Uri CONTENT_URI;
 
@@ -25,10 +34,9 @@ public class Provider {
         return CONTENT_URI;
     }
 
-    public static boolean init(Context context) {
-        if (PumpFactory.getServiceCount() != 0) {
-            return false;
-        }
+    @Override
+    public boolean onCreate() {
+        context = getContext();
         DBService.init(context);
         DownloadManager downloadManager = ReflectUtil.newInstance(DownloadManager.class);
         downloadManager.start(context);
@@ -39,10 +47,7 @@ public class Provider {
         IDownloadConfigService downloadConfig = ReflectUtil.newInstance(DownloadConfigService.class);
         PumpFactory.addService(IDownloadConfigService.class, downloadConfig);
         OKHttpUtil.init(context);
-        //If DownloadService is running,pause it.
-//        Intent intent = new Intent(context, DownloadService.class);
-//        context.stopService(intent);
-        return PumpFactory.getServiceCount() != 0;
+        return true;
     }
 
     public static final class DownloadTable {
@@ -75,5 +80,38 @@ public class Provider {
             this.url = url;
         }
 
+    }
+
+    @Nullable
+    @Override
+    public Cursor query(@NonNull Uri uri,
+                        @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
+        throw new SQLException("Not support to query.");
+    }
+
+    @Nullable
+    @Override
+    public String getType(@NonNull Uri uri) {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
+        return null;
+    }
+
+    @Override
+    public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
+        throw new SQLException("Not support to delete.");
+    }
+
+    @Override
+    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
+        throw new SQLException("Not support to update.");
+    }
+
+    private SQLiteDatabase getDatabase() {
+        return DBService.getInstance().getWritableDatabase();
     }
 }

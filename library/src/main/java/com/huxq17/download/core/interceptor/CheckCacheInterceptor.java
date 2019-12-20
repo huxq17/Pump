@@ -5,6 +5,7 @@ import android.os.Environment;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 
+import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.config.IDownloadConfigService;
@@ -15,7 +16,6 @@ import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.connection.DownloadConnection;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.manager.IDownloadManager;
-import com.huxq17.download.provider.Provider;
 import com.huxq17.download.utils.FileUtil;
 import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.utils.Util;
@@ -30,35 +30,34 @@ import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
 public class CheckCacheInterceptor implements DownloadInterceptor {
     private DownloadDetailsInfo downloadDetailsInfo;
     private DownloadRequest downloadRequest;
-    private int responseCode;
     private String lastModified;
     private String eTag;
-    private long contentLength;
-    private String contentLengthField;
+    private static final int CONTENT_LENGTH_NOT_FOUND = -1;
 
     @Override
     public DownloadInfo intercept(DownloadChain chain) {
         downloadRequest = chain.request();
         downloadDetailsInfo = downloadRequest.getDownloadInfo();
         DownloadConnection connection = buildRequest(downloadRequest);
-        String transferEncoding;
+        int responseCode;
+        long contentLength;
         try {
             connection.connect();
-            transferEncoding = connection.getHeader("Transfer-Encoding");
+            String transferEncoding = connection.getHeader("Transfer-Encoding");
             lastModified = connection.getHeader("Last-Modified");
-            if (downloadRequest.getFilePath() == null) {
-                String fileName = Util.guessFileName(downloadRequest.getUrl(), connection.getHeader("Content-Disposition"), connection.getHeader("Content-Type"));
-                downloadRequest.setFilePath(Util.getCachePath(PumpFactory.getService(IDownloadManager.class).getContext()) + "/" + fileName);
-                DBService.getInstance().updateInfo(downloadRequest.getDownloadInfo());
-            }
+            setFilePathIfNeed(connection);
             eTag = connection.getHeader("ETag");
-            contentLengthField = connection.getHeader("Content-Length");
+            String contentLengthField = connection.getHeader("Content-Length");
+            downloadDetailsInfo.setMD5(connection.getHeader("Content-MD5"));
             responseCode = connection.getResponseCode();
             contentLength = getContentLength(connection);
             long originalContentLength = Util.parseContentLength(connection.getHeader("Content-Length"));
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 contentLength = originalContentLength;
                 downloadDetailsInfo.setSupportBreakpoint(false);
+            }
+            if (contentLength == CONTENT_LENGTH_NOT_FOUND && isNeedHeadContentLength(contentLengthField, transferEncoding)) {
+                contentLength = headContentLength();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -67,22 +66,17 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         } finally {
             connection.close();
         }
+        return parseResponse(chain, responseCode, contentLength);
+    }
 
-        if (contentLength == -1 &&
-                isNeedHeadContentLength(transferEncoding)) {
-            contentLength = headContentLength();
-        }
-        if (contentLength == -1 && responseCode != HttpURLConnection.HTTP_NOT_MODIFIED) {
-            downloadDetailsInfo.setSupportBreakpoint(false);
-        }
-
-        downloadDetailsInfo.setMd5(connection.getHeader("Content-MD5"));
+    private DownloadInfo parseResponse(DownloadChain chain, int responseCode, long contentLength) {
         if (responseCode >= 200 && responseCode < 300) {
-            if (contentLength > 0) {
+            if (contentLength != CONTENT_LENGTH_NOT_FOUND) {
                 long downloadDirUsableSpace = Util.getUsableSpace(new File(downloadDetailsInfo.getFilePath()));
                 long dataFileUsableSpace = Util.getUsableSpace(Environment.getDataDirectory());
                 long minUsableStorageSpace = PumpFactory.getService(IDownloadConfigService.class).getMinUsableSpace();
                 if (downloadDirUsableSpace < contentLength * 2 || dataFileUsableSpace <= minUsableStorageSpace) {
+                    //space is unusable.
                     downloadDetailsInfo.setErrorCode(ErrorCode.USABLE_SPACE_NOT_ENOUGH);
                     Context context = PumpFactory.getService(IDownloadManager.class).getContext();
                     String downloadFileAvailableSize = Formatter.formatFileSize(context, downloadDirUsableSpace);
@@ -90,12 +84,25 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
                     return downloadDetailsInfo.snapshot();
                 } else {
                     downloadDetailsInfo.setContentLength(contentLength);
-                    downloadDetailsInfo.setCacheBean(new Provider.CacheBean(downloadRequest.getId(), lastModified, eTag));
+                    downloadDetailsInfo.setCacheBean(new DownloadProvider.CacheBean(downloadRequest.getId(), lastModified, eTag));
                 }
-            } else {
-                //Not found content-length in http head.
-                downloadDetailsInfo.setContentLength(contentLength);
             }
+            downloadDetailsInfo.setSupportBreakpoint(contentLength != CONTENT_LENGTH_NOT_FOUND);
+            File tempDir = downloadDetailsInfo.getTempDir();
+            String[] childList = tempDir.list(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.startsWith(DOWNLOAD_PART);
+                }
+            });
+            if (childList != null && childList.length != downloadRequest.getThreadNum() ||
+                    contentLength != downloadDetailsInfo.getContentLength()
+                    || contentLength == CONTENT_LENGTH_NOT_FOUND) {
+                FileUtil.deleteDir(tempDir);
+            }
+            downloadDetailsInfo.setContentLength(contentLength);
+            downloadDetailsInfo.setFinished(0);
+            FileUtil.deleteFile(downloadDetailsInfo.getDownloadFile());
         } else if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
             if (downloadDetailsInfo.isFinished()) {
                 downloadDetailsInfo.setCompletedSize(downloadDetailsInfo.getContentLength());
@@ -110,31 +117,17 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
             }
             return downloadDetailsInfo.snapshot();
         }
-        checkDownloadFile();
         return chain.proceed(downloadRequest);
     }
 
-    private void checkDownloadFile() {
-        long contentLength = downloadDetailsInfo.getContentLength();
 
-        File tempDir = downloadDetailsInfo.getTempDir();
-        long localLength = DBService.getInstance().queryLocalLength(downloadDetailsInfo);
-        if (contentLength <= 0 || contentLength != localLength) {
-            //If file's length have changed,we need to re-download it.
-            FileUtil.deleteDir(tempDir);
+    private void setFilePathIfNeed(DownloadConnection connection) {
+        if (downloadRequest.getFilePath() == null) {
+            String fileName = Util.guessFileName(downloadRequest.getUrl(),
+                    connection.getHeader("Content-Disposition"), connection.getHeader("Content-Type"));
+            downloadRequest.setFilePath(Util.getCachePath(DownloadProvider.context) + "/" + fileName);
+            DBService.getInstance().updateInfo(downloadRequest.getDownloadInfo());
         }
-        downloadDetailsInfo.setFinished(0);
-        String[] childList = tempDir.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.startsWith(DOWNLOAD_PART);
-            }
-        });
-        if (childList != null && (childList.length != downloadRequest.getThreadNum() || contentLength <= 0)) {
-            FileUtil.deleteDir(tempDir);
-        }
-        FileUtil.deleteFile(downloadDetailsInfo.getDownloadFile());
-
     }
 
     private DownloadConnection buildRequest(DownloadRequest downloadRequest) {
@@ -142,7 +135,7 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         DownloadConnection connection = createConnection(url);
         connection.addHeader("Range", "bytes=0-0");
         if (downloadRequest.getDownloadInfo().isFinished() && !downloadRequest.isForceReDownload()) {
-            Provider.CacheBean cacheBean = DBService.getInstance().queryCache(url);
+            DownloadProvider.CacheBean cacheBean = DBService.getInstance().queryCache(url);
             if (cacheBean != null) {
                 String eTag = cacheBean.eTag;
                 String lastModified = cacheBean.lastModified;
@@ -153,12 +146,13 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
                     connection.addHeader("If-None-Match", eTag);
                 }
             }
+
         }
         return connection;
     }
 
     private long getContentLength(DownloadConnection connection) {
-        long contentLength = -1;
+        long contentLength = CONTENT_LENGTH_NOT_FOUND;
         String contentRange = connection.getHeader("Content-Range");
         if (contentRange != null) {
             final String[] session = contentRange.split("/");
@@ -173,7 +167,7 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         return contentLength;
     }
 
-    private boolean isNeedHeadContentLength(String transferEncoding) {
+    private boolean isNeedHeadContentLength(String contentLengthField, String transferEncoding) {
         if (transferEncoding != null && transferEncoding.equals("chunked")) {
             // because of the Transfer-Encoding can certain the result is right, so pass.
             return false;
@@ -201,7 +195,7 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         } finally {
             connection.close();
         }
-        return -1;
+        return CONTENT_LENGTH_NOT_FOUND;
     }
 
     private DownloadConnection createConnection(String url) {

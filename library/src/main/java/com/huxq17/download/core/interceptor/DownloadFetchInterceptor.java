@@ -1,6 +1,5 @@
 package com.huxq17.download.core.interceptor;
 
-import com.huxq17.download.ErrorCode;
 import com.huxq17.download.TaskManager;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
@@ -16,6 +15,7 @@ public class DownloadFetchInterceptor implements DownloadInterceptor {
     private DownloadDetailsInfo downloadInfo;
     private DownloadRequest downloadRequest;
     private DownloadTask downloadTask;
+
     @Override
     public DownloadInfo intercept(DownloadChain chain) {
         downloadRequest = chain.request();
@@ -25,12 +25,12 @@ public class DownloadFetchInterceptor implements DownloadInterceptor {
             if (downloadInfo.isSupportBreakpoint()) {
                 downloadWithBreakpoint();
             } else {
-                 downloadWithoutBreakPoint();
+                downloadWithoutBreakPoint();
             }
         } else {
             return downloadInfo.snapshot();
         }
-        if (downloadInfo.getErrorCode() == ErrorCode.NETWORK_UNAVAILABLE) {
+        if (!downloadInfo.isRunning()) {
             return downloadInfo.snapshot();
         }
         return chain.proceed(downloadRequest);
@@ -48,6 +48,7 @@ public class DownloadFetchInterceptor implements DownloadInterceptor {
         long completedSize = 0;
         int threadNum = downloadRequest.getThreadNum();
         countDownLatch = new CountDownLatch(threadNum);
+
         synchronized (downloadTask.getLock()) {
             for (int i = 0; i < threadNum; i++) {
                 DownloadBlockTask task = new DownloadBlockTask(downloadRequest, countDownLatch, i);

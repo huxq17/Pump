@@ -66,14 +66,14 @@ public class DownloadBlockTask implements Task {
                         connection.flushDownload();
                     } else {
                         downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
-                        downloadTask.cancelBlockTasks();
+                        downloadTask.cancel();
                     }
                 }
             } catch (IOException e) {
                 if (!connection.isCanceled()) {
                     e.printStackTrace();
                     downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
-                    downloadTask.cancelBlockTasks();
+                    downloadTask.cancel();
                 }
             } finally {
                 connection.close();

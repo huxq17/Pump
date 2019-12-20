@@ -56,10 +56,8 @@ public class SimpleDownloadTask implements Task {
                 }
             }
         } catch (IOException e) {
-            if (!connection.isCanceled()) {
-                e.printStackTrace();
-                downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
-            }
+            e.printStackTrace();
+            downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
         } finally {
             connection.close();
         }

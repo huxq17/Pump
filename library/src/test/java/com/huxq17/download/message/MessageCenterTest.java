@@ -4,9 +4,9 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 
+import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
-import com.huxq17.download.provider.Provider;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,7 +35,7 @@ public class MessageCenterTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        Provider.init(context);
+//        DownloadProvider.init(context);
         messageCenter = Mockito.spy(new MessageCenter());
     }
 

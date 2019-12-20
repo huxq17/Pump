@@ -2,14 +2,16 @@ package com.huxq17.download.core;
 
 import android.text.TextUtils;
 
+import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.core.task.DownloadTask;
-import com.huxq17.download.provider.Provider;
 import com.huxq17.download.utils.FileUtil;
+import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.utils.Util;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.lang.ref.WeakReference;
+import java.security.Provider;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +37,7 @@ public class DownloadDetailsInfo {
     private DownloadTask downloadTask;
     private SpeedMonitor speedMonitor;
 
-    private Provider.CacheBean cacheBean;
+    private DownloadProvider.CacheBean cacheBean;
     private String md5;
     private boolean supportBreakpoint = true;
 
@@ -88,11 +90,11 @@ public class DownloadDetailsInfo {
         return downloadTask;
     }
 
-    public void setCacheBean(Provider.CacheBean cacheBean) {
+    public void setCacheBean(DownloadProvider.CacheBean cacheBean) {
         this.cacheBean = cacheBean;
     }
 
-    public Provider.CacheBean getCacheBean() {
+    public DownloadProvider.CacheBean getCacheBean() {
         return cacheBean;
     }
 
@@ -100,7 +102,7 @@ public class DownloadDetailsInfo {
         return md5 == null ? "" : md5;
     }
 
-    public void setMd5(String md5) {
+    public void setMD5(String md5) {
         this.md5 = md5;
     }
 
@@ -130,8 +132,14 @@ public class DownloadDetailsInfo {
     }
 
     public void setErrorCode(int code) {
-        this.errorCode = code;
-        setStatus(DownloadInfo.Status.FAILED);
+        if (status != null && status.isRunning()) {
+            LogUtil.e("setErrorCode="+code);
+            this.errorCode = code;
+            setStatus(DownloadInfo.Status.FAILED);
+        }
+    }
+    public void clearErrorCode(){
+        this.errorCode = 0;
     }
 
     public DownloadInfo.Status getStatus() {
