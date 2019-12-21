@@ -8,6 +8,7 @@ import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.task.DownloadBlockTask;
 import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.core.task.SimpleDownloadTask;
+import com.huxq17.download.utils.LogUtil;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -37,6 +38,7 @@ public class DownloadFetchInterceptor implements DownloadInterceptor {
     }
 
     private boolean downloadWithoutBreakPoint() {
+        LogUtil.e("downloadWithoutBreakPoint ");
         SimpleDownloadTask simpleDownloadTask = new SimpleDownloadTask(downloadRequest);
         downloadTask.addBlockTask(simpleDownloadTask);
         simpleDownloadTask.run();
@@ -50,6 +52,7 @@ public class DownloadFetchInterceptor implements DownloadInterceptor {
         countDownLatch = new CountDownLatch(threadNum);
 
         synchronized (downloadTask.getLock()) {
+            LogUtil.e("downloadWithBreakpoint threadNum="+threadNum);
             for (int i = 0; i < threadNum; i++) {
                 DownloadBlockTask task = new DownloadBlockTask(downloadRequest, countDownLatch, i);
                 completedSize += task.getCompletedSize();

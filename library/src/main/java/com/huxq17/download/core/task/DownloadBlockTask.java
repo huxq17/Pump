@@ -7,6 +7,7 @@ import com.huxq17.download.config.IDownloadConfigService;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.connection.DownloadConnection;
+import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,6 +67,7 @@ public class DownloadBlockTask implements Task {
                         connection.flushDownload();
                     } else {
                         downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
+                        LogUtil.e("request cancel id="+blockId);
                         downloadTask.cancel();
                     }
                 }
@@ -108,6 +110,7 @@ public class DownloadBlockTask implements Task {
     public void cancel() {
         isCanceled = true;
         connection.cancel();
+        LogUtil.e("cancel id="+blockId);
     }
 
 }

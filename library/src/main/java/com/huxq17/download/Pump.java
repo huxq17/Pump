@@ -131,22 +131,6 @@ public class Pump {
         return PumpFactory.getService(IDownloadManager.class).getAllDownloadList();
     }
 
-    public static void getAllDownloadListOnMainThread(final Func<List<DownloadInfo>> func) {
-        TaskManager.execute(new Runnable() {
-            @Override
-            public void run() {
-                final List<DownloadInfo> downloadInfoList = PumpFactory.getService(IDownloadManager.class).getAllDownloadList();
-                TaskManager.executeOnMainThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        func.call(downloadInfoList);
-                    }
-                });
-            }
-        });
-    }
-
-
     public static List<DownloadInfo> getDownloadingList() {
         return PumpFactory.getService(IDownloadManager.class).getDownloadingList();
     }

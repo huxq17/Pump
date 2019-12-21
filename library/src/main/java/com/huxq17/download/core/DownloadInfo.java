@@ -1,6 +1,8 @@
 package com.huxq17.download.core;
 
 
+import com.huxq17.download.utils.LogUtil;
+
 import java.io.File;
 
 public class DownloadInfo {

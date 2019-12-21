@@ -11,7 +11,6 @@ import com.huxq17.download.utils.Util;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.lang.ref.WeakReference;
-import java.security.Provider;
 import java.util.ArrayList;
 import java.util.List;
 

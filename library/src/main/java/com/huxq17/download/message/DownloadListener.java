@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import com.huxq17.download.Pump;
 import com.huxq17.download.core.DownloadInfo;
+import com.huxq17.download.utils.LogUtil;
 
 public class DownloadListener {
     private String id;

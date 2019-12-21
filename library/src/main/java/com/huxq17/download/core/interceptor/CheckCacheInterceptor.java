@@ -14,6 +14,7 @@ import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.connection.DownloadConnection;
+import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.utils.FileUtil;
@@ -33,11 +34,13 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
     private String lastModified;
     private String eTag;
     private static final int CONTENT_LENGTH_NOT_FOUND = -1;
+    private DownloadTask downloadTask;
 
     @Override
     public DownloadInfo intercept(DownloadChain chain) {
         downloadRequest = chain.request();
         downloadDetailsInfo = downloadRequest.getDownloadInfo();
+        downloadTask = downloadDetailsInfo.getDownloadTask();
         DownloadConnection connection = buildRequest(downloadRequest);
         int responseCode;
         long contentLength;
@@ -83,7 +86,6 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
                     LogUtil.e("Download directory usable space is " + downloadFileAvailableSize + ";but download file's contentLength is " + contentLength);
                     return downloadDetailsInfo.snapshot();
                 } else {
-                    downloadDetailsInfo.setContentLength(contentLength);
                     downloadDetailsInfo.setCacheBean(new DownloadProvider.CacheBean(downloadRequest.getId(), lastModified, eTag));
                 }
             }
@@ -102,11 +104,13 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
             }
             downloadDetailsInfo.setContentLength(contentLength);
             downloadDetailsInfo.setFinished(0);
+            downloadTask.updateInfo();
             FileUtil.deleteFile(downloadDetailsInfo.getDownloadFile());
         } else if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
             if (downloadDetailsInfo.isFinished()) {
                 downloadDetailsInfo.setCompletedSize(downloadDetailsInfo.getContentLength());
                 downloadDetailsInfo.setFinished(1);
+                downloadTask.updateInfo();
                 return downloadDetailsInfo.snapshot();
             }
         } else {
@@ -126,7 +130,7 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
             String fileName = Util.guessFileName(downloadRequest.getUrl(),
                     connection.getHeader("Content-Disposition"), connection.getHeader("Content-Type"));
             downloadRequest.setFilePath(Util.getCachePath(DownloadProvider.context) + "/" + fileName);
-            DBService.getInstance().updateInfo(downloadRequest.getDownloadInfo());
+            downloadTask.updateInfo();
         }
     }
 

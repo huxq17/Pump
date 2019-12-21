@@ -44,14 +44,12 @@ public class DownloadTask implements Task {
             dbService = DBService.getInstance();
             messageCenter = PumpFactory.getService(IMessageCenter.class);
             downloadInfo.setErrorCode(0);
-            if (downloadInfo.getCompletedSize() == downloadInfo.getContentLength()) {
+            if (downloadInfo.getCompletedSize() == downloadInfo.getContentLength()
+                    ||downloadRequest.isForceReDownload()) {
                 downloadInfo.setCompletedSize(0);
             }
-            if (downloadRequest.isForceReDownload() && downloadInfo.isFinished()) {
-                FileUtil.deleteFile(downloadInfo.getDownloadFile());
-                updateInfo();
-            }
             downloadInfo.setStatus(DownloadInfo.Status.WAIT);
+            updateInfo();
             notifyProgressChanged(downloadInfo);
         } else {
             downloadInfo = null;
@@ -117,6 +115,7 @@ public class DownloadTask implements Task {
                 DBService.getInstance().deleteInfo(downloadInfo.getId());
             }
         }
+        updateInfo();
 
     }
 
@@ -165,7 +164,7 @@ public class DownloadTask implements Task {
 
     public void stop() {
         synchronized (lock) {
-            LogUtil.e("stop downloadInfo.getStatus().shouldStop()="+downloadInfo.getStatus().shouldStop());
+            LogUtil.e("stop downloadInfo.getStatus().shouldStop()=" + downloadInfo.getStatus().shouldStop());
             if (downloadInfo.getStatus().shouldStop()) {
                 downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
                 cancel();
@@ -183,7 +182,7 @@ public class DownloadTask implements Task {
     }
 
     public void cancel() {
-        LogUtil.e("cancel downloadBlockTasks.size="+downloadBlockTasks.size());
+        LogUtil.e("cancel downloadBlockTasks.size=" + downloadBlockTasks.size());
         synchronized (downloadBlockTasks) {
             if (thread != null) {
                 thread.interrupt();
