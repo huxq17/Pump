@@ -5,7 +5,6 @@ import android.text.TextUtils;
 import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.utils.FileUtil;
-import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.utils.Util;
 
 import java.io.File;
@@ -132,7 +131,6 @@ public class DownloadDetailsInfo {
 
     public void setErrorCode(int code) {
         if (status != null && status.isRunning()) {
-            LogUtil.e("setErrorCode="+code);
             this.errorCode = code;
             setStatus(DownloadInfo.Status.FAILED);
         }

@@ -25,7 +25,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 
-public class DownloadDispatcher implements Task {
+public class DownloadDispatcher extends Task {
     private DownloadManager downloadManager;
     private AtomicBoolean isRunning = new AtomicBoolean();
     private AtomicBoolean isCanceled = new AtomicBoolean();
@@ -88,7 +88,7 @@ public class DownloadDispatcher implements Task {
     }
 
     @Override
-    public void run() {
+    public void execute() {
         while (isRunnable()) {
             consumeRequest();
         }

@@ -21,19 +21,18 @@ import com.huxq17.download.utils.LogUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DownloadTask implements Task {
+public class DownloadTask extends Task {
     private final DownloadDetailsInfo downloadInfo;
     private final Object lock;
     private DBService dbService;
     private IMessageCenter messageCenter;
-    private Thread thread;
-    private final List<Task> downloadBlockTasks = new ArrayList<>();
     private int lastProgress;
     /**
      * True indicate that not support breakpoint download.
      */
     private DownloadRequest downloadRequest;
     private volatile boolean isDeleted;
+    private DownloadFetchInterceptor fetchInterceptor;
 
     public DownloadTask(DownloadRequest downloadRequest) {
         if (downloadRequest != null) {
@@ -45,7 +44,7 @@ public class DownloadTask implements Task {
             messageCenter = PumpFactory.getService(IMessageCenter.class);
             downloadInfo.setErrorCode(0);
             if (downloadInfo.getCompletedSize() == downloadInfo.getContentLength()
-                    &&downloadRequest.isForceReDownload()) {
+                    && downloadRequest.isForceReDownload()) {
                 downloadInfo.setCompletedSize(0);
             }
             downloadInfo.setStatus(DownloadInfo.Status.WAIT);
@@ -82,27 +81,22 @@ public class DownloadTask implements Task {
     }
 
     @Override
-    public void run() {
-        LogUtil.e("downloadtask run");
-        thread = Thread.currentThread();
+    public void execute() {
         if (isRunning()) {
             downloadInfo.setStatus(DownloadInfo.Status.RUNNING);
             notifyProgressChanged(downloadInfo);
             downloadWithDownloadChain();
             notifyProgressChanged(downloadInfo);
         }
-        synchronized (downloadBlockTasks) {
-            downloadBlockTasks.clear();
-        }
     }
 
     private void downloadWithDownloadChain() {
         List<DownloadInterceptor> interceptors = new ArrayList<>();
+        fetchInterceptor = new DownloadFetchInterceptor();
         interceptors.add(new RetryInterceptor());
         interceptors.add(new CheckCacheInterceptor());
-        interceptors.add(new DownloadFetchInterceptor());
+        interceptors.add(fetchInterceptor);
         interceptors.add(new MergeFileInterceptor());
-//        interceptors.add(new VerifyResultInterceptor());
         DownloadChain realDownloadChain = new DownloadChain(interceptors, downloadRequest, 0);
         realDownloadChain.proceed(downloadRequest);
         synchronized (lock) {
@@ -116,7 +110,6 @@ public class DownloadTask implements Task {
             }
         }
         updateInfo();
-
     }
 
     boolean onDownload(int length) {
@@ -144,12 +137,6 @@ public class DownloadTask implements Task {
 
     public DownloadDetailsInfo getDownloadInfo() {
         return downloadInfo;
-    }
-
-    public void addBlockTask(Task task) {
-        synchronized (downloadBlockTasks) {
-            downloadBlockTasks.add(task);
-        }
     }
 
     public void pause() {
@@ -182,15 +169,11 @@ public class DownloadTask implements Task {
     }
 
     public void cancel() {
-        LogUtil.e("cancel downloadBlockTasks.size=" + downloadBlockTasks.size());
-        synchronized (downloadBlockTasks) {
-            if (thread != null) {
-                thread.interrupt();
-            }
-            for (Task task : downloadBlockTasks) {
-                task.cancel();
-            }
-            downloadBlockTasks.clear();
+        if (currentThread != null) {
+            currentThread.interrupt();
+        }
+        if (fetchInterceptor != null) {
+            fetchInterceptor.cancel();
         }
     }
 
@@ -207,6 +190,6 @@ public class DownloadTask implements Task {
     }
 
     public boolean isRunning() {
-        return downloadInfo != null && downloadInfo.isRunning();
+        return currentThread != null && downloadInfo != null && downloadInfo.isRunning();
     }
 }

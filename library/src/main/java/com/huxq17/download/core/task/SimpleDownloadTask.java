@@ -7,32 +7,25 @@ import com.huxq17.download.config.IDownloadConfigService;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.connection.DownloadConnection;
-import com.huxq17.download.utils.FileUtil;
 import com.huxq17.download.utils.Util;
 
 import java.io.File;
 import java.io.IOException;
 
 
-public class SimpleDownloadTask implements Task {
-    private boolean isCanceled;
-    private DownloadRequest downloadRequest;
+public class SimpleDownloadTask extends Task {
     private DownloadDetailsInfo downloadInfo;
     private DownloadConnection connection;
 
     public SimpleDownloadTask(DownloadRequest downloadRequest) {
-        this.downloadRequest = downloadRequest;
         downloadInfo = downloadRequest.getDownloadInfo();
         connection = PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory().create(downloadRequest.getUrl());
     }
 
     @Override
-    public void run() {
-        isCanceled = false;
+    public void execute() {
         DownloadTask downloadTask = downloadInfo.getDownloadTask();
         File downloadFile = new File(downloadInfo.getFilePath());
-        FileUtil.deleteFile(downloadFile);
-
         try {
             if (downloadFile.createNewFile()) {
                 connection.connect();
@@ -46,7 +39,7 @@ public class SimpleDownloadTask implements Task {
                     connection.prepareDownload(downloadFile);
 
                     int len;
-                    while (!isCanceled && (len = connection.downloadBuffer(buffer)) != -1) {
+                    while (!isCanceled() && (len = connection.downloadBuffer(buffer)) != -1) {
                         if (!downloadTask.onDownload(len)) {
                             break;
                         }
@@ -65,7 +58,9 @@ public class SimpleDownloadTask implements Task {
 
     @Override
     public void cancel() {
-        isCanceled = true;
-        connection.cancel();
+        if (!connection.isCanceled()) {
+            connection.cancel();
+        }
     }
+
 }

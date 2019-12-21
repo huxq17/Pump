@@ -90,28 +90,15 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
                 }
             }
             downloadDetailsInfo.setSupportBreakpoint(contentLength != CONTENT_LENGTH_NOT_FOUND);
-            File tempDir = downloadDetailsInfo.getTempDir();
-            String[] childList = tempDir.list(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return name.startsWith(DOWNLOAD_PART);
-                }
-            });
-            if (childList != null && childList.length != downloadRequest.getThreadNum() ||
-                    contentLength != downloadDetailsInfo.getContentLength()
-                    || contentLength == CONTENT_LENGTH_NOT_FOUND) {
-                FileUtil.deleteDir(tempDir);
-            }
-            downloadDetailsInfo.setContentLength(contentLength);
-            downloadDetailsInfo.setFinished(0);
-            downloadTask.updateInfo();
-            FileUtil.deleteFile(downloadDetailsInfo.getDownloadFile());
+            checkDownloadFile(contentLength);
         } else if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
             if (downloadDetailsInfo.isFinished()) {
                 downloadDetailsInfo.setCompletedSize(downloadDetailsInfo.getContentLength());
                 downloadDetailsInfo.setFinished(1);
                 downloadTask.updateInfo();
                 return downloadDetailsInfo.snapshot();
+            } else {
+                checkDownloadFile(contentLength);
             }
         } else {
             if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
@@ -124,6 +111,24 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         return chain.proceed(downloadRequest);
     }
 
+    private void checkDownloadFile(long contentLength) {
+        File tempDir = downloadDetailsInfo.getTempDir();
+        String[] childList = tempDir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.startsWith(DOWNLOAD_PART);
+            }
+        });
+        if (childList != null && childList.length != downloadRequest.getThreadNum() ||
+                contentLength != downloadDetailsInfo.getContentLength()
+                || contentLength == CONTENT_LENGTH_NOT_FOUND) {
+            FileUtil.deleteDir(tempDir);
+        }
+        downloadDetailsInfo.setContentLength(contentLength);
+        downloadDetailsInfo.setFinished(0);
+        downloadTask.updateInfo();
+        FileUtil.deleteFile(downloadDetailsInfo.getDownloadFile());
+    }
 
     private void setFilePathIfNeed(DownloadConnection connection) {
         if (downloadRequest.getFilePath() == null) {

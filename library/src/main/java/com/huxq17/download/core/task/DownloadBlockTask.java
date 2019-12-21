@@ -7,19 +7,15 @@ import com.huxq17.download.config.IDownloadConfigService;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.connection.DownloadConnection;
-import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.util.concurrent.CountDownLatch;
 
 import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
 
 
-public class DownloadBlockTask implements Task {
-    private CountDownLatch countDownLatch;
-    private volatile boolean isCanceled;
+public class DownloadBlockTask extends Task {
     private DownloadConnection connection;
     private int blockId;
     private long completedSize;
@@ -27,17 +23,23 @@ public class DownloadBlockTask implements Task {
     private DownloadRequest downloadRequest;
     private DownloadDetailsInfo downloadInfo;
 
-    public DownloadBlockTask(DownloadRequest downloadRequest, CountDownLatch countDownLatch, int blockId) {
+    public DownloadBlockTask(DownloadRequest downloadRequest, int blockId) {
         this.downloadRequest = downloadRequest;
         downloadInfo = downloadRequest.getDownloadInfo();
         connection = PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory().create(downloadRequest.getUrl());
-        this.countDownLatch = countDownLatch;
         this.blockId = blockId;
         calculateCompletedSize();
     }
 
     @Override
-    public void run() {
+    public void cancel() {
+        if (!connection.isCanceled()) {
+            connection.cancel();
+        }
+    }
+
+    @Override
+    public void execute() {
         DownloadTask downloadTask = downloadInfo.getDownloadTask();
         long threadNum = downloadRequest.getThreadNum();
         long fileLength = downloadRequest.getDownloadInfo().getContentLength();
@@ -54,34 +56,26 @@ public class DownloadBlockTask implements Task {
             try {
                 connection.connect();
                 int code = connection.getResponseCode();
-                if (!isCanceled) {
-                    if (code == HttpURLConnection.HTTP_PARTIAL) {
-                        int len;
-                        connection.prepareDownload(tempFile);
-                        byte[] buffer = new byte[8092];
-                        while (!isCanceled && (len = connection.downloadBuffer(buffer)) != -1) {
-                            if (!downloadTask.onDownload(len)) {
-                                break;
-                            }
+                if (code == HttpURLConnection.HTTP_PARTIAL) {
+                    int len;
+                    connection.prepareDownload(tempFile);
+                    byte[] buffer = new byte[8092];
+                    while (!isCanceled() && (len = connection.downloadBuffer(buffer)) != -1) {
+                        if (!downloadTask.onDownload(len)) {
+                            break;
                         }
-                        connection.flushDownload();
-                    } else {
-                        downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
-                        LogUtil.e("request cancel id="+blockId);
-                        downloadTask.cancel();
                     }
-                }
-            } catch (IOException e) {
-                if (!connection.isCanceled()) {
-                    e.printStackTrace();
+                    connection.flushDownload();
+                } else {
                     downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
                     downloadTask.cancel();
                 }
+            } catch (IOException e) {
+                downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
             } finally {
                 connection.close();
             }
         }
-        countDownLatch.countDown();
     }
 
     private void calculateCompletedSize() {
@@ -104,13 +98,6 @@ public class DownloadBlockTask implements Task {
 
     public long getCompletedSize() {
         return completedSize;
-    }
-
-    @Override
-    public void cancel() {
-        isCanceled = true;
-        connection.cancel();
-        LogUtil.e("cancel id="+blockId);
     }
 
 }

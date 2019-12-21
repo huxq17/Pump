@@ -6,66 +6,75 @@ import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.task.DownloadBlockTask;
-import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.core.task.SimpleDownloadTask;
-import com.huxq17.download.utils.LogUtil;
+import com.huxq17.download.core.task.Task;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class DownloadFetchInterceptor implements DownloadInterceptor {
     private DownloadDetailsInfo downloadInfo;
     private DownloadRequest downloadRequest;
-    private DownloadTask downloadTask;
+    private final List<Task> blockList = new ArrayList<>();
 
     @Override
     public DownloadInfo intercept(DownloadChain chain) {
         downloadRequest = chain.request();
         downloadInfo = downloadRequest.getDownloadInfo();
-        downloadTask = downloadInfo.getDownloadTask();
-        if (downloadInfo.isRunning()) {
-            if (downloadInfo.isSupportBreakpoint()) {
-                downloadWithBreakpoint();
+        synchronized (blockList) {
+            if (downloadInfo.isRunning()) {
+                if (downloadInfo.isSupportBreakpoint()) {
+                    downloadWithBreakpoint();
+                } else {
+                    downloadWithoutBreakPoint();
+                }
             } else {
-                downloadWithoutBreakPoint();
+                return downloadInfo.snapshot();
             }
-        } else {
-            return downloadInfo.snapshot();
-        }
-        if (!downloadInfo.isRunning()) {
-            return downloadInfo.snapshot();
         }
         return chain.proceed(downloadRequest);
     }
 
-    private boolean downloadWithoutBreakPoint() {
-        LogUtil.e("downloadWithoutBreakPoint ");
+    private void downloadWithoutBreakPoint() {
         SimpleDownloadTask simpleDownloadTask = new SimpleDownloadTask(downloadRequest);
-        downloadTask.addBlockTask(simpleDownloadTask);
+        blockList.add(simpleDownloadTask);
         simpleDownloadTask.run();
-        return true;
     }
 
-    private boolean downloadWithBreakpoint() {
-        CountDownLatch countDownLatch;
+    private void downloadWithBreakpoint() {
         long completedSize = 0;
         int threadNum = downloadRequest.getThreadNum();
-        countDownLatch = new CountDownLatch(threadNum);
-
-        synchronized (downloadTask.getLock()) {
-            LogUtil.e("downloadWithBreakpoint threadNum="+threadNum);
-            for (int i = 0; i < threadNum; i++) {
-                DownloadBlockTask task = new DownloadBlockTask(downloadRequest, countDownLatch, i);
-                completedSize += task.getCompletedSize();
-                downloadTask.addBlockTask(task);
-                TaskManager.execute(task);
-            }
+        List<Future> futures = new ArrayList<>(threadNum);
+        for (int i = 0; i < threadNum; i++) {
+            DownloadBlockTask task = new DownloadBlockTask(downloadRequest, i);
+            blockList.add(task);
+            completedSize += task.getCompletedSize();
+            futures.add(TaskManager.submit(task));
         }
         downloadInfo.setCompletedSize(completedSize);
         try {
-            countDownLatch.await();
-        } catch (InterruptedException ignore) {
-            return false;
+            for (Future future : futures) {
+                if (!future.isDone()) {
+                    future.get();
+                }
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            cancel();
+            for (Future f : futures) {
+                f.cancel(true);
+            }
         }
-        return true;
+
+    }
+
+    public void cancel() {
+        synchronized (blockList) {
+            for (Task task : blockList) {
+                task.cancel();
+            }
+            blockList.clear();
+        }
     }
 }
