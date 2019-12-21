@@ -45,7 +45,7 @@ public class DownloadTask implements Task {
             messageCenter = PumpFactory.getService(IMessageCenter.class);
             downloadInfo.setErrorCode(0);
             if (downloadInfo.getCompletedSize() == downloadInfo.getContentLength()
-                    ||downloadRequest.isForceReDownload()) {
+                    &&downloadRequest.isForceReDownload()) {
                 downloadInfo.setCompletedSize(0);
             }
             downloadInfo.setStatus(DownloadInfo.Status.WAIT);
