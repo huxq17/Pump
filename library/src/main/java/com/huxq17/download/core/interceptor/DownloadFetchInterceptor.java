@@ -30,6 +30,7 @@ public class DownloadFetchInterceptor implements DownloadInterceptor {
             } else {
                 downloadWithoutBreakPoint();
             }
+            clearBlockList();
         } else {
             return downloadInfo.snapshot();
         }
@@ -76,6 +77,11 @@ public class DownloadFetchInterceptor implements DownloadInterceptor {
             for (Task task : blockList) {
                 task.cancel();
             }
+        }
+    }
+
+    private void clearBlockList() {
+        synchronized (blockList) {
             blockList.clear();
         }
     }
