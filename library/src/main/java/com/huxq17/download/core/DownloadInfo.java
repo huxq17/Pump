@@ -92,6 +92,10 @@ public class DownloadInfo {
         return contentLength == 0 ? 0 : (int) (completedSize * 1f / contentLength * 100);
     }
 
+    public String getMD5() {
+        return downloadDetailsInfo.getMd5();
+    }
+
     public int getFinished() {
         return finished;
     }
@@ -109,7 +113,7 @@ public class DownloadInfo {
     }
 
     public enum Status {
-        STOPPED, WAIT, RUNNING, PAUSING, PAUSED, FAILED, FINISHED,DELETED;
+        STOPPED, WAIT, RUNNING, PAUSING, PAUSED, FAILED, FINISHED, DELETED;
 
         public boolean isRunning() {
             return this.ordinal() >= WAIT.ordinal() && this.ordinal() <= RUNNING.ordinal();

@@ -1,12 +1,7 @@
 package com.huxq17.download.core.interceptor;
 
-import android.text.TextUtils;
-
 import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.ErrorCode;
-import com.huxq17.download.OnVerifyMd5Listener;
-import com.huxq17.download.PumpFactory;
-import com.huxq17.download.config.IDownloadConfigService;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadInterceptor;
@@ -77,14 +72,10 @@ public class MergeFileInterceptor implements DownloadInterceptor {
     private void checkDownloadResult(long contentLength, long completedSize) {
         File downloadFile = downloadInfo.getDownloadFile();
         long downloadFileLength = downloadFile == null ? 0 : downloadFile.length();
-        if (downloadFileLength == contentLength &&
-                isMd5Equals(downloadInfo.getMd5(), downloadInfo.getDownloadFile(), downloadRequest.getOnVerifyMd5Listener())) {
+        if (downloadFileLength == contentLength) {
             DownloadProvider.CacheBean cacheBean = downloadInfo.getCacheBean();
             if (cacheBean != null) {
                 DBService.getInstance().updateCache(cacheBean);
-            }
-            if (downloadRequest.getOnDownloadSuccessListener() != null) {
-                downloadRequest.getOnDownloadSuccessListener().onDownloadSuccess(downloadInfo.getDownloadFile(), downloadRequest);
             }
             downloadInfo.setFinished(1);
             downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
@@ -94,13 +85,13 @@ public class MergeFileInterceptor implements DownloadInterceptor {
         }
     }
 
-    private boolean isMd5Equals(String md5, File downloadFile, OnVerifyMd5Listener listener) {
-        if (listener == null) {
-            listener = PumpFactory.getService(IDownloadConfigService.class).getOnVerifyMd5Listener();
-        }
-        if (!TextUtils.isEmpty(md5) && listener != null) {
-            return listener.onVerifyMd5(md5, downloadFile);
-        }
-        return true;
-    }
+//    private boolean isMd5Equals(String md5, File downloadFile, OnVerifyMd5Listener listener) {
+//        if (listener == null) {
+//            listener = PumpFactory.getService(IDownloadConfigService.class).getOnVerifyMd5Listener();
+//        }
+//        if (!TextUtils.isEmpty(md5) && listener != null) {
+//            return listener.onVerifyMd5(md5, downloadFile);
+//        }
+//        return true;
+//    }
 }

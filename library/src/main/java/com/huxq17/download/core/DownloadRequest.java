@@ -3,13 +3,10 @@ package com.huxq17.download.core;
 
 import android.text.TextUtils;
 
-import com.huxq17.download.OnVerifyMd5Listener;
 import com.huxq17.download.Pump;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.manager.IDownloadManager;
 import com.huxq17.download.message.DownloadListener;
-
-import java.io.File;
 
 
 public final class DownloadRequest {
@@ -21,8 +18,6 @@ public final class DownloadRequest {
     private final boolean forceReDownload;
     private final int retryCount;
     private final int retryDelay;
-    private final OnVerifyMd5Listener onVerifyMd5Listener;
-    private final OnDownloadSuccessListener onDownloadSuccessListener;
     //Maybe use in the future
     private final DownloadListener downloadListener;
 
@@ -38,8 +33,6 @@ public final class DownloadRequest {
         this.forceReDownload = downloadGenerator.forceReDownload;
         this.retryCount = downloadGenerator.retryCount;
         this.retryDelay = downloadGenerator.retryDelay;
-        this.onVerifyMd5Listener = downloadGenerator.onVerifyMd5Listener;
-        this.onDownloadSuccessListener = downloadGenerator.onDownloadSuccessListener;
         this.downloadListener = downloadGenerator.downloadListener;
         this.downloadTaskExecutor = downloadGenerator.downloadTaskExecutor;
     }
@@ -47,14 +40,6 @@ public final class DownloadRequest {
     void setDownloadInfo(DownloadDetailsInfo downloadInfo) {
         this.downloadInfo = downloadInfo;
         downloadInfo.setFilePath(filePath);
-    }
-
-    public OnVerifyMd5Listener getOnVerifyMd5Listener() {
-        return onVerifyMd5Listener;
-    }
-
-    public OnDownloadSuccessListener getOnDownloadSuccessListener() {
-        return onDownloadSuccessListener;
     }
 
     public int getRetryDelay() {
@@ -124,8 +109,6 @@ public final class DownloadRequest {
         private boolean forceReDownload;
         private int retryCount;
         private int retryDelay;
-        private OnVerifyMd5Listener onVerifyMd5Listener;
-        private OnDownloadSuccessListener onDownloadSuccessListener;
         private DownloadListener downloadListener;
 
         private static final int DEFAULT_RETRY_DELAY = 200;
@@ -151,21 +134,6 @@ public final class DownloadRequest {
             return this;
         }
 
-        public DownloadGenerator setOnVerifyMd5Listener(OnVerifyMd5Listener listener) {
-            this.onVerifyMd5Listener = listener;
-            return this;
-        }
-
-        /**
-         * 设置下载成功的监听，回调执行在异步下载线程，不会阻塞ui线程。
-         *
-         * @param onDownloadSuccessListener 下载成功监听
-         * @return DownloadGenerator
-         */
-        public DownloadGenerator setOnDownloadSuccessListener(OnDownloadSuccessListener onDownloadSuccessListener) {
-            this.onDownloadSuccessListener = onDownloadSuccessListener;
-            return this;
-        }
 
         /**
          * Tag download task, can use {@link Pump#getDownloadListByTag(String)} to get download list
@@ -232,10 +200,6 @@ public final class DownloadRequest {
             PumpFactory.getService(IDownloadManager.class).
                     submit(new DownloadRequest(this));
         }
-    }
-
-    public interface OnDownloadSuccessListener {
-        void onDownloadSuccess(File downloadFile, DownloadRequest downloadRequest);
     }
 
     @Override

@@ -65,7 +65,6 @@ public class DownloadDispatcher extends Task {
     }
 
     void consumeRequest() {
-        LogUtil.e("consumeRequest isBlockForConsumeRequest()="+isBlockForConsumeRequest());
         if (isBlockForConsumeRequest()) {
             waitForConsumer();
         }
@@ -158,9 +157,6 @@ public class DownloadDispatcher extends Task {
         if (downloadInfo == null) {
             downloadInfo = createDownloadInfo(id, url, filePath, tag);
             downloadRequest.setDownloadInfo(downloadInfo);
-        }
-        if (downloadRequest.isForceReDownload() && downloadInfo.isFinished()) {
-            downloadInfo.setCompletedSize(0);
         }
         downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
         return new DownloadTask(downloadRequest);

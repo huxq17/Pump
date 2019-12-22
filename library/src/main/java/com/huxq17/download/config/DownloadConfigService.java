@@ -1,10 +1,13 @@
 package com.huxq17.download.config;
 
 
-import com.huxq17.download.utils.OKHttpUtil;
-import com.huxq17.download.OnVerifyMd5Listener;
+import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.connection.DownloadConnection;
 import com.huxq17.download.core.connection.OkHttpDownloadConnection;
+import com.huxq17.download.utils.OKHttpUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DownloadConfigService implements IDownloadConfigService {
     /**
@@ -41,16 +44,16 @@ public class DownloadConfigService implements IDownloadConfigService {
     }
 
     @Override
-    public OnVerifyMd5Listener getOnVerifyMd5Listener() {
-        if (downloadConfig == null) {
-            return null;
-        }
-        return downloadConfig.getOnVerifyMd5Listener();
-    }
-
-    @Override
     public void setDownloadConnectionFactory(DownloadConnection.Factory factory) {
         this.downloadConnectionFactory = factory;
+    }
+
+
+    public List<DownloadInterceptor> getDownloadInterceptors() {
+        if (downloadConfig == null) {
+            return new ArrayList<>();
+        }
+        return downloadConfig.getInterceptors();
     }
 
     @Override

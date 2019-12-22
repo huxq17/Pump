@@ -1,7 +1,9 @@
 package com.huxq17.download.config;
 
-import com.huxq17.download.OnVerifyMd5Listener;
+import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.connection.DownloadConnection;
+
+import java.util.List;
 
 public interface IDownloadConfigService {
     void setConfig(DownloadConfig downloadConfig);
@@ -10,7 +12,7 @@ public interface IDownloadConfigService {
 
     long getMinUsableSpace();
 
-    OnVerifyMd5Listener getOnVerifyMd5Listener();
+    List<DownloadInterceptor> getDownloadInterceptors();
 
     void setDownloadConnectionFactory(DownloadConnection.Factory factory);
 

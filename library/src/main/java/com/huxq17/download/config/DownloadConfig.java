@@ -2,9 +2,12 @@ package com.huxq17.download.config;
 
 import android.content.Context;
 
-import com.huxq17.download.OnVerifyMd5Listener;
 import com.huxq17.download.PumpFactory;
+import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.connection.DownloadConnection;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DownloadConfig {
     /**
@@ -15,7 +18,7 @@ public class DownloadConfig {
      * 最小可用的内存空间
      */
     private long minUsableStorageSpace = 4 * 1024L;
-    private OnVerifyMd5Listener onVerifyMd5Listener;
+    private List<DownloadInterceptor> interceptors = new ArrayList<>();
 
     private DownloadConfig() {
     }
@@ -32,8 +35,12 @@ public class DownloadConfig {
         return new Builder();
     }
 
-    public OnVerifyMd5Listener getOnVerifyMd5Listener() {
-        return onVerifyMd5Listener;
+    public void addDownloadInterceptor(DownloadInterceptor downloadInterceptor) {
+        interceptors.add(downloadInterceptor);
+    }
+
+    public List<DownloadInterceptor> getInterceptors() {
+        return interceptors;
     }
 
     public static class Builder {
