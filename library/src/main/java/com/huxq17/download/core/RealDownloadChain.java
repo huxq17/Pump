@@ -4,13 +4,13 @@ import com.huxq17.download.core.task.DownloadTask;
 
 import java.util.List;
 
-public class DownloadChain implements DownloadInterceptor.DownloadChain {
+public final class RealDownloadChain implements DownloadInterceptor.DownloadChain {
     private final int index;
     private int calls;
     private final List<DownloadInterceptor> interceptors;
     private final DownloadRequest downloadRequest;
 
-    public DownloadChain(List<DownloadInterceptor> interceptors, DownloadRequest downloadRequest
+    public RealDownloadChain(List<DownloadInterceptor> interceptors, DownloadRequest downloadRequest
             , int index) {
         this.index = index;
         this.downloadRequest = downloadRequest;
@@ -38,7 +38,7 @@ public class DownloadChain implements DownloadInterceptor.DownloadChain {
                     + " must call proceed() exactly once");
         }
         DownloadInterceptor interceptor = interceptors.get(index);
-        DownloadInterceptor.DownloadChain nextChain = new DownloadChain(interceptors,
+        DownloadInterceptor.DownloadChain nextChain = new RealDownloadChain(interceptors,
                 downloadRequest, index + 1);
         return interceptor.intercept(nextChain);
     }

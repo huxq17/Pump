@@ -5,7 +5,7 @@ import android.text.TextUtils;
 
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.config.IDownloadConfigService;
-import com.huxq17.download.core.DownloadChain;
+import com.huxq17.download.core.RealDownloadChain;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadInterceptor;
@@ -97,7 +97,7 @@ public class DownloadTask extends Task {
         interceptors.add(new CheckCacheInterceptor());
         interceptors.add(fetchInterceptor);
         interceptors.add(new MergeFileInterceptor());
-        DownloadChain realDownloadChain = new DownloadChain(interceptors, downloadRequest, 0);
+        RealDownloadChain realDownloadChain = new RealDownloadChain(interceptors, downloadRequest, 0);
         realDownloadChain.proceed(downloadRequest);
         synchronized (lock) {
             if (downloadInfo.getStatus() == DownloadInfo.Status.PAUSING) {

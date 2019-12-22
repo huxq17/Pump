@@ -4,6 +4,7 @@ import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.DownloadRequest;
+import com.huxq17.download.core.RealDownloadChain;
 
 import static com.huxq17.download.ErrorCode.NETWORK_UNAVAILABLE;
 
@@ -14,7 +15,7 @@ public class RetryInterceptor implements DownloadInterceptor {
 
     @Override
     public DownloadInfo intercept(DownloadChain chain) {
-        com.huxq17.download.core.DownloadChain realDownloadChain = (com.huxq17.download.core.DownloadChain) chain;
+        RealDownloadChain realDownloadChain = (RealDownloadChain) chain;
         DownloadRequest downloadRequest = chain.request();
         downloadDetailsInfo = downloadRequest.getDownloadInfo();
         int retryDelay = downloadRequest.getRetryDelay();

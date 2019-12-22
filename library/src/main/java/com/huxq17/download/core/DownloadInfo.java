@@ -3,7 +3,7 @@ package com.huxq17.download.core;
 
 import java.io.File;
 
-public class DownloadInfo {
+public final class DownloadInfo {
     private final String url;
     private final File downloadFile;
     private final String id;
@@ -106,6 +106,10 @@ public class DownloadInfo {
 
     public Status getStatus() {
         return status;
+    }
+
+    public void setErrorCode(int errorCode) {
+        downloadDetailsInfo.setErrorCode(errorCode);
     }
 
     public boolean isRunning() {
