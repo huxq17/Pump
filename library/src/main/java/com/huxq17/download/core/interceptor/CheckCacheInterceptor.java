@@ -127,7 +127,7 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         downloadDetailsInfo.setContentLength(contentLength);
         downloadDetailsInfo.setFinished(0);
         downloadTask.updateInfo();
-        FileUtil.deleteFile(downloadDetailsInfo.getDownloadFile());
+        downloadDetailsInfo.deleteDownloadFile();
     }
 
     private void setFilePathIfNeed(DownloadConnection connection) {

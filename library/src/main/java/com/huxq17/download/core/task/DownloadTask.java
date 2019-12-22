@@ -15,8 +15,6 @@ import com.huxq17.download.core.interceptor.MergeFileInterceptor;
 import com.huxq17.download.core.interceptor.RetryInterceptor;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.message.IMessageCenter;
-import com.huxq17.download.utils.FileUtil;
-import com.huxq17.download.utils.LogUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +29,6 @@ public class DownloadTask extends Task {
      * True indicate that not support breakpoint download.
      */
     private DownloadRequest downloadRequest;
-    private volatile boolean isDeleted;
     private DownloadFetchInterceptor fetchInterceptor;
 
     public DownloadTask(DownloadRequest downloadRequest) {
@@ -46,6 +43,7 @@ public class DownloadTask extends Task {
             if (downloadInfo.getCompletedSize() == downloadInfo.getContentLength()
                     && downloadRequest.isForceReDownload()) {
                 downloadInfo.setCompletedSize(0);
+                downloadInfo.deleteDownloadFile();
             }
             downloadInfo.setStatus(DownloadInfo.Status.WAIT);
             updateInfo();
@@ -102,11 +100,6 @@ public class DownloadTask extends Task {
         synchronized (lock) {
             if (downloadInfo.getStatus() == DownloadInfo.Status.PAUSING) {
                 downloadInfo.setStatus(DownloadInfo.Status.PAUSED);
-            } else if (isDeleted) {
-                FileUtil.deleteDir(downloadInfo.getTempDir());
-                FileUtil.deleteFile(downloadInfo.getDownloadFile());
-                downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
-                DBService.getInstance().deleteInfo(downloadInfo.getId());
             }
         }
         updateInfo();
@@ -151,7 +144,6 @@ public class DownloadTask extends Task {
 
     public void stop() {
         synchronized (lock) {
-            LogUtil.e("stop downloadInfo.getStatus().shouldStop()=" + downloadInfo.getStatus().shouldStop());
             if (downloadInfo.getStatus().shouldStop()) {
                 downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
                 cancel();
@@ -159,33 +151,18 @@ public class DownloadTask extends Task {
         }
     }
 
-    public void delete() {
-        synchronized (lock) {
-            if (isRunning()) {
-                isDeleted = true;
-                cancel();
-            }
-        }
-    }
-
     public void cancel() {
-        if (currentThread != null) {
-            currentThread.interrupt();
-        }
         if (fetchInterceptor != null) {
             fetchInterceptor.cancel();
         }
-    }
-
-    public boolean isDeleted() {
-        return isDeleted;
+        if (currentThread != null) {
+            currentThread.interrupt();
+        }
     }
 
     public void updateInfo() {
         synchronized (lock) {
-            if (!isDeleted) {
-                dbService.updateInfo(downloadInfo);
-            }
+            dbService.updateInfo(downloadInfo);
         }
     }
 

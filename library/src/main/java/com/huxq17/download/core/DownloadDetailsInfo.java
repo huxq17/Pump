@@ -72,10 +72,8 @@ public class DownloadDetailsInfo {
     public void setFilePath(String filePath) {
         if (filePath != null && !filePath.equals(this.filePath)) {
             this.filePath = filePath;
-            if (downloadFile != null) {
-                FileUtil.deleteFile(downloadFile);
-                FileUtil.deleteDir(getTempDir());
-            }
+            deleteDownloadFile();
+            deleteTempDir();
             downloadFile = new File(filePath);
         }
     }
@@ -129,13 +127,18 @@ public class DownloadDetailsInfo {
         this.status = status;
     }
 
+    public boolean isDeleted() {
+        return status == DownloadInfo.Status.DELETED;
+    }
+
     public void setErrorCode(int code) {
         if (status != null && status.isRunning()) {
             this.errorCode = code;
             setStatus(DownloadInfo.Status.FAILED);
         }
     }
-    public void clearErrorCode(){
+
+    public void clearErrorCode() {
         this.errorCode = 0;
     }
 
@@ -213,6 +216,18 @@ public class DownloadDetailsInfo {
 
     public File getDownloadFile() {
         return downloadFile;
+    }
+
+    public void deleteDownloadFile() {
+        if (downloadFile != null) {
+            FileUtil.deleteFile(downloadFile);
+        }
+    }
+
+    public void deleteTempDir() {
+        if (getTempDir() != null) {
+            FileUtil.deleteFile(getTempDir());
+        }
     }
 
     public String getFilePath() {

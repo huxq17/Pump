@@ -63,6 +63,9 @@ public class DBService {
     }
 
     public synchronized void updateInfo(DownloadDetailsInfo downloadInfo) {
+        if (downloadInfo.isDeleted()) {
+            return;
+        }
         SQLiteDatabase db = getWritableDatabase();
         String[] args = {downloadInfo.getId()};
         Cursor cursor = db.query(DownloadProvider.DownloadTable.TABLE_NAME, new String[]{DownloadProvider.DownloadTable.URL}, DownloadProvider.DownloadTable.ID + "=?", args, null, null, null, null);

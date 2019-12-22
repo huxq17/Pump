@@ -23,23 +23,24 @@ public class DownloadFetchInterceptor implements DownloadInterceptor {
     public DownloadInfo intercept(DownloadChain chain) {
         downloadRequest = chain.request();
         downloadInfo = downloadRequest.getDownloadInfo();
-        synchronized (blockList) {
-            if (downloadInfo.isRunning()) {
-                if (downloadInfo.isSupportBreakpoint()) {
-                    downloadWithBreakpoint();
-                } else {
-                    downloadWithoutBreakPoint();
-                }
+
+        if (downloadInfo.isRunning()) {
+            if (downloadInfo.isSupportBreakpoint()) {
+                downloadWithBreakpoint();
             } else {
-                return downloadInfo.snapshot();
+                downloadWithoutBreakPoint();
             }
+        } else {
+            return downloadInfo.snapshot();
         }
         return chain.proceed(downloadRequest);
     }
 
     private void downloadWithoutBreakPoint() {
         SimpleDownloadTask simpleDownloadTask = new SimpleDownloadTask(downloadRequest);
-        blockList.add(simpleDownloadTask);
+        synchronized (blockList) {
+            blockList.add(simpleDownloadTask);
+        }
         simpleDownloadTask.run();
     }
 
@@ -47,11 +48,13 @@ public class DownloadFetchInterceptor implements DownloadInterceptor {
         long completedSize = 0;
         int threadNum = downloadRequest.getThreadNum();
         List<Future> futures = new ArrayList<>(threadNum);
-        for (int i = 0; i < threadNum; i++) {
-            DownloadBlockTask task = new DownloadBlockTask(downloadRequest, i);
-            blockList.add(task);
-            completedSize += task.getCompletedSize();
-            futures.add(TaskManager.submit(task));
+        synchronized (blockList) {
+            for (int i = 0; i < threadNum; i++) {
+                DownloadBlockTask task = new DownloadBlockTask(downloadRequest, i);
+                blockList.add(task);
+                completedSize += task.getCompletedSize();
+                futures.add(TaskManager.submit(task));
+            }
         }
         downloadInfo.setCompletedSize(completedSize);
         try {
@@ -66,7 +69,6 @@ public class DownloadFetchInterceptor implements DownloadInterceptor {
                 f.cancel(true);
             }
         }
-
     }
 
     public void cancel() {

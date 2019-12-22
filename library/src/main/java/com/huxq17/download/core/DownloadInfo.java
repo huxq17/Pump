@@ -1,8 +1,6 @@
 package com.huxq17.download.core;
 
 
-import com.huxq17.download.utils.LogUtil;
-
 import java.io.File;
 
 public class DownloadInfo {
@@ -111,7 +109,7 @@ public class DownloadInfo {
     }
 
     public enum Status {
-        STOPPED, WAIT, RUNNING, PAUSING, PAUSED, FAILED, FINISHED;
+        STOPPED, WAIT, RUNNING, PAUSING, PAUSED, FAILED, FINISHED,DELETED;
 
         public boolean isRunning() {
             return this.ordinal() >= WAIT.ordinal() && this.ordinal() <= RUNNING.ordinal();

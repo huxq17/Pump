@@ -9,7 +9,6 @@ import com.huxq17.download.callback.Filter;
 import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.manager.IDownloadManager;
-import com.huxq17.download.utils.FileUtil;
 import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
@@ -55,7 +54,7 @@ public class DownloadManager implements IDownloadManager {
         DownloadTask downloadTask = getDownloadTaskById(id);
         if (downloadTask != null) {
             synchronized (downloadTask.getLock()) {
-                downloadTask.delete();
+                downloadTask.cancel();
                 DownloadDetailsInfo downloadInfo = downloadTask.getDownloadInfo();
                 deleteDownloadInfo(downloadInfo);
             }
@@ -70,13 +69,10 @@ public class DownloadManager implements IDownloadManager {
 
     private void deleteDownloadInfo(DownloadDetailsInfo downloadInfo) {
         if (downloadInfo != null) {
+            downloadInfo.setStatus(DownloadInfo.Status.DELETED);
             downloadInfoManager.remove(downloadInfo.getId());
-            if (downloadInfo.getDownloadFile() != null) {
-                downloadInfo.getDownloadFile().delete();
-            }
-            if (downloadInfo.getTempDir() != null) {
-                FileUtil.deleteDir(downloadInfo.getTempDir());
-            }
+            downloadInfo.deleteTempDir();
+            downloadInfo.deleteDownloadFile();
             DBService.getInstance().deleteInfo(downloadInfo.getId());
         }
     }

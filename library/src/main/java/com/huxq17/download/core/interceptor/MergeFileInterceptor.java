@@ -49,7 +49,7 @@ public class MergeFileInterceptor implements DownloadInterceptor {
             if (contentLength > 0 && completedSize == contentLength && downloadPartFiles != null
                     && downloadPartFiles.length == downloadTask.getRequest().getThreadNum()) {
                 File file = downloadInfo.getDownloadFile();
-                FileUtil.deleteFile(file);
+                downloadInfo.deleteDownloadFile();
                 long startTime = System.currentTimeMillis();
                 boolean mergeSuccess = false;
                 if (downloadPartFiles.length == 1) {
@@ -61,7 +61,7 @@ public class MergeFileInterceptor implements DownloadInterceptor {
                         mergeSuccess = true;
                     }
                 }
-                FileUtil.deleteDir(tempDir);
+                downloadInfo.deleteTempDir();
                 if (mergeSuccess) {
                     LogUtil.d("Merge " + downloadInfo.getName() + " spend=" +
                             (System.currentTimeMillis() - startTime) + "; file.length=" + file.length());
