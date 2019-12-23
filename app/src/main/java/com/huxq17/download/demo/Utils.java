@@ -4,7 +4,6 @@ import android.support.annotation.NonNull;
 import android.util.Base64;
 
 import com.huxq17.download.callback.Func;
-import com.huxq17.download.utils.FileUtil;
 import com.huxq17.download.utils.Util;
 
 import java.io.File;
@@ -33,13 +32,10 @@ public class Utils {
         } else if (size < 1024 * 1024 * 1024) {
             float mbSize = size / 1024f / 1024f;
             return format.format(mbSize) + "MB";
-        } else if (size < 1024 * 1024 * 1024 * 1024) {
+        } else {
             float gbSize = size / 1024f / 1024f / 1024f;
             return format.format(gbSize) + "GB";
-        } else {
-            return "size: error";
         }
-
     }
 
     public static String getMD5ByBase64(File file) {
@@ -114,7 +110,7 @@ public class Utils {
                         createDirWithFile(relName);
                         unzipFile = new File(relName);
                     }
-                     out = new FileOutputStream(unzipFile);
+                    out = new FileOutputStream(unzipFile);
                     int bytes;
 
                     while ((bytes = zipIn.read(buffer, 0, 8192)) != -1) {
