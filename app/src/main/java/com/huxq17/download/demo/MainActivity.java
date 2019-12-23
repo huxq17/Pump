@@ -3,9 +3,13 @@ package com.huxq17.download.demo;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Toast;
 
+import com.huxq17.download.core.DownloadInfo;
+import com.huxq17.download.core.DownloadInterceptor;
+import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.demo.remote.RemoteDownloadListActivity;
 import com.huxq17.download.utils.OKHttpUtil;
 import com.huxq17.download.config.DownloadConfig;
@@ -35,14 +39,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initProgressDialog();
-        //只要在第一次提交下载任务之前设置就可以。建议在application的onCreate里做
-        DownloadConfig.newBuilder(getApplicationContext())
-                //Optional,set the maximum number of tasks to run, default 3.
-                .setMaxRunningTaskNum(2)
-                //Optional,set the minimum available storage space size for downloading to avoid insufficient storage space during downloading, default is 4kb.
-                .setMinUsableStorageSpace(4 * 1024L)
-                .setDownloadConnectionFactory(new OkHttpDownloadConnection.Factory(OKHttpUtil.get()))//Optional
-                .build();
 //        Pump.subscribe(downloadObserver);
 //        try {
 //            File httpCacheDir = new File(getCacheDir(), "http");

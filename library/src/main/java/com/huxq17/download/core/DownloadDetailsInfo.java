@@ -132,7 +132,11 @@ public class DownloadDetailsInfo {
     }
 
     public void setErrorCode(int code) {
-        if (status != null && status.isRunning()) {
+        setErrorCode(code, false);
+    }
+
+    public void setErrorCode(int code, boolean force) {
+        if (status != null && (status.isRunning() || force)) {
             this.errorCode = code;
             setStatus(DownloadInfo.Status.FAILED);
         }
@@ -162,7 +166,7 @@ public class DownloadDetailsInfo {
                 if (downloadFile.exists() && downloadFile.length() == this.contentLength) {
                     return true;
                 } else if (downloadFile.exists()) {
-                    downloadFile.delete();
+                    FileUtil.deleteFile(downloadFile);
                 }
             }
             this.finished = 0;

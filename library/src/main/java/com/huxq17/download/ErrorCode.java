@@ -14,15 +14,11 @@ public class ErrorCode {
      */
     public static final int UNKNOWN_SERVER_ERROR = 1003;
     /**
-     * Breakpoint download need request file's length first,but not found in http response head,connect server to resolve it.
-     */
-    public static final int CONTENT_LENGTH_NOT_FOUND = 1004;
-    /**
      * Usable space is not enough.
      */
     public static final int USABLE_SPACE_NOT_ENOUGH = 1005;
     /**
      * Merge file failed.
      */
-    public static final int MERGE_FILE_FAIELD = 1006;
+    public static final int MERGE_FILE_FAILED = 1006;
 }

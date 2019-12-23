@@ -202,7 +202,7 @@ public class DownloadListActivity extends AppCompatActivity {
             tvSpeed.setText(speed);
             long completedSize = downloadInfo.getCompletedSize();
             long totalSize = downloadInfo.getContentLength();
-            tvDownload.setText(Util.getDataSize(completedSize) + "/" + Util.getDataSize(totalSize));
+            tvDownload.setText(Utils.getDataSize(completedSize) + "/" + Utils.getDataSize(totalSize));
         }
 
         @Override

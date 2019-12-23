@@ -51,17 +51,6 @@ public class DownloadConfig {
         }
 
         /**
-         * Set how many threads are used when downloading,default 3.
-         *
-         * @param threadNum
-         * @return
-         */
-        @Deprecated
-        public Builder setThreadNum(int threadNum) {
-            return this;
-        }
-
-        /**
          * Set the maximum number of tasks to run, default 3.
          *
          * @param maxRunningTaskNumber maximum number of tasks to run
@@ -80,6 +69,11 @@ public class DownloadConfig {
          */
         public Builder setMinUsableStorageSpace(long minUsableStorageSpace) {
             downloadConfig.minUsableStorageSpace = minUsableStorageSpace;
+            return this;
+        }
+
+        public Builder addDownloadInterceptor(DownloadInterceptor interceptor) {
+            downloadConfig.interceptors.add(interceptor);
             return this;
         }
 

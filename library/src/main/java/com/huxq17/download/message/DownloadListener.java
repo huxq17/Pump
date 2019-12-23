@@ -66,10 +66,10 @@ public class DownloadListener {
         long contentLength = downloadInfo.getContentLength();
         int progress = contentLength == 0 ? 0 : (int) (completedSize * 1f / contentLength * 100);
         onProgress(progress);
-        if (progress == 100) {
-            onSuccess();
-        } else if (status == DownloadInfo.Status.FAILED) {
+        if (status == DownloadInfo.Status.FAILED) {
             onFailed();
+        } else if (progress == 100) {
+            onSuccess();
         }
     }
 

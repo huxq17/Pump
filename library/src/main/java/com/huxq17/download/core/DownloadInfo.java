@@ -109,7 +109,7 @@ public final class DownloadInfo {
     }
 
     public void setErrorCode(int errorCode) {
-        downloadDetailsInfo.setErrorCode(errorCode);
+        downloadDetailsInfo.setErrorCode(errorCode,true);
     }
 
     public boolean isRunning() {

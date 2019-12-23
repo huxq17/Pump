@@ -62,7 +62,7 @@ public class MergeFileInterceptor implements DownloadInterceptor {
                             (System.currentTimeMillis() - startTime) + "; file.length=" + file.length());
                     checkDownloadResult(contentLength, completedSize);
                 } else {
-                    downloadInfo.setErrorCode(ErrorCode.MERGE_FILE_FAIELD);
+                    downloadInfo.setErrorCode(ErrorCode.MERGE_FILE_FAILED);
                 }
             }
         }

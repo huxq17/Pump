@@ -71,6 +71,7 @@ public class DownloadBlockTask extends Task {
                     downloadTask.cancel();
                 }
             } catch (IOException e) {
+                e.printStackTrace();
                 downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
             } finally {
                 connection.close();

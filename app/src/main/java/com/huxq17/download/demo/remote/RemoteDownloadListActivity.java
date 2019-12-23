@@ -25,7 +25,7 @@ import com.huxq17.download.Pump;
 import com.huxq17.download.RxPump;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.demo.R;
-import com.huxq17.download.demo.Util;
+import com.huxq17.download.demo.Utils;
 import com.huxq17.download.message.DownloadListener;
 import com.huxq17.download.utils.LogUtil;
 
@@ -280,7 +280,7 @@ public class RemoteDownloadListActivity extends AppCompatActivity {
                 tvSpeed.setText(speed);
                 long completedSize = downloadInfo.getCompletedSize();
                 long totalSize = downloadInfo.getContentLength();
-                tvDownload.setText(Util.getDataSize(completedSize) + "/" + Util.getDataSize(totalSize));
+                tvDownload.setText(Utils.getDataSize(completedSize) + "/" + Utils.getDataSize(totalSize));
             } else {
                 tvSpeed.setText("");
                 tvDownload.setText("");
