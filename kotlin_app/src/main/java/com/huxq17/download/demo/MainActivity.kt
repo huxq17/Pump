@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         initProgressDialog()
         //只要在第一次提交下载任务之前设置就可以。建议在application的onCreate里做
-        DownloadConfig.newBuilder(applicationContext)
+        DownloadConfig.newBuilder()
                 //Optional,set the maximum number of tasks to run, default 3.
                 .setMaxRunningTaskNum(2)
                 //Optional,set the minimum available storage space size for downloading to avoid insufficient storage space during downloading, default is 4kb.

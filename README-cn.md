@@ -3,14 +3,14 @@
 
 See the [English Doc](https://github.com/huxq17/Pump/blob/master/README.md) for English readme.
 
-Pump是一个快速，易用的android下载库，支持多任务，多线程和断点下载，同时使用了ETag和LastModified来避免不必要的下载，让下载更加智能。 [点击查看更多信息。](https://github.com/huxq17/Pump/wiki/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)
+Pump是一个快速，易用的android下载库，支持多任务，多线程和断点下载，同时使用了Http缓存机制来避免不必要的下载，让下载更加智能。 [点击查看更多信息。](https://github.com/huxq17/Pump/wiki/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)
 
 ### 配置 build.gradle：
 App模块的build.gradle：
 
 ```
 dependencies {
-   implementation'com.huxq17.pump:download:1.2.9'
+   implementation'com.huxq17.pump:download:1.2.10'
    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
 }
 

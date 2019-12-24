@@ -1,12 +1,13 @@
 package com.huxq17.download.config;
 
-import android.content.Context;
-
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.connection.DownloadConnection;
+import com.huxq17.download.core.connection.OkHttpDownloadConnection;
+import com.huxq17.download.utils.OKHttpUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DownloadConfig {
@@ -18,6 +19,8 @@ public class DownloadConfig {
      * 最小可用的内存空间
      */
     private long minUsableStorageSpace = 4 * 1024L;
+
+    private DownloadConnection.Factory connectionFactory;
     private List<DownloadInterceptor> interceptors = new ArrayList<>();
 
     private DownloadConfig() {
@@ -31,16 +34,17 @@ public class DownloadConfig {
         return minUsableStorageSpace;
     }
 
-    public static Builder newBuilder(Context context) {
+    public static Builder newBuilder() {
         return new Builder();
     }
 
-    public void addDownloadInterceptor(DownloadInterceptor downloadInterceptor) {
-        interceptors.add(downloadInterceptor);
+    public List<DownloadInterceptor> getInterceptors() {
+        return Collections.unmodifiableList(interceptors);
     }
 
-    public List<DownloadInterceptor> getInterceptors() {
-        return interceptors;
+    public DownloadConnection.Factory getDownloadConnectionFactory() {
+        return connectionFactory == null ? new OkHttpDownloadConnection.Factory(OKHttpUtil.get())
+                : connectionFactory;
     }
 
     public static class Builder {
@@ -54,7 +58,6 @@ public class DownloadConfig {
          * Set the maximum number of tasks to run, default 3.
          *
          * @param maxRunningTaskNumber maximum number of tasks to run
-         * @return
          */
         public Builder setMaxRunningTaskNum(int maxRunningTaskNumber) {
             downloadConfig.maxRunningTaskNumber = maxRunningTaskNumber;
@@ -62,10 +65,10 @@ public class DownloadConfig {
         }
 
         /**
-         * Set the minimum available storage space size for downloading to avoid insufficient storage space during downloading, default is 4kb。
+         * Set the minimum available storage space size for downloading to avoid insufficient
+         * storage space during downloading, default is 4kb。
          *
          * @param minUsableStorageSpace minimum available storage space size
-         * @return
          */
         public Builder setMinUsableStorageSpace(long minUsableStorageSpace) {
             downloadConfig.minUsableStorageSpace = minUsableStorageSpace;
@@ -78,7 +81,7 @@ public class DownloadConfig {
         }
 
         public Builder setDownloadConnectionFactory(DownloadConnection.Factory factory) {
-            PumpFactory.getService(IDownloadConfigService.class).setDownloadConnectionFactory(factory);
+            downloadConfig.connectionFactory = factory;
             return this;
         }
 

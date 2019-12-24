@@ -14,7 +14,5 @@ public interface IDownloadConfigService {
 
     List<DownloadInterceptor> getDownloadInterceptors();
 
-    void setDownloadConnectionFactory(DownloadConnection.Factory factory);
-
     DownloadConnection.Factory getDownloadConnectionFactory();
 }

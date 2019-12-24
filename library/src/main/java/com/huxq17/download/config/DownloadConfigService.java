@@ -7,6 +7,7 @@ import com.huxq17.download.core.connection.OkHttpDownloadConnection;
 import com.huxq17.download.utils.OKHttpUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class DownloadConfigService implements IDownloadConfigService {
@@ -19,7 +20,8 @@ public class DownloadConfigService implements IDownloadConfigService {
      */
     private long minUsableStorageSpace = 4 * 1024L;
     private DownloadConfig downloadConfig;
-    private DownloadConnection.Factory downloadConnectionFactory;
+    private DownloadConnection.Factory connectionFactory;
+    private List<DownloadInterceptor> interceptors;
 
     private DownloadConfigService() {
     }
@@ -43,24 +45,23 @@ public class DownloadConfigService implements IDownloadConfigService {
         return downloadConfig.getMinUsableSpace();
     }
 
-    @Override
-    public void setDownloadConnectionFactory(DownloadConnection.Factory factory) {
-        this.downloadConnectionFactory = factory;
-    }
-
 
     public List<DownloadInterceptor> getDownloadInterceptors() {
         if (downloadConfig == null) {
-            return new ArrayList<>();
+            interceptors = Collections.emptyList();
+        }else{
+            interceptors = downloadConfig.getInterceptors();
         }
-        return downloadConfig.getInterceptors();
+        return interceptors;
     }
 
     @Override
     public DownloadConnection.Factory getDownloadConnectionFactory() {
-        if (downloadConnectionFactory == null) {
-            downloadConnectionFactory = new OkHttpDownloadConnection.Factory(OKHttpUtil.get());
+        if (downloadConfig == null) {
+            connectionFactory = new OkHttpDownloadConnection.Factory(OKHttpUtil.get());
+        } else {
+            connectionFactory = downloadConfig.getDownloadConnectionFactory();
         }
-        return downloadConnectionFactory;
+        return connectionFactory;
     }
 }

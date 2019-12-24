@@ -65,7 +65,7 @@ public class DemoApplication extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
-        DownloadConfig.newBuilder(getApplicationContext())
+        DownloadConfig.newBuilder()
                 //Optional,set the maximum number of tasks to run at the same time, default 3.
                 .setMaxRunningTaskNum(2)
                 //Optional,set the minimum available storage space size for downloading to avoid insufficient storage space during downloading, default is 4kb.
