@@ -30,6 +30,10 @@ public class TaskManager {
         mUiHandler.post(runnable);
     }
 
+    public static void executeOnMainThread(Runnable runnable, long delay) {
+        mUiHandler.postDelayed(runnable, delay);
+    }
+
     public static Future<?> submit(Callable task) {
         return getExecutorService().submit(task);
     }

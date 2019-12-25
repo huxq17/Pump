@@ -50,7 +50,7 @@ public class DownloadDispatcher extends Task {
         defaultTaskExecutor = new SimpleDownloadTaskExecutor();
     }
 
-    public void enqueueRequest(DownloadRequest request) {
+    void enqueueRequest(final DownloadRequest request) {
         if (!isRunning()) {
             start();
         }
@@ -65,9 +65,7 @@ public class DownloadDispatcher extends Task {
     }
 
     void consumeRequest() {
-        if (isBlockForConsumeRequest()) {
-            waitForConsumer();
-        }
+        waitForConsumer();
         DownloadRequest downloadRequest = requestQueue.poll();
         if (downloadRequest != null && !downloadManager.isTaskRunning(downloadRequest.getId())) {
             DownloadTaskExecutor downloadTaskExecutor = downloadRequest.getDownloadExecutor();
@@ -117,6 +115,19 @@ public class DownloadDispatcher extends Task {
         return requestQueue.isEmpty();
     }
 
+    void waitForConsumer() {
+        lock.lock();
+        try {
+            if (isBlockForConsumeRequest()) {
+                consumer.await();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            lock.unlock();
+        }
+    }
+
     boolean isRunnable() {
         return isRunning() && !isCanceled.get();
     }
@@ -125,17 +136,6 @@ public class DownloadDispatcher extends Task {
         lock.lock();
         try {
             consumer.signal();
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    void waitForConsumer() {
-        lock.lock();
-        try {
-            consumer.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         } finally {
             lock.unlock();
         }

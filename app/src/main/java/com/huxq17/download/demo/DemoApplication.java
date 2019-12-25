@@ -76,12 +76,12 @@ public class DemoApplication extends Application {
                     public DownloadInfo intercept(DownloadChain chain) {
                         DownloadRequest downloadRequest = chain.request();
                         DownloadInfo downloadInfo = chain.proceed(downloadRequest);
-                        if (downloadInfo.isFinished()) {
+                        if (false&&downloadInfo.isFinished()) {
                             //verify md5.
                             File downloadFile = new File(downloadInfo.getFilePath());
                             String fileMD5 = Utils.getMD5ByBase64(downloadFile);
                             String serverMD5 = downloadInfo.getMD5();
-                            LogUtil.e("fileMD5=" + fileMD5 + ";serverMD5=" + serverMD5);
+                            LogUtil.e("verify MD5 fileMD5=" + fileMD5 + ";serverMD5=" + serverMD5);
                             if (!TextUtils.isEmpty(serverMD5) && !serverMD5.equals(fileMD5)) {
                                 //setErrorCode will make download failed.
                                 downloadInfo.setErrorCode(MD5_VERIFY_FAILED);
