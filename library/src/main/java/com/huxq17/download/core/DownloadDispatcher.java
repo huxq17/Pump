@@ -112,13 +112,13 @@ public class DownloadDispatcher extends Task {
     }
 
     boolean isBlockForConsumeRequest() {
-        return requestQueue.isEmpty();
+        return requestQueue.isEmpty() && isRunnable();
     }
 
     void waitForConsumer() {
         lock.lock();
         try {
-            if (isBlockForConsumeRequest()) {
+            while (isBlockForConsumeRequest()) {
                 consumer.await();
             }
         } catch (InterruptedException e) {
