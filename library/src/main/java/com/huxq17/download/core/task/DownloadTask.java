@@ -117,7 +117,6 @@ public class DownloadTask extends Task {
             if (progress != lastProgress) {
                 if (progress != 100) {
                     lastProgress = progress;
-                    downloadInfo.computeSpeed();
                     notifyProgressChanged(downloadInfo);
                 }
             }
