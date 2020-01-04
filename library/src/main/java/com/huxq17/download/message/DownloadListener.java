@@ -4,7 +4,6 @@ import android.text.TextUtils;
 
 import com.huxq17.download.Pump;
 import com.huxq17.download.core.DownloadInfo;
-import com.huxq17.download.utils.LogUtil;
 
 public class DownloadListener {
     private String id;
@@ -30,7 +29,7 @@ public class DownloadListener {
     }
 
     /**
-     * Enable this Observer.
+     * Enable this observer.
      */
     public final void enable() {
         enable(null);
@@ -59,12 +58,10 @@ public class DownloadListener {
     }
 
     final void downloading(DownloadInfo downloadInfo) {
-        long completedSize = downloadInfo.getCompletedSize();
         DownloadInfo.Status status = downloadInfo.getStatus();
         this.downloadInfo = downloadInfo;
         this.status = status;
-        long contentLength = downloadInfo.getContentLength();
-        int progress = contentLength == 0 ? 0 : (int) (completedSize * 1f / contentLength * 100);
+        int progress = downloadInfo.getProgress();
         onProgress(progress);
         if (status == DownloadInfo.Status.FAILED) {
             onFailed();
@@ -84,10 +81,7 @@ public class DownloadListener {
      * @return Receive if return true, or not receive.
      */
     public boolean filter(DownloadInfo downloadInfo) {
-        if (!TextUtils.isEmpty(id)) {
-            return id.equals(downloadInfo.getId());
-        }
-        return true;
+        return id == null || id.equals(downloadInfo.getId());
     }
 
     public void onProgress(int progress) {

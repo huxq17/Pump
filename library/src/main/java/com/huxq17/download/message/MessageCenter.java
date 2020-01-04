@@ -19,7 +19,6 @@ public class MessageCenter implements IMessageCenter {
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
-            super.handleMessage(msg);
             if (isShutdown()) {
                 return;
             }

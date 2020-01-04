@@ -37,6 +37,10 @@ public class DownloadDetailsInfo {
 
     private DownloadProvider.CacheBean cacheBean;
     private String md5;
+    private int progress;
+    /**
+     * True indicate that support breakpoint download.
+     */
     private boolean supportBreakpoint = true;
 
     public DownloadDetailsInfo(String url, String filePath) {
@@ -131,6 +135,10 @@ public class DownloadDetailsInfo {
         return status == DownloadInfo.Status.DELETED;
     }
 
+    public void setProgress(int progress) {
+        this.progress = progress;
+    }
+
     public void setErrorCode(int code) {
         setErrorCode(code, false);
     }
@@ -215,7 +223,7 @@ public class DownloadDetailsInfo {
     public DownloadInfo snapshot() {
         computeSpeed();
         return new DownloadInfo(url, downloadFile, tag, id, createTime, speed, completedSize, contentLength,
-                errorCode, status, finished, this);
+                errorCode, status, finished,progress, this);
     }
 
     public File getDownloadFile() {

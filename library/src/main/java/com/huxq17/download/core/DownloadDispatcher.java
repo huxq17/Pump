@@ -160,7 +160,6 @@ public class DownloadDispatcher extends Task {
         }
         downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
         return new DownloadTask(downloadRequest);
-
     }
 
     boolean isUsableSpaceEnough(DownloadRequest downloadRequest) {

@@ -16,12 +16,13 @@ public final class DownloadInfo {
     private final int errorCode;
     private final String tag;
     private final long createTime;
+    private final int progress;
 
     private DownloadDetailsInfo downloadDetailsInfo;
 
     DownloadInfo(String url, File downloadFile, String tag, String id, long createTime,
                  String speed, long completedSize, long contentLength, int errorCode,
-                 Status status, int finished, DownloadDetailsInfo downloadDetailsInfo) {
+                 Status status, int finished, int progress, DownloadDetailsInfo downloadDetailsInfo) {
         this.url = url;
         this.downloadFile = downloadFile;
         this.tag = tag;
@@ -33,6 +34,7 @@ public final class DownloadInfo {
         this.errorCode = errorCode;
         this.status = status;
         this.finished = finished;
+        this.progress = progress;
         this.downloadDetailsInfo = downloadDetailsInfo;
     }
 
@@ -89,7 +91,7 @@ public final class DownloadInfo {
     }
 
     public int getProgress() {
-        return contentLength == 0 ? 0 : (int) (completedSize * 1f / contentLength * 100);
+        return progress;
     }
 
     public String getMD5() {
@@ -109,7 +111,7 @@ public final class DownloadInfo {
     }
 
     public void setErrorCode(int errorCode) {
-        downloadDetailsInfo.setErrorCode(errorCode,true);
+        downloadDetailsInfo.setErrorCode(errorCode, true);
     }
 
     public boolean isRunning() {

@@ -5,11 +5,11 @@ import android.text.TextUtils;
 
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.config.IDownloadConfigService;
-import com.huxq17.download.core.RealDownloadChain;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.DownloadRequest;
+import com.huxq17.download.core.RealDownloadChain;
 import com.huxq17.download.core.interceptor.CheckCacheInterceptor;
 import com.huxq17.download.core.interceptor.DownloadFetchInterceptor;
 import com.huxq17.download.core.interceptor.MergeFileInterceptor;
@@ -26,9 +26,6 @@ public class DownloadTask extends Task {
     private DBService dbService;
     private IMessageCenter messageCenter;
     private int lastProgress;
-    /**
-     * True indicate that not support breakpoint download.
-     */
     private DownloadRequest downloadRequest;
     private DownloadFetchInterceptor fetchInterceptor;
 
@@ -47,6 +44,7 @@ public class DownloadTask extends Task {
                 downloadInfo.deleteDownloadFile();
             }
             downloadInfo.setStatus(DownloadInfo.Status.WAIT);
+            downloadInfo.setProgress(0);
             updateInfo();
             notifyProgressChanged(downloadInfo);
         } else {
@@ -114,6 +112,7 @@ public class DownloadTask extends Task {
             }
             downloadInfo.download(length);
             int progress = (int) (downloadInfo.getCompletedSize() * 1f / downloadInfo.getContentLength() * 100);
+            downloadInfo.setProgress(progress);
             if (progress != lastProgress) {
                 if (progress != 100) {
                     lastProgress = progress;
