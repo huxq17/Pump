@@ -218,6 +218,7 @@ public class DownloadDetailsInfo {
                 setStatus(DownloadInfo.Status.STOPPED);
             }
         }
+        progress =  (int) (completedSize * 1f / contentLength * 100);
     }
 
     public DownloadInfo snapshot() {
