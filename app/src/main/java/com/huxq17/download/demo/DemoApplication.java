@@ -1,22 +1,13 @@
 package com.huxq17.download.demo;
 
 import android.app.Application;
-import android.text.TextUtils;
 
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.config.DownloadConfig;
 import com.huxq17.download.config.IDownloadConfigService;
-import com.huxq17.download.core.DownloadInfo;
-import com.huxq17.download.core.DownloadInterceptor;
-import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.DownloadTaskExecutor;
 import com.huxq17.download.core.SimpleDownloadTaskExecutor;
 import com.huxq17.download.core.connection.OkHttpDownloadConnection;
-import com.huxq17.download.utils.FileUtil;
-import com.huxq17.download.utils.LogUtil;
-import com.huxq17.download.utils.OKHttpUtil;
-
-import java.io.File;
 
 public class DemoApplication extends Application {
     private static DemoApplication instance;
@@ -70,7 +61,7 @@ public class DemoApplication extends Application {
                 .setMaxRunningTaskNum(2)
                 //Optional,set the minimum available storage space size for downloading to avoid insufficient storage space during downloading, default is 4kb.
                 .setMinUsableStorageSpace(4 * 1024L)
-                .setDownloadConnectionFactory(new OkHttpDownloadConnection.Factory(OKHttpUtil.get()))//Optional
+                .setDownloadConnectionFactory(new OkHttpDownloadConnection.Factory(Utils.getIgnoreCertificateOkHttpClient()))//Optional
 //                .addDownloadInterceptor(new DownloadInterceptor() {
 //                    @Override
 //                    public DownloadInfo intercept(DownloadChain chain) {

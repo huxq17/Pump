@@ -197,7 +197,7 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
     private long headContentLength() {
         DownloadConnection connection = createConnection(downloadRequest.getUrl());
         try {
-            connection.connect();
+            connection.connect("HEAD");
             return Util.parseContentLength(connection.getHeader("Content-Length"));
         } catch (IOException e) {
             e.printStackTrace();
