@@ -29,7 +29,7 @@ public class MergeFileInterceptor implements DownloadInterceptor {
         synchronized (downloadTask.getLock()) {
             long contentLength = downloadInfo.getContentLength();
             long completedSize = downloadInfo.getCompletedSize();
-            if (!downloadInfo.isSupportBreakpoint()) {
+            if (!downloadInfo.isSupportBreakpoint() || downloadRequest.isDisableBreakPointDownload()) {
                 checkDownloadResult(contentLength, completedSize);
                 return downloadInfo.snapshot();
             }

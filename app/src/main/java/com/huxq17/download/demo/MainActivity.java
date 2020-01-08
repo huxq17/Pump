@@ -3,21 +3,14 @@ package com.huxq17.download.demo;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.Toast;
 
-import com.huxq17.download.core.DownloadInfo;
-import com.huxq17.download.core.DownloadInterceptor;
-import com.huxq17.download.core.DownloadRequest;
-import com.huxq17.download.demo.remote.RemoteDownloadListActivity;
-import com.huxq17.download.utils.OKHttpUtil;
-import com.huxq17.download.config.DownloadConfig;
 import com.huxq17.download.Pump;
-import com.huxq17.download.utils.LogUtil;
-import com.huxq17.download.core.connection.OkHttpDownloadConnection;
 import com.huxq17.download.demo.installapk.APK;
+import com.huxq17.download.demo.remote.RemoteDownloadListActivity;
 import com.huxq17.download.message.DownloadListener;
+import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
 
@@ -83,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
                         .forceReDownload(true)
                         //Optionally,Set how many threads are used when downloading,default 3.
                         .threadNum(3)
-                        .disableBreakPointDownload()
+//                        .disableBreakPointDownload()
                         .setRetry(3, 200)
                         .submit();
             }
