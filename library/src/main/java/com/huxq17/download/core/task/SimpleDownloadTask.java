@@ -37,7 +37,6 @@ public class SimpleDownloadTask extends Task {
                 if (connection.isSuccessful()) {
                     byte[] buffer = new byte[8092];
                     connection.prepareDownload(downloadFile);
-
                     int len;
                     while (!isCanceled() && (len = connection.downloadBuffer(buffer)) != -1) {
                         if (!downloadTask.onDownload(len)) {

@@ -23,6 +23,7 @@ public final class DownloadRequest {
 
     private final DownloadTaskExecutor downloadTaskExecutor;
     private DownloadDetailsInfo downloadInfo;
+    private final boolean disableBreakPointDownload;
 
     DownloadRequest(DownloadGenerator downloadGenerator) {
         this.id = downloadGenerator.id;
@@ -35,6 +36,7 @@ public final class DownloadRequest {
         this.retryDelay = downloadGenerator.retryDelay;
         this.downloadListener = downloadGenerator.downloadListener;
         this.downloadTaskExecutor = downloadGenerator.downloadTaskExecutor;
+        this.disableBreakPointDownload = downloadGenerator.disableBreakPointDownload;
     }
 
     void setDownloadInfo(DownloadDetailsInfo downloadInfo) {
@@ -88,8 +90,13 @@ public final class DownloadRequest {
         return tag == null ? "" : tag;
     }
 
+
     public boolean isForceReDownload() {
         return forceReDownload;
+    }
+
+    public boolean isDisableBreakPointDownload() {
+        return disableBreakPointDownload;
     }
 
     public DownloadTaskExecutor getDownloadExecutor() {
@@ -113,6 +120,7 @@ public final class DownloadRequest {
 
         private static final int DEFAULT_RETRY_DELAY = 200;
         private DownloadTaskExecutor downloadTaskExecutor;
+        private boolean disableBreakPointDownload;
 
         public DownloadGenerator(String url, String filePath) {
             this.url = url;
@@ -155,6 +163,12 @@ public final class DownloadRequest {
          */
         public DownloadGenerator forceReDownload(boolean force) {
             this.forceReDownload = force;
+            return this;
+        }
+
+        public DownloadGenerator disableBreakPointDownload() {
+            this.disableBreakPointDownload = true;
+            threadNum = 1;
             return this;
         }
 

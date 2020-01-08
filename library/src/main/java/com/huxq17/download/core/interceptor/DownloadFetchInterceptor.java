@@ -25,7 +25,7 @@ public class DownloadFetchInterceptor implements DownloadInterceptor {
         downloadInfo = downloadRequest.getDownloadInfo();
 
         if (downloadInfo.isRunning()) {
-            if (downloadInfo.isSupportBreakpoint()) {
+            if (downloadInfo.isSupportBreakpoint() && !downloadRequest.isDisableBreakPointDownload()) {
                 downloadWithBreakpoint();
             } else {
                 downloadWithoutBreakPoint();

@@ -119,15 +119,16 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
                 return name.startsWith(DOWNLOAD_PART);
             }
         });
-        if (childList != null && childList.length != downloadRequest.getThreadNum() ||
+        if (childList != null && childList.length != downloadRequest.getThreadNum() && downloadDetailsInfo.isSupportBreakpoint() ||
                 contentLength != downloadDetailsInfo.getContentLength()
-                || contentLength == CONTENT_LENGTH_NOT_FOUND) {
-            FileUtil.deleteDir(tempDir);
+                || contentLength == CONTENT_LENGTH_NOT_FOUND || !downloadDetailsInfo.isSupportBreakpoint()
+                || downloadRequest.isDisableBreakPointDownload()) {
+            downloadDetailsInfo.deleteTempDir();
         }
         downloadDetailsInfo.setContentLength(contentLength);
         downloadDetailsInfo.setFinished(0);
-        downloadTask.updateInfo();
         downloadDetailsInfo.deleteDownloadFile();
+        downloadTask.updateInfo();
     }
 
     private void setFilePathIfNeed(DownloadConnection connection) {
