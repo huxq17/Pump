@@ -17,7 +17,6 @@ import com.huxq17.download.core.connection.DownloadConnection;
 import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.manager.IDownloadManager;
-import com.huxq17.download.utils.FileUtil;
 import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.utils.Util;
 
@@ -57,7 +56,6 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
             long originalContentLength = Util.parseContentLength(connection.getHeader("Content-Length"));
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 contentLength = originalContentLength;
-                downloadDetailsInfo.setSupportBreakpoint(false);
             }
             if (contentLength == CONTENT_LENGTH_NOT_FOUND && isNeedHeadContentLength(contentLengthField, transferEncoding)) {
                 contentLength = headContentLength();
@@ -89,7 +87,12 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
                     downloadDetailsInfo.setCacheBean(new DownloadProvider.CacheBean(downloadRequest.getId(), lastModified, eTag));
                 }
             }
-            downloadDetailsInfo.setSupportBreakpoint(contentLength != CONTENT_LENGTH_NOT_FOUND);
+            if (responseCode == HttpURLConnection.HTTP_PARTIAL) {
+                downloadDetailsInfo.setSupportBreakpoint(contentLength != CONTENT_LENGTH_NOT_FOUND
+                        && !downloadRequest.isDisableBreakPointDownload());
+            } else {
+                downloadDetailsInfo.setSupportBreakpoint(false);
+            }
             checkDownloadFile(contentLength);
         } else if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
             if (downloadDetailsInfo.isFinished()) {
@@ -119,10 +122,9 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
                 return name.startsWith(DOWNLOAD_PART);
             }
         });
-        if (childList != null && childList.length != downloadRequest.getThreadNum() && downloadDetailsInfo.isSupportBreakpoint() ||
-                contentLength != downloadDetailsInfo.getContentLength()
-                || contentLength == CONTENT_LENGTH_NOT_FOUND || !downloadDetailsInfo.isSupportBreakpoint()
-                || downloadRequest.isDisableBreakPointDownload()) {
+        if (childList != null && childList.length != downloadRequest.getThreadNum() && downloadDetailsInfo.isSupportBreakpoint()
+                || contentLength != downloadDetailsInfo.getContentLength()
+                || contentLength == CONTENT_LENGTH_NOT_FOUND || !downloadDetailsInfo.isSupportBreakpoint()) {
             downloadDetailsInfo.deleteTempDir();
         }
         downloadDetailsInfo.setContentLength(contentLength);
