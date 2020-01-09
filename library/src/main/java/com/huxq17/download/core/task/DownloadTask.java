@@ -38,14 +38,15 @@ public class DownloadTask extends Task {
             dbService = DBService.getInstance();
             messageCenter = PumpFactory.getService(IMessageCenter.class);
             downloadInfo.setErrorCode(0);
+            downloadInfo.setStatus(DownloadInfo.Status.WAIT);
             if (downloadInfo.getCompletedSize() == downloadInfo.getContentLength()
-                    && downloadRequest.isForceReDownload()) {
+                    && downloadRequest.isForceReDownload()
+            ||downloadRequest.isDisableBreakPointDownload()) {
                 downloadInfo.setCompletedSize(0);
                 downloadInfo.deleteDownloadFile();
+                downloadInfo.setProgress(0);
+                updateInfo();
             }
-            downloadInfo.setStatus(DownloadInfo.Status.WAIT);
-            downloadInfo.setProgress(0);
-            updateInfo();
             notifyProgressChanged(downloadInfo);
         } else {
             downloadInfo = null;
