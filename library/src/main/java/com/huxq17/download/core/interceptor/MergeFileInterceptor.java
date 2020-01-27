@@ -81,7 +81,7 @@ public class MergeFileInterceptor implements DownloadInterceptor {
             downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
             downloadInfo.setCompletedSize(completedSize);
         } else {
-            downloadInfo.setStatus(DownloadInfo.Status.FAILED);
+            downloadInfo.setErrorCode(ErrorCode.DOWNLOAD_FAILED);
         }
     }
 

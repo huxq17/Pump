@@ -21,4 +21,8 @@ public class ErrorCode {
      * Merge file failed.
      */
     public static final int MERGE_FILE_FAILED = 1006;
+    /**
+     * Download file failed.
+     */
+    public static final int DOWNLOAD_FAILED = 1007;
 }
