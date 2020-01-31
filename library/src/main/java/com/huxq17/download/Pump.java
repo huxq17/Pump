@@ -3,7 +3,6 @@ package com.huxq17.download;
 
 import android.support.annotation.NonNull;
 
-import com.huxq17.download.callback.Func;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.manager.IDownloadManager;
@@ -92,7 +91,7 @@ public class Pump {
     }
 
     /**
-     * Delete a download info by Tag
+     * Delete a download download by Tag,to delete a group of task.
      *
      * @param tag tag th tag of group.
      */
@@ -101,7 +100,7 @@ public class Pump {
     }
 
     /**
-     * Delete a download info by unique download id. this method may delete a group of tasks.
+     * Delete a download by special download id.
      *
      * @param id unique download id,default is download url.
      */

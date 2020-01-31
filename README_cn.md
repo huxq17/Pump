@@ -1,12 +1,12 @@
 # Pump
-[![Android Arsenal]( https://img.shields.io/badge/Android%20Arsenal-Pump-green.svg?style=flat )]( https://android-arsenal.com/details/1/7293 )
+[![Android Arsenal]( https://img.shields.io/badge/Android%20Arsenal-Pump-green.svg?style=flat)]( https://android-arsenal.com/details/1/7293 )
 
-Pump is a fast, easy-to-use android download library that supports multitask, multithread, and breakpoint download. Use HTTP caching mechanism to avoid unnecessary download and make download smarter. For more information, see  [the wiki](https://github.com/huxq17/Pump/wiki/Usage).
+See the [English Doc](https://github.com/huxq17/Pump/blob/master/README.md) for English readme.
 
-See the [中文文档](https://github.com/huxq17/Pump/blob/master/README.md) for Chinese readme.
+Pump是一个快速，易用的android下载库，支持多任务，多线程和断点下载，同时使用了Http缓存机制来避免不必要的下载，让下载更加智能。 [点击查看更多信息。](https://github.com/huxq17/Pump/wiki/%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)
 
-## Download
-App module build.gradle：
+### 配置 build.gradle：
+App模块的build.gradle：
 
 ```
 dependencies {
@@ -15,13 +15,13 @@ dependencies {
 }
 
 ```
-### Gifs
+### 效果图
 
-|Single Task|Multiple Task|
+|下载单个任务|下载多个任务|
 |:-----|:-----|
 | <img src="art/download_file.gif" width="280" height="475" /> | <img src="art/download_files.gif" width="280" height="475" /> |
 
-### Proguard Rules
+### 混淆规则
 
 ```
 -keep class com.huxq17.download.** { *; }
@@ -29,9 +29,8 @@ dependencies {
 -dontwarn okio.**
 ```
 
-
-### About me
-    Email：huxq17@gmail.com
+### 关于我
+    邮箱：huxq17@163.com
 
 ### License
 

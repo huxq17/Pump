@@ -66,7 +66,7 @@ public class DownloadConfig {
 
         /**
          * Set the minimum available storage space size for downloading to avoid insufficient
-         * storage space during downloading, default is 4kb。
+         * storage space during downloading, default is 4kb.
          *
          * @param minUsableStorageSpace minimum available storage space size
          */
