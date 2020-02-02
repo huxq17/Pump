@@ -144,6 +144,6 @@ public class MainActivity extends AppCompatActivity {
             progressDialog.dismiss();
         }
         //shutdown will stop all tasks and release some resource.
-        Pump.shutdown();
+//        Pump.shutdown();
     }
 }

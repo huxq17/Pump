@@ -60,18 +60,15 @@ public class DownloadInfoManager {
     public DownloadDetailsInfo createInfoByCursor(Cursor cursor) {
         String id = cursor.getString(0);
         DownloadDetailsInfo info = downloadInfoMap.get(id);
-        if (info != null) {
-            return info;
-        } else {
+        if (info == null) {
             info = new DownloadDetailsInfo(id, cursor.getString(1),
                     cursor.getString(6), cursor.getString(7), cursor.getLong(5));
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));
             info.calculateDownloadProgress();
             downloadInfoMap.put(id, info);
-            return info;
         }
-
+        return info;
     }
 
 }

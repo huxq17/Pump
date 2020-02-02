@@ -118,9 +118,13 @@ public class DBService {
         SQLiteDatabase db = getWritableDatabase();
         Cursor cursor;
         if (tag == null) {
-            cursor = db.query(DownloadProvider.DownloadTable.TABLE_NAME, null, null, null, null, null, DownloadProvider.DownloadTable.CREATE_TIME, null);
+            cursor = db.query(DownloadProvider.DownloadTable.TABLE_NAME, null,
+                    null, null, null, null,
+                    DownloadProvider.DownloadTable.CREATE_TIME, null);
         } else {
-            cursor = db.query(DownloadProvider.DownloadTable.TABLE_NAME, null, DownloadProvider.DownloadTable.TAG + " = ?", new String[]{tag}, null, null, DownloadProvider.DownloadTable.CREATE_TIME, null);
+            cursor = db.query(DownloadProvider.DownloadTable.TABLE_NAME, null,
+                    DownloadProvider.DownloadTable.TAG + " = ?", new String[]{tag},
+                    null, null, DownloadProvider.DownloadTable.CREATE_TIME, null);
         }
         while (cursor.moveToNext()) {
             DownloadDetailsInfo info = downloadInfoManager.createInfoByCursor(cursor);

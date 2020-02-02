@@ -91,7 +91,7 @@ public class Pump {
     }
 
     /**
-     * Delete a download download by Tag,to delete a group of task.
+     * Delete a download by Tag,to delete a group of task.
      *
      * @param tag tag th tag of group.
      */
@@ -109,7 +109,7 @@ public class Pump {
     }
 
     /**
-     * Continue a download info by {@link DownloadInfo}
+     * Continue a download by id.
      *
      * @param id unique download id,default is download url.
      */
@@ -124,7 +124,7 @@ public class Pump {
     /**
      * Get a list of all download list.
      *
-     * @return
+     * @return download list
      */
     public static List<DownloadInfo> getAllDownloadList() {
         return PumpFactory.getService(IDownloadManager.class).getAllDownloadList();
