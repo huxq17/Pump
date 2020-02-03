@@ -4,7 +4,7 @@ package com.huxq17.download;
 import android.support.annotation.NonNull;
 
 import com.huxq17.download.core.DownloadInfo;
-import com.huxq17.download.manager.IDownloadManager;
+import com.huxq17.download.core.service.IDownloadManager;
 
 import java.io.File;
 import java.util.List;

@@ -5,9 +5,9 @@ import android.support.annotation.NonNull;
 
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadRequest;
-import com.huxq17.download.manager.IDownloadManager;
-import com.huxq17.download.message.DownloadListener;
-import com.huxq17.download.message.IMessageCenter;
+import com.huxq17.download.core.service.IDownloadManager;
+import com.huxq17.download.core.DownloadListener;
+import com.huxq17.download.core.service.IMessageCenter;
 
 import java.io.File;
 import java.util.List;

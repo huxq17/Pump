@@ -4,9 +4,10 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 
-import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
+import com.huxq17.download.core.DownloadListener;
+import com.huxq17.download.core.MessageCenter;
 
 import org.junit.Assert;
 import org.junit.Before;

@@ -4,7 +4,7 @@ import android.app.Application;
 
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.config.DownloadConfig;
-import com.huxq17.download.config.IDownloadConfigService;
+import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.core.DownloadTaskExecutor;
 import com.huxq17.download.core.SimpleDownloadTaskExecutor;
 

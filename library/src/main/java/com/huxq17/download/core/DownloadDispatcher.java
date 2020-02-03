@@ -7,12 +7,12 @@ import android.text.format.Formatter;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.TaskManager;
-import com.huxq17.download.config.IDownloadConfigService;
+import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.core.task.Task;
 import com.huxq17.download.db.DBService;
-import com.huxq17.download.manager.IDownloadManager;
-import com.huxq17.download.message.IMessageCenter;
+import com.huxq17.download.core.service.IDownloadManager;
+import com.huxq17.download.core.service.IMessageCenter;
 import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.utils.Util;
 

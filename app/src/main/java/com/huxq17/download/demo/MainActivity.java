@@ -9,7 +9,7 @@ import android.widget.Toast;
 import com.huxq17.download.Pump;
 import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.demo.remote.RemoteDownloadListActivity;
-import com.huxq17.download.message.DownloadListener;
+import com.huxq17.download.core.DownloadListener;
 import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;

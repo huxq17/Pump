@@ -4,9 +4,9 @@ package com.huxq17.download.config;
 import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.connection.DownloadConnection;
 import com.huxq17.download.core.connection.OkHttpDownloadConnection;
+import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.utils.OKHttpUtil;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 

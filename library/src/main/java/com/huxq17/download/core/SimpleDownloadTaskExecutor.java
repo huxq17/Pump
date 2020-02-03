@@ -1,7 +1,7 @@
 package com.huxq17.download.core;
 
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.config.IDownloadConfigService;
+import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.utils.LogUtil;
 

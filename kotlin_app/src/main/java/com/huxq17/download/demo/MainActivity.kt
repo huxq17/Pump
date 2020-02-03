@@ -9,7 +9,7 @@ import android.widget.Toast
 import com.huxq17.download.config.DownloadConfig
 import com.huxq17.download.Pump
 import com.huxq17.download.demo.installapk.APK
-import com.huxq17.download.message.DownloadListener
+import com.huxq17.download.core.DownloadListener
 import kotlinx.android.synthetic.main.activity_main.*
 
 import java.io.File

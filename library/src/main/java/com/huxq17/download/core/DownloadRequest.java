@@ -5,8 +5,7 @@ import android.text.TextUtils;
 
 import com.huxq17.download.Pump;
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.manager.IDownloadManager;
-import com.huxq17.download.message.DownloadListener;
+import com.huxq17.download.core.service.IDownloadManager;
 
 
 public final class DownloadRequest {
@@ -209,7 +208,8 @@ public final class DownloadRequest {
                 threadNum = 3;
             }
             if (this.downloadListener != null) {
-                this.downloadListener.enable();
+                downloadListener.setId(id);
+                downloadListener.enable();
             }
             PumpFactory.getService(IDownloadManager.class).
                     submit(new DownloadRequest(this));

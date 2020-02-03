@@ -4,7 +4,7 @@ package com.huxq17.download.core.task;
 import android.text.TextUtils;
 
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.config.IDownloadConfigService;
+import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadInterceptor;
@@ -15,7 +15,7 @@ import com.huxq17.download.core.interceptor.DownloadFetchInterceptor;
 import com.huxq17.download.core.interceptor.MergeFileInterceptor;
 import com.huxq17.download.core.interceptor.RetryInterceptor;
 import com.huxq17.download.db.DBService;
-import com.huxq17.download.message.IMessageCenter;
+import com.huxq17.download.core.service.IMessageCenter;
 
 import java.util.ArrayList;
 import java.util.List;

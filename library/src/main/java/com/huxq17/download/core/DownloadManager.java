@@ -8,7 +8,7 @@ import com.huxq17.download.DownloadInfoSnapshot;
 import com.huxq17.download.callback.Filter;
 import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.db.DBService;
-import com.huxq17.download.manager.IDownloadManager;
+import com.huxq17.download.core.service.IDownloadManager;
 import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;

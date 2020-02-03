@@ -20,7 +20,7 @@ import com.huxq17.download.Pump;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.demo.installapk.APK;
-import com.huxq17.download.message.DownloadListener;
+import com.huxq17.download.core.DownloadListener;
 
 import java.util.Collections;
 import java.util.Comparator;

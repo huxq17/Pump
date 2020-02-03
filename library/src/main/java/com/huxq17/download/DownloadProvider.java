@@ -12,12 +12,12 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.huxq17.download.config.DownloadConfigService;
-import com.huxq17.download.config.IDownloadConfigService;
+import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.core.DownloadManager;
 import com.huxq17.download.db.DBService;
-import com.huxq17.download.manager.IDownloadManager;
-import com.huxq17.download.message.IMessageCenter;
-import com.huxq17.download.message.MessageCenter;
+import com.huxq17.download.core.service.IDownloadManager;
+import com.huxq17.download.core.service.IMessageCenter;
+import com.huxq17.download.core.MessageCenter;
 import com.huxq17.download.utils.OKHttpUtil;
 import com.huxq17.download.utils.ReflectUtil;
 

@@ -1,9 +1,8 @@
-package com.huxq17.download.message;
+package com.huxq17.download.core;
 
 import android.text.TextUtils;
 
 import com.huxq17.download.Pump;
-import com.huxq17.download.core.DownloadInfo;
 
 public class DownloadListener {
     private String id;
@@ -42,7 +41,6 @@ public class DownloadListener {
     }
 
     private DownloadInfo downloadInfo;
-
 
     public final DownloadInfo.Status getStatus() {
         return status;

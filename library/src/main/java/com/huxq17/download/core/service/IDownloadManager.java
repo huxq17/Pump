@@ -1,4 +1,4 @@
-package com.huxq17.download.manager;
+package com.huxq17.download.core.service;
 
 import android.content.Context;
 

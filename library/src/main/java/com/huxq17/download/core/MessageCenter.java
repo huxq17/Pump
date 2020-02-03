@@ -1,4 +1,4 @@
-package com.huxq17.download.message;
+package com.huxq17.download.core;
 
 import android.content.Context;
 import android.os.Handler;
@@ -6,9 +6,8 @@ import android.os.Looper;
 import android.os.Message;
 
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.core.DownloadDetailsInfo;
-import com.huxq17.download.core.DownloadInfo;
-import com.huxq17.download.manager.IDownloadManager;
+import com.huxq17.download.core.service.IDownloadManager;
+import com.huxq17.download.core.service.IMessageCenter;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;

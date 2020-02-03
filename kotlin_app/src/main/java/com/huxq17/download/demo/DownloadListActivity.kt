@@ -14,7 +14,7 @@ import android.view.ViewGroup
 import com.huxq17.download.Pump
 import com.huxq17.download.core.DownloadInfo
 import com.huxq17.download.demo.installapk.APK
-import com.huxq17.download.message.DownloadListener
+import com.huxq17.download.core.DownloadListener
 import com.huxq17.download.utils.LogUtil
 import kotlinx.android.synthetic.main.activity_download_list.*
 import kotlinx.android.synthetic.main.item_download_list.view.*

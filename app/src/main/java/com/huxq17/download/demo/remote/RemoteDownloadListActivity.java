@@ -26,7 +26,7 @@ import com.huxq17.download.RxPump;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.demo.R;
 import com.huxq17.download.demo.Utils;
-import com.huxq17.download.message.DownloadListener;
+import com.huxq17.download.core.DownloadListener;
 import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
