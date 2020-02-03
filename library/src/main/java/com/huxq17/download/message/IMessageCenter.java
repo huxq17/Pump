@@ -11,7 +11,6 @@ public interface IMessageCenter {
 
     void unRegister(String url);
 
-    @Deprecated
     void unRegister(DownloadListener downloadListener);
 
     void notifyProgressChanged(DownloadDetailsInfo downloadInfo);

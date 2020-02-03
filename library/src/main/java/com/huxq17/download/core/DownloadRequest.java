@@ -209,7 +209,7 @@ public final class DownloadRequest {
                 threadNum = 3;
             }
             if (this.downloadListener != null) {
-                this.downloadListener.enable(id);
+                this.downloadListener.enable();
             }
             PumpFactory.getService(IDownloadManager.class).
                     submit(new DownloadRequest(this));

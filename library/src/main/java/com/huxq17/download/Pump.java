@@ -65,9 +65,8 @@ public class Pump {
     /**
      * unSubscribe {@link DownloadListener}.
      *
-     * @param downloadListener
+     * @param downloadListener downloadListener
      */
-    @Deprecated
     public static void unSubscribe(DownloadListener downloadListener) {
         PumpFactory.getService(IMessageCenter.class).unRegister(downloadListener);
     }

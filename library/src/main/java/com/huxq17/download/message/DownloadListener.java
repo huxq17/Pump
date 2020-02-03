@@ -32,11 +32,6 @@ public class DownloadListener {
      * Enable this observer.
      */
     public final void enable() {
-        enable(null);
-    }
-
-    public final void enable(String id) {
-        this.id = id;
         if (!enable) {
             Pump.subscribe(this);
         }

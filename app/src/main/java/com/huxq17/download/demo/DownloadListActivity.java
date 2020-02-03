@@ -35,7 +35,7 @@ public class DownloadListActivity extends AppCompatActivity {
         context.startActivity(intent);
     }
 
-    DownloadListener downloadObserver = new DownloadListener() {
+    DownloadListener downloadListener = new DownloadListener() {
         @Override
         public void onProgress(int progress) {
             DownloadInfo downloadInfo = getDownloadInfo();
@@ -65,7 +65,7 @@ public class DownloadListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         tag = getIntent().getStringExtra("tag");
         setContentView(R.layout.activity_download_list);
-        downloadObserver.enable();
+        downloadListener.enable();
         recyclerView = findViewById(R.id.rvDownloadList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         //Get all download list.
@@ -86,7 +86,7 @@ public class DownloadListActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        downloadObserver.disable();
+        downloadListener.disable();
         for (DownloadInfo downloadInfo : downloadInfoList) {
             Pump.stop(downloadInfo.getId());
         }

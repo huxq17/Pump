@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initProgressDialog();
-//        Pump.subscribe(downloadObserver);
+//        Pump.subscribe(downloadListener);
 //        try {
 //            File httpCacheDir = new File(getCacheDir(), "http");
 //            long httpCacheSize = 50 * 1024 * 1024;
