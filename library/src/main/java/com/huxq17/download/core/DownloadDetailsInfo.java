@@ -239,7 +239,7 @@ public class DownloadDetailsInfo {
 
     public void deleteTempDir() {
         if (getTempDir() != null) {
-            FileUtil.deleteFile(getTempDir());
+            FileUtil.deleteDir(getTempDir());
         }
     }
 

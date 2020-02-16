@@ -98,6 +98,8 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
             if (downloadDetailsInfo.isFinished()) {
                 downloadDetailsInfo.setCompletedSize(downloadDetailsInfo.getContentLength());
                 downloadDetailsInfo.setFinished(1);
+                downloadDetailsInfo.setProgress(100);
+                downloadDetailsInfo.setStatus(DownloadInfo.Status.FINISHED);
                 downloadTask.updateInfo();
                 return downloadDetailsInfo.snapshot();
             } else {

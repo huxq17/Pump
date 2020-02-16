@@ -4,12 +4,13 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.huxq17.download.Pump;
+import com.huxq17.download.core.DownloadListener;
 import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.demo.remote.RemoteDownloadListActivity;
-import com.huxq17.download.core.DownloadListener;
 import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
@@ -41,12 +42,17 @@ public class MainActivity extends AppCompatActivity {
 //                    .invoke(null, httpCacheDir, httpCacheSize);
 //        } catch (Exception httpResponseCacheNotAvailable) {
 //        }
+       final EditText etDownload = findViewById(R.id.etDownload);
         findViewById(R.id.add_task).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 progressDialog.setProgress(0);
                 progressDialog.show();
-                Pump.newRequest(url2)
+                String downloadUrl = etDownload.getText().toString();
+                if(downloadUrl.isEmpty()){
+                    downloadUrl =url2;
+                }
+                Pump.newRequest(downloadUrl)
                         .listener(new DownloadListener() {
 
                             @Override
@@ -75,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
                         //Optionally,Set whether to repeatedly download the downloaded file,default false.
                         .forceReDownload(true)
                         //Optionally,Set how many threads are used when downloading,default 3.
-                        .threadNum(3)
+                        .threadNum(1)
 //                        .disableBreakPointDownload()
                         .setRetry(3, 200)
                         .submit();
@@ -87,12 +93,12 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
                 Pump.newRequest(url, file1.getAbsolutePath())
-                        .forceReDownload(true)
                         .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
+                        .forceReDownload(true)
                         .submit();
                 Pump.newRequest(url4)
-                        .forceReDownload(true)
                         .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
+                        .forceReDownload(true)
                         .submit();
                 Pump.newRequest(url5)
                         .tag(TAG)
@@ -114,6 +120,13 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         RemoteDownloadListActivity.start(v.getContext());
+                    }
+                });
+        findViewById(R.id.jump_webview_download).
+                setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        WebViewDownloadActivity.start(v.getContext());
                     }
                 });
     }

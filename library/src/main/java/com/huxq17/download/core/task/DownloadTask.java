@@ -4,7 +4,6 @@ package com.huxq17.download.core.task;
 import android.text.TextUtils;
 
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadInterceptor;
@@ -14,8 +13,9 @@ import com.huxq17.download.core.interceptor.CheckCacheInterceptor;
 import com.huxq17.download.core.interceptor.DownloadFetchInterceptor;
 import com.huxq17.download.core.interceptor.MergeFileInterceptor;
 import com.huxq17.download.core.interceptor.RetryInterceptor;
-import com.huxq17.download.db.DBService;
+import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.core.service.IMessageCenter;
+import com.huxq17.download.db.DBService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,11 +39,13 @@ public class DownloadTask extends Task {
             messageCenter = PumpFactory.getService(IMessageCenter.class);
             downloadInfo.setErrorCode(0);
             downloadInfo.setStatus(DownloadInfo.Status.WAIT);
+            downloadInfo.setCompletedSize(0);
+            downloadInfo.setProgress(0);
             if (downloadInfo.getCompletedSize() == downloadInfo.getContentLength()
                     && downloadRequest.isForceReDownload()
-            ||downloadRequest.isDisableBreakPointDownload()) {
-                downloadInfo.setCompletedSize(0);
+                    || downloadRequest.isDisableBreakPointDownload()) {
                 downloadInfo.deleteDownloadFile();
+                downloadInfo.setCompletedSize(0);
                 downloadInfo.setProgress(0);
                 updateInfo();
             }

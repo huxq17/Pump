@@ -9,7 +9,7 @@ public class AuthorizationHeaderConnection extends OkHttpDownloadConnection {
     public AuthorizationHeaderConnection(OkHttpClient okHttpClient, String url) {
         super(okHttpClient, url);
         // add authorization header here.
-        addHeader("key","value");
+//        addHeader("user-agent","");
     }
     public static class Factory implements DownloadConnection.Factory {
         private OkHttpClient okHttpClient;

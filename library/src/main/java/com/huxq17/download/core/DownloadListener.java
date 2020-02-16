@@ -58,8 +58,15 @@ public class DownloadListener {
         onProgress(progress);
         if (status == DownloadInfo.Status.FAILED) {
             onFailed();
-        } else if (progress == 100) {
+            unSubscribe();
+        } else if (downloadInfo.getStatus() == DownloadInfo.Status.FINISHED) {
             onSuccess();
+            unSubscribe();
+        }
+    }
+    private void unSubscribe(){
+        if(id!=null){
+            Pump.unSubscribe(id);
         }
     }
 

@@ -44,6 +44,7 @@
             android:name=".installapk.RequestInstallPermissionActivity"
             android:theme="@style/transparentNoTitleStyle" />
         <activity android:name=".remote.RemoteDownloadListActivity" />
+        <activity android:name=".WebViewDownloadActivity" />
     </application>
 
 </manifest>

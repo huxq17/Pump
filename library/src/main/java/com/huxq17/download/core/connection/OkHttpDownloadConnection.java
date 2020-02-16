@@ -27,7 +27,6 @@ public class OkHttpDownloadConnection implements DownloadConnection {
     public OkHttpDownloadConnection(OkHttpClient okHttpClient, String url) {
         this.okHttpClient = okHttpClient;
         builder = new Request.Builder();
-//        builder.addHeader("Connection","close");
         this.url = url;
     }
 
@@ -44,7 +43,8 @@ public class OkHttpDownloadConnection implements DownloadConnection {
 
     @Override
     public void connect() throws IOException {
-        Request request = builder.get().url(url).build();
+        Request request = builder.get().url(url)
+                .build();
         call = okHttpClient.newCall(request);
         response = call.execute();
     }
