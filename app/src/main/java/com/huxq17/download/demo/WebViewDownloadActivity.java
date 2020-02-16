@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
-import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
@@ -47,14 +46,12 @@ public class WebViewDownloadActivity extends AppCompatActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 view.loadUrl(request.getUrl().toString());
-                printlnSession(request.getUrl().toString());
                 return true;
             }
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
                 view.loadUrl(url);
-                printlnSession(url);
                 return true;
             }
         };
@@ -69,7 +66,6 @@ public class WebViewDownloadActivity extends AppCompatActivity {
                 Pump.newRequest(url)
                         .listener(downloadListener)
                         .submit();
-                printlnSession(url);
             }
         });
     }
@@ -96,8 +92,9 @@ public class WebViewDownloadActivity extends AppCompatActivity {
         }
     };
 
-    private void printlnSession(String url) {
-        CookieManager cookieManager = CookieManager.getInstance();
-        String cookies = cookieManager.getCookie(url);
+    @Override
+    protected void onStop() {
+        super.onStop();
+        downloadListener.disable();
     }
 }
