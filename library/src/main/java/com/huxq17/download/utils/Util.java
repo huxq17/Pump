@@ -105,7 +105,6 @@ public class Util {
         }
     }
 
-
     public static long parseContentLength(@Nullable String contentLength) {
         if (contentLength == null) return -1;
 
@@ -197,13 +196,17 @@ public class Util {
                 }
             }
         }
-        if (extension == null) {
-            extension = filename.substring(dotIndex);
-        }
+
         if (dotIndex >= 0) {
+            if (extension == null) {
+                extension = filename.substring(dotIndex);
+            }
             filename = filename.substring(0, dotIndex);
         }
-        return filename + extension;
+        if (extension != null) {
+            filename = filename + extension;
+        }
+        return filename;
     }
 
     /**
