@@ -110,7 +110,7 @@ public class DemoApplication extends Application {
 //                        return downloadInfo;
 //                    }
 //                })
-                .addDownloadInterceptor(changePathInterceptor)
+//                .addDownloadInterceptor(changePathInterceptor)
                 .build();
 
     }
