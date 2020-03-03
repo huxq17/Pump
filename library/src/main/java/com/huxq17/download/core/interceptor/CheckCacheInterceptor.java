@@ -136,7 +136,7 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
     }
 
     private void setFilePathIfNeed(DownloadConnection connection) {
-        if (downloadRequest.getFilePath() == null) {
+        if (downloadDetailsInfo.getFilePath() == null) {
             String fileName = Util.guessFileName(downloadRequest.getUrl(),
                     connection.getHeader("Content-Disposition"), connection.getHeader("Content-Type"));
             downloadRequest.setFilePath(Util.getCachePath(DownloadProvider.context) + "/" + fileName);

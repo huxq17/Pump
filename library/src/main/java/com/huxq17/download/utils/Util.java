@@ -97,11 +97,12 @@ public class Util {
             File parentFile = file.getParentFile();
             if (parentFile != null) {
                 //Create parent directory if not exists.
-                parentFile.mkdirs();
+                if (!parentFile.exists()) {
+                    return parentFile.mkdirs() ? parentFile.getUsableSpace() : 0L;
+                }
                 return parentFile.getUsableSpace();
-            } else {
-                return 0L;
             }
+            return 0L;
         }
     }
 

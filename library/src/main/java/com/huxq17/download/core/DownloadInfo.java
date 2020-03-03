@@ -42,6 +42,10 @@ public final class DownloadInfo {
         return downloadDetailsInfo;
     }
 
+    public void updateFilePath(String filePath) {
+        downloadDetailsInfo.updateFilePath(filePath);
+    }
+
     public void setExtraData(Object extraData) {
         downloadDetailsInfo.setExtraData(extraData);
     }
