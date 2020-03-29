@@ -41,7 +41,7 @@ public class DownloadDispatcher extends Task {
         this.downloadManager = downloadManager;
     }
 
-    public void start() {
+    public synchronized void start() {
         isRunning.set(true);
         isCanceled.set(false);
         requestQueue = new ConcurrentLinkedQueue<>();
