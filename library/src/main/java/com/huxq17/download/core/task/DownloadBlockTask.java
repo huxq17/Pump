@@ -3,12 +3,13 @@ package com.huxq17.download.core.task;
 
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.connection.DownloadConnection;
+import com.huxq17.download.core.service.IDownloadConfigService;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
@@ -70,7 +71,10 @@ public class DownloadBlockTask extends Task {
                     downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
                     downloadTask.cancel();
                 }
-            } catch (IOException e) {
+            }
+            catch (FileNotFoundException e){
+                e.printStackTrace();
+            }catch (IOException e) {
                 e.printStackTrace();
                 downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
             } finally {
