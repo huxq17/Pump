@@ -2,7 +2,6 @@ package com.huxq17.download.demo;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
@@ -25,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     //http://www.httpwatch.com/httpgallery/chunked/chunkedimage.aspx
     String url4 = "http://v.nq6.com/xinqu.apk";
     //    String url5 = "http://t2.hddhhn.com/uploads/tu/201612/98/st93.png";
-    String url5 = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
+    String url5 = "http://gyxza3.eymlz.com/a31/rj_zhoux1/gjhlwjggzd.apk";
     private ProgressDialog progressDialog;
     private final static String TAG = "groupA";
 
