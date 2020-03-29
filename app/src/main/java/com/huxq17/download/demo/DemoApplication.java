@@ -1,12 +1,19 @@
 package com.huxq17.download.demo;
 
 import android.app.Application;
+import android.os.Environment;
 
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.config.DownloadConfig;
+import com.huxq17.download.core.DownloadInfo;
+import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.core.DownloadTaskExecutor;
 import com.huxq17.download.core.SimpleDownloadTaskExecutor;
+import com.huxq17.download.utils.FileUtil;
+import com.huxq17.download.utils.Util;
+
+import java.io.File;
 
 public class DemoApplication extends Application {
     private static DemoApplication instance;
@@ -51,6 +58,25 @@ public class DemoApplication extends Application {
         }
     };
 
+    /**
+     * Use for move download file to another directory.
+     */
+    private DownloadInterceptor changePathInterceptor = new DownloadInterceptor() {
+        @Override
+        public DownloadInfo intercept(DownloadChain chain) {
+            DownloadInfo downloadInfo = chain.proceed(chain.request());
+            if (downloadInfo.getStatus() == DownloadInfo.Status.FINISHED) {
+                File oldFile = new File(downloadInfo.getFilePath());
+                File newFile = new File(Environment.getExternalStorageDirectory(), "AE6-1D01" + File.separatorChar + "Test" + File.separatorChar + oldFile.getName());
+                if(!oldFile.equals(newFile)){
+                    FileUtil.copyFile(oldFile, newFile);
+                    downloadInfo.updateFilePath(newFile.getAbsolutePath());
+                }
+            }
+            return downloadInfo;
+        }
+    };
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -84,6 +110,7 @@ public class DemoApplication extends Application {
 //                        return downloadInfo;
 //                    }
 //                })
+//                .addDownloadInterceptor(changePathInterceptor)
                 .build();
 
     }

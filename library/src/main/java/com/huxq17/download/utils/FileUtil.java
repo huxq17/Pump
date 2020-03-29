@@ -44,6 +44,9 @@ public class FileUtil {
     }
 
     public static void copyFile(File sourceFile, File destFile) {
+        if(destFile.getParentFile()!=null&&!destFile.getParentFile().exists()){
+            destFile.getParentFile().mkdirs();
+        }
         BufferedSource bufferedSource = null;
         BufferedSink bufferedSink = null;
         try {

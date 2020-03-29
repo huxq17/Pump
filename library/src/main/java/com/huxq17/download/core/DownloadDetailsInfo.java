@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.core.task.DownloadTask;
+import com.huxq17.download.db.DBService;
 import com.huxq17.download.utils.FileUtil;
 import com.huxq17.download.utils.Util;
 
@@ -88,6 +89,16 @@ public class DownloadDetailsInfo {
 
     public DownloadTask getDownloadTask() {
         return downloadTask;
+    }
+
+    public void updateFilePath(String filePath) {
+        if (filePath == null || filePath.isEmpty()) {
+            return;
+        }
+        synchronized (this) {
+            setFilePath(filePath);
+            DBService.getInstance().updateInfo(this);
+        }
     }
 
     public void setCacheBean(DownloadProvider.CacheBean cacheBean) {
@@ -218,13 +229,13 @@ public class DownloadDetailsInfo {
                 setStatus(DownloadInfo.Status.STOPPED);
             }
         }
-        progress =  (int) (completedSize * 1f / contentLength * 100);
+        progress = (int) (completedSize * 1f / contentLength * 100);
     }
 
     public DownloadInfo snapshot() {
         computeSpeed();
         return new DownloadInfo(url, downloadFile, tag, id, createTime, speed, completedSize, contentLength,
-                errorCode, status, finished,progress, this);
+                errorCode, status, finished, progress, this);
     }
 
     public File getDownloadFile() {

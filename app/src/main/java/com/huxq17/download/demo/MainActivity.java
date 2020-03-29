@@ -2,6 +2,7 @@ package com.huxq17.download.demo;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
                 if(downloadUrl.isEmpty()){
                     downloadUrl =url2;
                 }
+
                 Pump.newRequest(downloadUrl)
                         .listener(new DownloadListener() {
 
