@@ -41,7 +41,8 @@ public class DownloadTask extends Task {
             downloadInfo.setStatus(DownloadInfo.Status.WAIT);
             downloadInfo.setCompletedSize(0);
             downloadInfo.setProgress(0);
-            if (downloadInfo.getCompletedSize() == downloadInfo.getContentLength()
+            if (downloadInfo.getCompletedSize() > 0 &&
+                    downloadInfo.getCompletedSize() == downloadInfo.getContentLength()
                     && downloadRequest.isForceReDownload()
                     || downloadRequest.isDisableBreakPointDownload()) {
                 downloadInfo.deleteDownloadFile();

@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
                         //Optionally,Set whether to repeatedly download the downloaded file,default false.
                         .forceReDownload(true)
                         //Optionally,Set how many threads are used when downloading,default 3.
-                        .threadNum(1)
+                        .threadNum(3)
 //                        .disableBreakPointDownload()
                         .setRetry(3, 200)
                         .submit();
