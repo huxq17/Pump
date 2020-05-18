@@ -1,8 +1,11 @@
 package com.huxq17.download.core;
 
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 
 import com.huxq17.download.Pump;
+import com.huxq17.download.android.ViewHandler;
 
 public class DownloadListener {
     private String id;
@@ -10,6 +13,13 @@ public class DownloadListener {
     private boolean enable;
 
     public DownloadListener() {
+    }
+
+    public DownloadListener(FragmentActivity activity) {
+        ViewHandler.handleView(activity,this);
+    }
+    public DownloadListener(Fragment fragment) {
+        ViewHandler.handleView(fragment,this);
     }
 
     /**
@@ -64,8 +74,9 @@ public class DownloadListener {
             unSubscribe();
         }
     }
-    private void unSubscribe(){
-        if(id!=null){
+
+    private void unSubscribe() {
+        if (id != null) {
             Pump.unSubscribe(id);
         }
     }

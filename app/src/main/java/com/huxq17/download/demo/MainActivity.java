@@ -47,14 +47,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 progressDialog.setProgress(0);
-                progressDialog.show();
+//                progressDialog.show();
                 String downloadUrl = etDownload.getText().toString();
                 if(downloadUrl.isEmpty()){
                     downloadUrl =url2;
                 }
 
                 Pump.newRequest(downloadUrl)
-                        .listener(new DownloadListener() {
+                        .listener(new DownloadListener(MainActivity.this) {
 
                             @Override
                             public void onProgress(int progress) {
@@ -137,12 +137,6 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Pump.unSubscribe(url2);
-    }
-
     private void initProgressDialog() {
         progressDialog = new ProgressDialog(this);
         progressDialog.setTitle("Downloading");
@@ -154,9 +148,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (progressDialog != null) {
-            progressDialog.dismiss();
-        }
         //shutdown will stop all tasks and release some resource.
 //        Pump.shutdown();
     }
