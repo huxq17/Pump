@@ -1,11 +1,11 @@
 package com.huxq17.download.core;
 
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import android.text.TextUtils;
 
 import com.huxq17.download.Pump;
-import com.huxq17.download.android.ViewHandler;
+import com.huxq17.download.android.ViewLifecycleHandler;
 
 public class DownloadListener {
     private String id;
@@ -16,10 +16,11 @@ public class DownloadListener {
     }
 
     public DownloadListener(FragmentActivity activity) {
-        ViewHandler.handleView(activity,this);
+        ViewLifecycleHandler.handleLifecycleForActivity(activity, this);
     }
+
     public DownloadListener(Fragment fragment) {
-        ViewHandler.handleView(fragment,this);
+        ViewLifecycleHandler.handleLifecycleForFragment(fragment, this);
     }
 
     /**

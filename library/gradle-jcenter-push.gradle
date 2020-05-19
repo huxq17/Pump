@@ -1,7 +1,4 @@
 import groovy.util.Node
-
-
-
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 

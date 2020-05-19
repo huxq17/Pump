@@ -3,10 +3,10 @@ package com.huxq17.download.demo
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -47,7 +47,7 @@ class DownloadListActivity : AppCompatActivity() {
         tag = intent.getStringExtra("tag")
         setContentView(R.layout.activity_download_list)
         downloadObserver.enable()
-        val linearLayoutManager = LinearLayoutManager(this)
+        val linearLayoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         //Get all download list.
         downloadInfoList = if (TextUtils.isEmpty(tag)) Pump.getAllDownloadList() else Pump.getDownloadListByTag(tag)
 
@@ -67,7 +67,7 @@ class DownloadListActivity : AppCompatActivity() {
         Pump.shutdown()
     }
 
-    class DownloadAdapter(var map: HashMap<DownloadViewHolder, DownloadInfo>, var downloadInfoList: MutableList<DownloadInfo>) : RecyclerView.Adapter<DownloadViewHolder>() {
+    class DownloadAdapter(var map: HashMap<DownloadViewHolder, DownloadInfo>, var downloadInfoList: MutableList<DownloadInfo>) : androidx.recyclerview.widget.RecyclerView.Adapter<DownloadViewHolder>() {
 
         override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): DownloadViewHolder {
             val v = LayoutInflater.from(viewGroup.context).inflate(R.layout.item_download_list, viewGroup, false)
@@ -94,7 +94,7 @@ class DownloadListActivity : AppCompatActivity() {
         }
     }
 
-    class DownloadViewHolder(itemView: View, adapter: DownloadAdapter) : RecyclerView.ViewHolder(itemView), View.OnClickListener, View.OnLongClickListener {
+    class DownloadViewHolder(itemView: View, adapter: DownloadAdapter) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView), View.OnClickListener, View.OnLongClickListener {
         lateinit var downloadInfo: DownloadInfo
         lateinit var status: DownloadInfo.Status
         private var totalSizeString: String? = null

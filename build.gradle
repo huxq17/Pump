@@ -22,10 +22,8 @@ buildscript {
 }
 subprojects {
     println("=======$project.name")
-
     project.configurations.all {
         resolutionStrategy.eachDependency { details ->
-
             if (details.requested.group == 'com.android.support') {
                 details.useVersion "28.0.0"
             }
@@ -34,7 +32,8 @@ subprojects {
 }
 
 allprojects {
-    apply from: "${project.rootProject.file('common.gradle')}"
+    apply from: "${project.rootProject.file('gradles/common.gradle')}"
+    apply from: "${project.rootProject.file('gradles/version.gradle')}"
     repositories {
         mavenLocal()
         google()

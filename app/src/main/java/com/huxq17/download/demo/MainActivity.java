@@ -2,7 +2,7 @@ package com.huxq17.download.demo;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 progressDialog.setProgress(0);
-//                progressDialog.show();
+                progressDialog.show();
                 String downloadUrl = etDownload.getText().toString();
                 if(downloadUrl.isEmpty()){
                     downloadUrl =url2;

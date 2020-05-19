@@ -1,6 +1,6 @@
 package com.huxq17.download.demo;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Base64;
 
 import com.huxq17.download.callback.Func;

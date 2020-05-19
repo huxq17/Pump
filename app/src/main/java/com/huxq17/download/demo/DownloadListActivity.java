@@ -4,11 +4,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,7 +35,7 @@ public class DownloadListActivity extends AppCompatActivity {
         context.startActivity(intent);
     }
 
-    DownloadListener downloadListener = new DownloadListener() {
+    DownloadListener downloadListener = new DownloadListener(this) {
         @Override
         public void onProgress(int progress) {
             DownloadInfo downloadInfo = getDownloadInfo();
@@ -86,7 +86,6 @@ public class DownloadListActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        downloadListener.disable();
         for (DownloadInfo downloadInfo : downloadInfoList) {
             Pump.stop(downloadInfo.getId());
         }

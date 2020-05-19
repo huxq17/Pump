@@ -1,7 +1,7 @@
 package com.huxq17.download;
 
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadRequest;

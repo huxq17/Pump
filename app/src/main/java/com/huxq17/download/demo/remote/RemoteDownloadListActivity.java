@@ -8,12 +8,12 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.content.FileProvider;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.core.content.FileProvider;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -51,7 +51,7 @@ public class RemoteDownloadListActivity extends AppCompatActivity {
         context.startActivity(intent);
     }
 
-    DownloadListener downloadObserver = new DownloadListener() {
+    DownloadListener downloadObserver = new DownloadListener(this) {
         @Override
         public void onProgress(int progress) {
             DownloadInfo downloadInfo = getDownloadInfo();
@@ -99,7 +99,6 @@ public class RemoteDownloadListActivity extends AppCompatActivity {
     private Disposable disposable;
     private LinkedHashSet<String> downloadingMusicList = new LinkedHashSet<>();
 
-    @SuppressLint("CheckResult")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -156,7 +155,6 @@ public class RemoteDownloadListActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        downloadObserver.disable();
         disposable.dispose();
         for (String id : map.keySet()) {
             Pump.stop(id);

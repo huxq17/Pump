@@ -2,31 +2,31 @@ package com.huxq17.download.android;
 
 import android.app.Activity;
 import android.app.Application;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
 
 import com.huxq17.download.core.DownloadListener;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ViewHandler {
+public class ViewLifecycleHandler {
     private static final ViewHandlerManager sViewHandlerManager = new ViewHandlerManager();
 
-    public static void handleView(FragmentActivity view, DownloadListener downloadListener) {
-        sViewHandlerManager.handleActivity(view, downloadListener);
+    public static void handleLifecycleForActivity(FragmentActivity view, DownloadListener downloadListener) {
+        sViewHandlerManager.handleLifecycleForActivity(view, downloadListener);
     }
 
-    public static void handleView(Fragment view, DownloadListener downloadListener) {
-        sViewHandlerManager.handleFragment(view, downloadListener);
+    public static void handleLifecycleForFragment(Fragment view, DownloadListener downloadListener) {
+        sViewHandlerManager.handleLifecycleForFragment(view, downloadListener);
     }
 
     private static class ViewHandlerManager {
         private boolean mActivityCallbacksIsAdded = false;
         private Map<String, DownloadListener> downloadListenerMap = new HashMap<>();
 
-        private void handleActivity(FragmentActivity activity, DownloadListener downloadListener) {
+        private void handleLifecycleForActivity(FragmentActivity activity, DownloadListener downloadListener) {
             if (activity.getFragmentManager() == null || activity.getFragmentManager().isDestroyed()) {
                 downloadListener.disable();
                 return;
@@ -38,7 +38,7 @@ public class ViewHandler {
             }
         }
 
-        private void handleFragment(Fragment fragment, DownloadListener downloadListener) {
+        private void handleLifecycleForFragment(Fragment fragment, DownloadListener downloadListener) {
             if (fragment.getFragmentManager() == null || fragment.getFragmentManager().isDestroyed()) {
                 downloadListener.disable();
                 return;
