@@ -6,7 +6,9 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
+import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.core.DownloadListener;
+import com.huxq17.download.utils.LogUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,18 +31,20 @@ public class ViewLifecycleHandler {
         private void handleLifecycleForActivity(FragmentActivity activity, DownloadListener downloadListener) {
             if (activity.getFragmentManager() == null || activity.getFragmentManager().isDestroyed()) {
                 downloadListener.disable();
+                LogUtil.w("FragmentActivity "+activity +" 's fragmentManager is null!");
                 return;
             }
             downloadListenerMap.put(activity.getClass().getSimpleName(), downloadListener);
             if (!mActivityCallbacksIsAdded) {
                 mActivityCallbacksIsAdded = true;
-                activity.getApplication().registerActivityLifecycleCallbacks(mActivityCallbacks);
+                ((Application) DownloadProvider.context).registerActivityLifecycleCallbacks(mActivityCallbacks);
             }
         }
 
         private void handleLifecycleForFragment(Fragment fragment, DownloadListener downloadListener) {
             if (fragment.getFragmentManager() == null || fragment.getFragmentManager().isDestroyed()) {
                 downloadListener.disable();
+                LogUtil.w("fragment "+fragment +" 's fragmentManager is null!");
                 return;
             }
             downloadListenerMap.put(fragment.getClass().getSimpleName(), downloadListener);
