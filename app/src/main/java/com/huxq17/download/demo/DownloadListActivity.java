@@ -4,11 +4,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,12 +41,12 @@ public class DownloadListActivity extends AppCompatActivity {
         @Override
         public void onProgress(int progress) {
             DownloadInfo downloadInfo = getDownloadInfo();
-            DownloadViewHolder viewHolder = (DownloadViewHolder) downloadInfo.getExtraData();
-            if (viewHolder != null) {
-                DownloadInfo tag = map.get(viewHolder);
-                if (tag != null && tag.getId().equals(downloadInfo.getId())) {
-                    viewHolder.bindData(downloadInfo);
-                }
+            Object extraData = downloadInfo.getExtraData();
+            if (!(extraData instanceof DownloadViewHolder)) return;
+            DownloadViewHolder viewHolder = (DownloadViewHolder) extraData;
+            DownloadInfo tag = map.get(viewHolder);
+            if (tag != null && tag.getId().equals(downloadInfo.getId())) {
+                viewHolder.bindData(downloadInfo);
             }
         }
 
