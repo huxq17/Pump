@@ -46,7 +46,7 @@ buildscript {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
     }
 }
-apply from: 'gradle-jcenter-push.gradle'
+apply from: '../gradle/gradle-jcenter-push.gradle'
 if(DEBUG_MODE){
     apply from: '../jacoco-report.gradle'
 }

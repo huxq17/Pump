@@ -4,5 +4,7 @@ ext {
     appMinSdkVersion = 17
     appCompileSdkVersion = 29
     appTargetSdkVersion = 29
+    kotlin_version = '1.3.50'
+    gradle_version = '3.5.2'
 
 }
