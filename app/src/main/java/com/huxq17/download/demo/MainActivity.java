@@ -15,6 +15,8 @@ import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
 
+import okhttp3.Request;
+
 public class MainActivity extends AppCompatActivity {
     //        private String url = "http://dlied5.myapp.com/myapp/1104466820/sgame/2017_com.tencent.tmgp.sgame_h178_1.41.2.16_5a7ef8.apk";
     private String url = "http://down.youxifan.com/Q6ICeD";
@@ -79,11 +81,13 @@ public class MainActivity extends AppCompatActivity {
                                 Toast.makeText(MainActivity.this, "Download failed", Toast.LENGTH_SHORT).show();
                             }
                         })
-                        //Optionally,Set whether to repeatedly download the downloaded file,default false.
+                        //Set whether to repeatedly download the downloaded file,default false.
                         .forceReDownload(true)
-                        //Optionally,Set how many threads are used when downloading,default 3.
+                        //Set how many threads are used when downloading,default 3.
                         .threadNum(3)
                         .disableBreakPointDownload()
+                        //Pump will connect server by this OKHttp request builder,so you can customize http request.
+                        .setRequestBuilder(new Request.Builder())
                         .setRetry(3, 200)
                         .submit();
             }

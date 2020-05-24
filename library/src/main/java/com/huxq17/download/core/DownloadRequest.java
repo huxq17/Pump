@@ -7,6 +7,8 @@ import com.huxq17.download.Pump;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.core.service.IDownloadManager;
 
+import okhttp3.Request;
+
 
 public final class DownloadRequest {
     private final String id;
@@ -19,10 +21,12 @@ public final class DownloadRequest {
     private final int retryDelay;
     //Maybe use in the future
     private final DownloadListener downloadListener;
-
     private final DownloadTaskExecutor downloadTaskExecutor;
-    private DownloadDetailsInfo downloadInfo;
     private final boolean disableBreakPointDownload;
+    private final Request.Builder httpRequestBuilder;
+
+    private DownloadDetailsInfo downloadInfo;
+
 
     DownloadRequest(DownloadGenerator downloadGenerator) {
         this.id = downloadGenerator.id;
@@ -36,6 +40,10 @@ public final class DownloadRequest {
         this.downloadListener = downloadGenerator.downloadListener;
         this.downloadTaskExecutor = downloadGenerator.downloadTaskExecutor;
         this.disableBreakPointDownload = downloadGenerator.disableBreakPointDownload;
+        this.httpRequestBuilder = downloadGenerator.httpRequestBuilder;
+        if (httpRequestBuilder != null) {
+            httpRequestBuilder.url(url);
+        }
     }
 
     void setDownloadInfo(DownloadDetailsInfo downloadInfo) {
@@ -102,6 +110,13 @@ public final class DownloadRequest {
         return downloadTaskExecutor;
     }
 
+    public Request.Builder getHttpRequestBuilder() {
+        if (httpRequestBuilder == null) {
+            return new Request.Builder().url(url);
+        }
+        return httpRequestBuilder;
+    }
+
     public static DownloadGenerator newRequest(String url, String filePath) {
         return new DownloadGenerator(url, filePath);
     }
@@ -120,6 +135,7 @@ public final class DownloadRequest {
         private static final int DEFAULT_RETRY_DELAY = 200;
         private DownloadTaskExecutor downloadTaskExecutor;
         private boolean disableBreakPointDownload;
+        private Request.Builder httpRequestBuilder;
 
         public DownloadGenerator(String url, String filePath) {
             this.url = url;
@@ -147,7 +163,6 @@ public final class DownloadRequest {
          * filter by tag,and use {@link DownloadInfo#getTag()} to get tag.
          *
          * @param tag tag
-         * @return
          */
         public DownloadGenerator tag(String tag) {
             this.tag = tag;
@@ -157,8 +172,7 @@ public final class DownloadRequest {
         /**
          * Set whether to repeatedly download the downloaded file,default false.
          *
-         * @param force
-         * @return
+         * @param force true will re-download if have download completed before.
          */
         public DownloadGenerator forceReDownload(boolean force) {
             this.forceReDownload = force;
@@ -172,13 +186,24 @@ public final class DownloadRequest {
         }
 
         /**
+         * Pump will connect server by this OKHttp request builder,so you can customize http request.
+         * For example,you can specify http method,http head and http params.
+         * If http method isn't GET,will use {@link DownloadGenerator#disableBreakPointDownload()} to improve download speed.
+         *
+         * @param httpRequestBuilder OKHttp request builder
+         */
+        public DownloadGenerator setRequestBuilder(Request.Builder httpRequestBuilder) {
+            this.httpRequestBuilder = httpRequestBuilder;
+            return this;
+        }
+
+        /**
          * Set retry count and retry interval.
          * Retry only if the network connection fails.
          *
          * @param retryCount  retry count
          * @param delayMillis The delay (in milliseconds)  until the Retry
          *                    will be executed.The default value is 200 milliseconds.
-         * @return
          */
         public DownloadGenerator setRetry(int retryCount, int delayMillis) {
             if (retryCount < 0) {
@@ -211,6 +236,10 @@ public final class DownloadRequest {
                 downloadListener.setId(id);
                 downloadListener.enable();
             }
+            if (httpRequestBuilder != null &&
+                    !"GET".equalsIgnoreCase(httpRequestBuilder.url(url).build().method())) {
+                disableBreakPointDownload();
+            }
             PumpFactory.getService(IDownloadManager.class).
                     submit(new DownloadRequest(this));
         }
@@ -223,9 +252,7 @@ public final class DownloadRequest {
         }
         if (obj instanceof DownloadRequest) {
             DownloadRequest downloadRequest = (DownloadRequest) obj;
-            if (getId().equals(downloadRequest.getId())) {
-                return true;
-            }
+            return getId().equals(downloadRequest.getId());
         }
         return false;
     }

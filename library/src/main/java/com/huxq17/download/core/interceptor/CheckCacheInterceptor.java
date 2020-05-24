@@ -8,15 +8,15 @@ import android.text.format.Formatter;
 import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.connection.DownloadConnection;
+import com.huxq17.download.core.service.IDownloadConfigService;
+import com.huxq17.download.core.service.IDownloadManager;
 import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.db.DBService;
-import com.huxq17.download.core.service.IDownloadManager;
 import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.utils.Util;
 
@@ -40,7 +40,8 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         downloadRequest = chain.request();
         downloadDetailsInfo = downloadRequest.getDownloadInfo();
         downloadTask = downloadDetailsInfo.getDownloadTask();
-        if(downloadRequest.isDisableBreakPointDownload()){
+        if (downloadRequest.isDisableBreakPointDownload()) {
+            setFilePathIfNeed(null,null);
             checkDownloadFile(0);
             downloadDetailsInfo.setSupportBreakpoint(false);
             return chain.proceed(downloadRequest);
@@ -49,10 +50,10 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         int responseCode;
         long contentLength;
         try {
-            connection.connect();
+            connection.connect("GET");
             String transferEncoding = connection.getHeader("Transfer-Encoding");
             lastModified = connection.getHeader("Last-Modified");
-            setFilePathIfNeed(connection);
+            setFilePathIfNeed(connection.getHeader("Content-Disposition"), connection.getHeader("Content-Type"));
             eTag = connection.getHeader("ETag");
             String contentLengthField = connection.getHeader("Content-Length");
             downloadDetailsInfo.setMD5(connection.getHeader("Content-MD5"));
@@ -139,10 +140,9 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         downloadTask.updateInfo();
     }
 
-    private void setFilePathIfNeed(DownloadConnection connection) {
+    private void setFilePathIfNeed(String contentDisposition, String contentType) {
         if (downloadDetailsInfo.getFilePath() == null) {
-            String fileName = Util.guessFileName(downloadRequest.getUrl(),
-                    connection.getHeader("Content-Disposition"), connection.getHeader("Content-Type"));
+            String fileName = Util.guessFileName(downloadRequest.getUrl(), contentDisposition, contentType);
             downloadRequest.setFilePath(Util.getCachePath(DownloadProvider.context) + "/" + fileName);
             downloadTask.updateInfo();
         }
@@ -150,7 +150,7 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
 
     private DownloadConnection buildRequest(DownloadRequest downloadRequest) {
         String url = downloadRequest.getUrl();
-        DownloadConnection connection = createConnection(url);
+        DownloadConnection connection = createConnection(downloadRequest);
         connection.addHeader("Range", "bytes=0-0");
         if (downloadRequest.getDownloadInfo().isFinished() && !downloadRequest.isForceReDownload()) {
             DownloadProvider.CacheBean cacheBean = DBService.getInstance().queryCache(url);
@@ -204,7 +204,7 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
     }
 
     private long headContentLength() {
-        DownloadConnection connection = createConnection(downloadRequest.getUrl());
+        DownloadConnection connection = createConnection(downloadRequest);
         try {
             connection.connect("HEAD");
             return Util.parseContentLength(connection.getHeader("Content-Length"));
@@ -216,7 +216,8 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         return CONTENT_LENGTH_NOT_FOUND;
     }
 
-    private DownloadConnection createConnection(String url) {
-        return PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory().create(url);
+    private DownloadConnection createConnection(DownloadRequest downloadRequest) {
+        return PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory()
+                .create(downloadRequest.getHttpRequestBuilder());
     }
 }

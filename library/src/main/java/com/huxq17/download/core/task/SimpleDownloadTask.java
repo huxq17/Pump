@@ -12,14 +12,16 @@ import com.huxq17.download.utils.Util;
 import java.io.File;
 import java.io.IOException;
 
+import okhttp3.Request;
+
 
 public class SimpleDownloadTask extends Task {
-    private DownloadDetailsInfo downloadInfo;
-    private DownloadConnection connection;
+    private final DownloadDetailsInfo downloadInfo;
+    private final DownloadConnection connection;
 
     public SimpleDownloadTask(DownloadRequest downloadRequest) {
         downloadInfo = downloadRequest.getDownloadInfo();
-        connection = PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory().create(downloadRequest.getUrl());
+        connection = PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory().create(downloadRequest.getHttpRequestBuilder());
     }
 
     @Override
@@ -29,7 +31,6 @@ public class SimpleDownloadTask extends Task {
         try {
             if (downloadFile.createNewFile()) {
                 connection.connect();
-
                 long contentLength = Util.parseContentLength(connection.getHeader("Content-Length"));
                 if (contentLength > 0) {
                     downloadInfo.setContentLength(contentLength);

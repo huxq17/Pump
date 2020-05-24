@@ -4,10 +4,11 @@ import com.huxq17.download.core.connection.DownloadConnection;
 import com.huxq17.download.core.connection.OkHttpDownloadConnection;
 
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 public class AuthorizationHeaderConnection extends OkHttpDownloadConnection {
-    public AuthorizationHeaderConnection(OkHttpClient okHttpClient, String url) {
-        super(okHttpClient, url);
+    public AuthorizationHeaderConnection(OkHttpClient okHttpClient, Request.Builder requestBuilder) {
+        super(okHttpClient, requestBuilder);
         // add authorization header here.
 //        addHeader("user-agent","");
     }
@@ -18,9 +19,10 @@ public class AuthorizationHeaderConnection extends OkHttpDownloadConnection {
             this.okHttpClient = okHttpClient;
         }
 
+
         @Override
-        public DownloadConnection create(String url) {
-            return new AuthorizationHeaderConnection(okHttpClient, url);
+        public DownloadConnection create(Request.Builder requestBuilder) {
+            return  new AuthorizationHeaderConnection(okHttpClient, requestBuilder);
         }
     }
 }

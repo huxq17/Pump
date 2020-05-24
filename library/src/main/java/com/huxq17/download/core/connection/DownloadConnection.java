@@ -5,6 +5,8 @@ import androidx.annotation.NonNull;
 import java.io.File;
 import java.io.IOException;
 
+import okhttp3.Request;
+
 
 public interface DownloadConnection {
     void addHeader(String key, String value);
@@ -32,6 +34,6 @@ public interface DownloadConnection {
     boolean isCanceled();
 
     interface Factory {
-        DownloadConnection create(String url);
+        DownloadConnection create(@NonNull Request.Builder requestBuilder);
     }
 }

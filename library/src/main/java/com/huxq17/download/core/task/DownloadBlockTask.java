@@ -27,7 +27,7 @@ public class DownloadBlockTask extends Task {
     public DownloadBlockTask(DownloadRequest downloadRequest, int blockId) {
         this.downloadRequest = downloadRequest;
         downloadInfo = downloadRequest.getDownloadInfo();
-        connection = PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory().create(downloadRequest.getUrl());
+        connection = PumpFactory.getService(IDownloadConfigService.class).getDownloadConnectionFactory().create(downloadRequest.getHttpRequestBuilder());
         this.blockId = blockId;
         calculateCompletedSize();
     }

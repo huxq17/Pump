@@ -23,19 +23,16 @@ public class OkHttpDownloadConnection implements DownloadConnection {
     private BufferedSink bufferedSink;
     private BufferedSource bufferedSource;
     private Request.Builder builder;
-    private String url;
 
-    public OkHttpDownloadConnection(OkHttpClient okHttpClient, String url) {
+    public OkHttpDownloadConnection(OkHttpClient okHttpClient, Request.Builder builder) {
         this.okHttpClient = okHttpClient;
-        builder = new Request.Builder();
-        this.url = url;
+        this.builder = builder;
     }
 
     @Override
     public void addHeader(String key, String value) {
         builder.addHeader(key, value);
     }
-
 
     @Override
     public String getHeader(String key) {
@@ -44,16 +41,14 @@ public class OkHttpDownloadConnection implements DownloadConnection {
 
     @Override
     public void connect() throws IOException {
-        LogUtil.e("connect to "+url);
-        Request request = builder.get().url(url)
-                .build();
-        call = okHttpClient.newCall(request);
+        LogUtil.e("connect to " + builder.build().url());
+        call = okHttpClient.newCall(builder.build());
         response = call.execute();
     }
 
     @Override
     public void connect(@NonNull String method) throws IOException {
-        Request request = builder.method(method, null).url(url).build();
+        Request request = builder.method(method, null).build();
         call = okHttpClient.newCall(request);
         response = call.execute();
     }
@@ -115,8 +110,8 @@ public class OkHttpDownloadConnection implements DownloadConnection {
         }
 
         @Override
-        public DownloadConnection create(String url) {
-            return new OkHttpDownloadConnection(okHttpClient, url);
+        public DownloadConnection create(Request.Builder requestBuilder) {
+            return new OkHttpDownloadConnection(okHttpClient,requestBuilder);
         }
     }
 }
