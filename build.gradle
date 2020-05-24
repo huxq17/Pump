@@ -1,7 +1,4 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-apply from: "${project.rootProject.file('gradle/common.gradle')}"
-apply from: "${project.rootProject.file('gradle/version.gradle')}"
-
 buildscript {
     ext.kotlin_version = '1.3.50'
     ext.gradle_version = '3.5.2'

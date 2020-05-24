@@ -40,6 +40,11 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         downloadRequest = chain.request();
         downloadDetailsInfo = downloadRequest.getDownloadInfo();
         downloadTask = downloadDetailsInfo.getDownloadTask();
+        if(downloadRequest.isDisableBreakPointDownload()){
+            checkDownloadFile(0);
+            downloadDetailsInfo.setSupportBreakpoint(false);
+            return chain.proceed(downloadRequest);
+        }
         DownloadConnection connection = buildRequest(downloadRequest);
         int responseCode;
         long contentLength;
@@ -88,8 +93,7 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
                 }
             }
             if (responseCode == HttpURLConnection.HTTP_PARTIAL) {
-                downloadDetailsInfo.setSupportBreakpoint(contentLength != CONTENT_LENGTH_NOT_FOUND
-                        && !downloadRequest.isDisableBreakPointDownload());
+                downloadDetailsInfo.setSupportBreakpoint(contentLength != CONTENT_LENGTH_NOT_FOUND);
             } else {
                 downloadDetailsInfo.setSupportBreakpoint(false);
             }
