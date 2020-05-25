@@ -41,8 +41,8 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         downloadDetailsInfo = downloadRequest.getDownloadInfo();
         downloadTask = downloadDetailsInfo.getDownloadTask();
         if (downloadRequest.isDisableBreakPointDownload()) {
-            setFilePathIfNeed(null,null);
-            checkDownloadFile(0);
+            setFilePathIfNeed(null, null);
+            downloadDetailsInfo.deleteTempDir();
             downloadDetailsInfo.setSupportBreakpoint(false);
             return chain.proceed(downloadRequest);
         }
@@ -90,7 +90,9 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
                     LogUtil.e("Download directory usable space is " + downloadFileAvailableSize + ";but download file's contentLength is " + contentLength);
                     return downloadDetailsInfo.snapshot();
                 } else {
-                    downloadDetailsInfo.setCacheBean(new DownloadProvider.CacheBean(downloadRequest.getId(), lastModified, eTag));
+                    if (!TextUtils.isEmpty(lastModified) || !TextUtils.isEmpty(eTag)){
+                        downloadDetailsInfo.setCacheBean(new DownloadProvider.CacheBean(downloadRequest.getId(), lastModified, eTag));
+                    }
                 }
             }
             if (responseCode == HttpURLConnection.HTTP_PARTIAL) {

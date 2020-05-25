@@ -2,7 +2,6 @@ package com.huxq17.download.core.connection;
 
 import androidx.annotation.NonNull;
 
-import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.utils.Util;
 
 import java.io.File;
@@ -41,7 +40,6 @@ public class OkHttpDownloadConnection implements DownloadConnection {
 
     @Override
     public void connect() throws IOException {
-        LogUtil.e("connect to " + builder.build().url());
         call = okHttpClient.newCall(builder.build());
         response = call.execute();
     }
@@ -110,7 +108,7 @@ public class OkHttpDownloadConnection implements DownloadConnection {
         }
 
         @Override
-        public DownloadConnection create(Request.Builder requestBuilder) {
+        public DownloadConnection create(@NonNull Request.Builder requestBuilder) {
             return new OkHttpDownloadConnection(okHttpClient,requestBuilder);
         }
     }

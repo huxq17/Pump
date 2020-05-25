@@ -77,7 +77,6 @@ public class DownloadDetailsInfo {
     public void setFilePath(String filePath) {
         if (filePath != null && !filePath.equals(this.filePath)) {
             this.filePath = filePath;
-            deleteDownloadFile();
             deleteTempDir();
             downloadFile = new File(filePath);
         }
@@ -97,6 +96,7 @@ public class DownloadDetailsInfo {
         }
         synchronized (this) {
             setFilePath(filePath);
+            deleteDownloadFile();
             DBService.getInstance().updateInfo(this);
         }
     }

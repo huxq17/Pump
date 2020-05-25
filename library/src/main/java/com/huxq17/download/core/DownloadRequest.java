@@ -112,9 +112,9 @@ public final class DownloadRequest {
 
     public Request.Builder getHttpRequestBuilder() {
         if (httpRequestBuilder == null) {
-            return new Request.Builder().url(url);
+            return new Request.Builder().url(url).build().newBuilder();
         }
-        return httpRequestBuilder;
+        return httpRequestBuilder.build().newBuilder();
     }
 
     public static DownloadGenerator newRequest(String url, String filePath) {

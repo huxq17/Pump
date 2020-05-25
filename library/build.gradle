@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven'
 android {
     compileSdkVersion appCompileSdkVersion
     defaultConfig {
@@ -49,4 +50,20 @@ buildscript {
 apply from: project.rootProject.file('gradle/gradle-jcenter-push.gradle')
 if(DEBUG_MODE){
     apply from: '../jacoco-report.gradle'
+}
+
+group = 'com.huxq17.pump'
+version = VERSION_NAME
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            // repository(url: "http://www.xxx.com/repos") {
+            //    authentication(userName: "admin", password: "admin")
+            // }
+            repository(url: uri('../../../repo'))
+        }
+    }
+}
+ext {
+    bintray_labels = ['java', 'jar']
 }

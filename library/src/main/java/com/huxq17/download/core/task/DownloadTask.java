@@ -43,8 +43,7 @@ public class DownloadTask extends Task {
             downloadInfo.setProgress(0);
             if (downloadInfo.getCompletedSize() > 0 &&
                     downloadInfo.getCompletedSize() == downloadInfo.getContentLength()
-                    && downloadRequest.isForceReDownload()
-                    || downloadRequest.isDisableBreakPointDownload()) {
+                    && downloadRequest.isForceReDownload()) {
                 downloadInfo.deleteDownloadFile();
                 downloadInfo.setCompletedSize(0);
                 downloadInfo.setProgress(0);
