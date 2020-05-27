@@ -13,11 +13,13 @@ import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.connection.DownloadConnection;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.utils.FileUtil;
+import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.utils.Util;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 
 import okhttp3.Request;
 
@@ -48,16 +50,21 @@ public class SimpleDownloadTask extends Task {
                 downloadInfo.setFinished(1);
                 downloadInfo.setProgress(100);
                 downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
+                LogUtil.e("huTest download "+downloadInfo.getUrl()+" 304");
                 return;
             } else {
                 downloadInfo.deleteDownloadFile();
             }
+            downloadInfo.setFinished(0);
             if (connection.isSuccessful() && downloadFile.createNewFile()) {
                 long contentLength = Util.parseContentLength(connection.getHeader("Content-Length"));
                 if (contentLength > 0) {
                     downloadInfo.setContentLength(contentLength);
                 }
                 byte[] buffer = new byte[8092];
+                if(downloadFile.length()>0&&contentLength!=downloadFile.length()){
+                    LogUtil.e("huTest contentChanged download "+downloadInfo.getUrl()+" downloadSize="+downloadFile.length()+";contentLength="+contentLength);
+                }
                 connection.prepareDownload(downloadFile);
                 int len;
                 while (!isCanceled() && (len = connection.downloadBuffer(buffer)) != -1) {
@@ -67,18 +74,21 @@ public class SimpleDownloadTask extends Task {
                 }
                 connection.flushDownload();
                 downloadInfo.setContentLength(downloadFile.length());
+                LogUtil.e("huTest download "+downloadInfo.getUrl()+" downloadSize="+downloadFile.length()+";contentLength="+contentLength);
+            }else{
+                LogUtil.e("huTest download "+downloadInfo.getUrl()+" failed,responseCode is "+connection.getResponseCode());
             }
         } catch (IOException e) {
             e.printStackTrace();
             downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
+            LogUtil.e("huTest download "+downloadInfo.getUrl()+" failed,  cause by "+e.getMessage());
         } finally {
             connection.close();
         }
     }
 
     private void addCacheHeader() {
-
-        DownloadProvider.CacheBean cacheBean = DBService.getInstance().queryCache(downloadInfo.getUrl());
+        DownloadProvider.CacheBean cacheBean = DBService.getInstance().queryCache(downloadInfo.getId());
         if (cacheBean != null) {
             String eTag = cacheBean.eTag;
             String lastModified = cacheBean.lastModified;

@@ -52,15 +52,32 @@ if(DEBUG_MODE){
     apply from: '../jacoco-report.gradle'
 }
 
-group = 'com.huxq17.pump'
-version = VERSION_NAME
+//group = 'com.huxq17.pump'
+//version = VERSION_NAME
+//artifactId  = "download"
+
+task sourceJar (type:Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.sourceFiles
+}
+
+artifacts {
+    archives sourceJar
+}
 uploadArchives {
     repositories {
         mavenDeployer {
             // repository(url: "http://www.xxx.com/repos") {
             //    authentication(userName: "admin", password: "admin")
             // }
-            repository(url: uri('../../../repo'))
+            repository(url: uri('../../../repo')){
+                pom.groupId = 'com.huxq17.pump'
+
+                pom.artifactId = 'download'
+
+                pom.version = VERSION_NAME
+
+            }
         }
     }
 }
