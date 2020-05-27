@@ -50,7 +50,6 @@ public class SimpleDownloadTask extends Task {
                 downloadInfo.setFinished(1);
                 downloadInfo.setProgress(100);
                 downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
-                LogUtil.e("huTest download "+downloadInfo.getUrl()+" 304");
                 return;
             } else {
                 downloadInfo.deleteDownloadFile();
@@ -62,9 +61,6 @@ public class SimpleDownloadTask extends Task {
                     downloadInfo.setContentLength(contentLength);
                 }
                 byte[] buffer = new byte[8092];
-                if(downloadFile.length()>0&&contentLength!=downloadFile.length()){
-                    LogUtil.e("huTest contentChanged download "+downloadInfo.getUrl()+" downloadSize="+downloadFile.length()+";contentLength="+contentLength);
-                }
                 connection.prepareDownload(downloadFile);
                 int len;
                 while (!isCanceled() && (len = connection.downloadBuffer(buffer)) != -1) {
@@ -74,14 +70,13 @@ public class SimpleDownloadTask extends Task {
                 }
                 connection.flushDownload();
                 downloadInfo.setContentLength(downloadFile.length());
-                LogUtil.e("huTest download "+downloadInfo.getUrl()+" downloadSize="+downloadFile.length()+";contentLength="+contentLength);
             }else{
-                LogUtil.e("huTest download "+downloadInfo.getUrl()+" failed,responseCode is "+connection.getResponseCode());
+                downloadInfo.setErrorCode(ErrorCode.ERROR_CREATE_FILE_FAILED);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
-            LogUtil.e("huTest download "+downloadInfo.getUrl()+" failed,  cause by "+e.getMessage());
+            LogUtil.e("download "+downloadInfo.getUrl()+" failed,  cause by "+e.getMessage());
         } finally {
             connection.close();
         }

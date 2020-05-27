@@ -6,6 +6,10 @@ public class ErrorCode {
      */
     public static final int NETWORK_UNAVAILABLE = 2001;
     /**
+     * create download file failed.
+     */
+    public static final int ERROR_CREATE_FILE_FAILED = 2003;
+    /**
      * Website return 404.
      */
     public static final int FILE_NOT_FOUND = 1002;

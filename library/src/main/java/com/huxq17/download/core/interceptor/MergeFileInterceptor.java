@@ -72,7 +72,8 @@ public class MergeFileInterceptor implements DownloadInterceptor {
     private void checkDownloadResult(long contentLength, long completedSize) {
         File downloadFile = downloadInfo.getDownloadFile();
         long downloadFileLength = downloadFile == null ? 0 : downloadFile.length();
-        if (downloadFileLength == contentLength && downloadFileLength == completedSize) {
+        if (downloadFileLength > 0 && downloadFileLength == contentLength
+                && downloadFileLength == completedSize) {
             DownloadProvider.CacheBean cacheBean = downloadInfo.getCacheBean();
             if (cacheBean != null) {
                 DBService.getInstance().updateCache(cacheBean);
