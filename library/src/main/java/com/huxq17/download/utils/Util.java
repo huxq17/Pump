@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 public class Util {
     public static final String DOWNLOAD_PART = "DOWNLOAD_PART-";
+    public static final int CONTENT_LENGTH_NOT_FOUND = -1;
 
     private Util() {
     }

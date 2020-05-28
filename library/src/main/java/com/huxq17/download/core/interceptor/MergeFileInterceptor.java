@@ -18,11 +18,10 @@ import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
 
 public class MergeFileInterceptor implements DownloadInterceptor {
     private DownloadDetailsInfo downloadInfo;
-    private DownloadRequest downloadRequest;
 
     @Override
     public DownloadInfo intercept(DownloadChain chain) {
-        downloadRequest = chain.request();
+        DownloadRequest downloadRequest = chain.request();
         downloadInfo = downloadRequest.getDownloadInfo();
         DownloadTask downloadTask = downloadInfo.getDownloadTask();
 
@@ -72,7 +71,8 @@ public class MergeFileInterceptor implements DownloadInterceptor {
     private void checkDownloadResult(long contentLength, long completedSize) {
         File downloadFile = downloadInfo.getDownloadFile();
         long downloadFileLength = downloadFile == null ? 0 : downloadFile.length();
-        if (downloadFileLength > 0 && downloadFileLength == contentLength
+        if (downloadInfo.getStatus() != DownloadInfo.Status.FAILED &&
+                downloadFileLength > 0 && downloadFileLength == contentLength
                 && downloadFileLength == completedSize) {
             DownloadProvider.CacheBean cacheBean = downloadInfo.getCacheBean();
             if (cacheBean != null) {

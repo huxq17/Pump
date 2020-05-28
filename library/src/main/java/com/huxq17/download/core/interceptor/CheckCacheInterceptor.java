@@ -25,6 +25,7 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
+import static com.huxq17.download.utils.Util.CONTENT_LENGTH_NOT_FOUND;
 import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
 
 public class CheckCacheInterceptor implements DownloadInterceptor {
@@ -32,7 +33,6 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
     private DownloadRequest downloadRequest;
     private String lastModified;
     private String eTag;
-    private static final int CONTENT_LENGTH_NOT_FOUND = -1;
     private DownloadTask downloadTask;
 
     @Override

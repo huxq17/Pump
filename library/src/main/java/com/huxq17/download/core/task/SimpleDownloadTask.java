@@ -51,9 +51,8 @@ public class SimpleDownloadTask extends Task {
                 downloadInfo.setProgress(100);
                 downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
                 return;
-            } else {
-                downloadInfo.deleteDownloadFile();
             }
+            downloadInfo.deleteDownloadFile();
             downloadInfo.setFinished(0);
             if (connection.isSuccessful() && downloadFile.createNewFile()) {
                 long contentLength = Util.parseContentLength(connection.getHeader("Content-Length"));

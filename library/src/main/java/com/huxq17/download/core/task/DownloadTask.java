@@ -20,6 +20,8 @@ import com.huxq17.download.db.DBService;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.huxq17.download.utils.Util.CONTENT_LENGTH_NOT_FOUND;
+
 public class DownloadTask extends Task {
     private final DownloadDetailsInfo downloadInfo;
     private final Object lock;
@@ -41,12 +43,11 @@ public class DownloadTask extends Task {
             downloadInfo.setStatus(DownloadInfo.Status.WAIT);
             downloadInfo.setCompletedSize(0);
             downloadInfo.setProgress(0);
+            downloadInfo.setContentLength(CONTENT_LENGTH_NOT_FOUND);
             if (downloadInfo.getCompletedSize() > 0 &&
                     downloadInfo.getCompletedSize() == downloadInfo.getContentLength()
                     && downloadRequest.isForceReDownload()) {
                 downloadInfo.deleteDownloadFile();
-                downloadInfo.setCompletedSize(0);
-                downloadInfo.setProgress(0);
                 updateInfo();
             }
             notifyProgressChanged(downloadInfo);
@@ -115,6 +116,9 @@ public class DownloadTask extends Task {
             }
             downloadInfo.download(length);
             int progress = (int) (downloadInfo.getCompletedSize() * 1f / downloadInfo.getContentLength() * 100);
+            if (progress < 0) {
+                progress = 0;
+            }
             downloadInfo.setProgress(progress);
             if (progress != lastProgress) {
                 if (progress != 100) {
