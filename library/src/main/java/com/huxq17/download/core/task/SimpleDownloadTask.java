@@ -6,22 +6,18 @@ import android.text.TextUtils;
 import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.core.DownloadInfo;
-import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.core.DownloadDetailsInfo;
+import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.connection.DownloadConnection;
+import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.db.DBService;
-import com.huxq17.download.utils.FileUtil;
 import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.utils.Util;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
-
-import okhttp3.Request;
 
 
 public class SimpleDownloadTask extends Task {
@@ -73,7 +69,7 @@ public class SimpleDownloadTask extends Task {
                 downloadInfo.setErrorCode(ErrorCode.ERROR_CREATE_FILE_FAILED);
             }
         } catch (IOException e) {
-//            e.printStackTrace();
+            e.printStackTrace();
             downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
             LogUtil.e("download "+downloadInfo.getUrl()+" failed,  cause by "+e.getMessage());
         } finally {

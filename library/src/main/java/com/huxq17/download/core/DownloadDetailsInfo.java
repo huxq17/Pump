@@ -302,7 +302,7 @@ public class DownloadDetailsInfo {
         return wfExtraData == null ? null : wfExtraData.get();
     }
 
-    public boolean isRunning() {
+    public synchronized boolean isRunning() {
         return status != null && status.isRunning();
     }
 }

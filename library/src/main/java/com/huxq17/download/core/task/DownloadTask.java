@@ -174,6 +174,6 @@ public class DownloadTask extends Task {
     }
 
     public boolean isRunning() {
-        return currentThread != null && downloadInfo != null && downloadInfo.isRunning();
+        return downloadInfo != null && downloadInfo.isRunning();
     }
 }

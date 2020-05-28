@@ -125,16 +125,16 @@ public final class DownloadInfo {
     public enum Status {
         STOPPED, WAIT, RUNNING, PAUSING, PAUSED, FAILED, FINISHED, DELETED;
 
-        public boolean isRunning() {
+        public synchronized boolean isRunning() {
             return this.ordinal() >= WAIT.ordinal() && this.ordinal() <= RUNNING.ordinal();
         }
 
-        public boolean shouldStop() {
+        public synchronized boolean shouldStop() {
             return this.ordinal() > STOPPED.ordinal() && this.ordinal() < FAILED.ordinal();
 
         }
 
-        public boolean isCanceled() {
+        public synchronized boolean isCanceled() {
             return ordinal() >= PAUSING.ordinal() && ordinal() <= PAUSED.ordinal();
         }
     }

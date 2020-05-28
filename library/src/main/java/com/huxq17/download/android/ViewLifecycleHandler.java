@@ -16,12 +16,12 @@ import java.util.Map;
 public class ViewLifecycleHandler {
     private static final ViewHandlerManager sViewHandlerManager = new ViewHandlerManager();
 
-    public static void handleLifecycleForActivity(FragmentActivity view, DownloadListener downloadListener) {
-        sViewHandlerManager.handleLifecycleForActivity(view, downloadListener);
-    }
-
-    public static void handleLifecycleForFragment(Fragment view, DownloadListener downloadListener) {
-        sViewHandlerManager.handleLifecycleForFragment(view, downloadListener);
+    public static void handleLifecycleForView(Object view, DownloadListener downloadListener) {
+        if(view instanceof FragmentActivity){
+            sViewHandlerManager.handleLifecycleForActivity((FragmentActivity) view, downloadListener);
+        }else if(view instanceof Fragment){
+            sViewHandlerManager.handleLifecycleForFragment((Fragment) view, downloadListener);
+        }
     }
 
     private static class ViewHandlerManager {
