@@ -12,16 +12,15 @@ import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.connection.DownloadConnection;
 import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.db.DBService;
-import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.utils.Util;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
 
-import okhttp3.Request;
 import okhttp3.Response;
+
+import static com.huxq17.download.utils.Util.setFilePathIfNeed;
 
 
 public class SimpleDownloadTask extends Task {
@@ -38,7 +37,6 @@ public class SimpleDownloadTask extends Task {
     @Override
     public void execute() {
         DownloadTask downloadTask = downloadInfo.getDownloadTask();
-        File downloadFile = new File(downloadInfo.getFilePath());
         if (shouldUseCacheRequest) {
             addCacheHeader();
         }
@@ -52,6 +50,8 @@ public class SimpleDownloadTask extends Task {
                 downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
                 return;
             }
+            setFilePathIfNeed(downloadTask,response);
+            File downloadFile = new File(downloadInfo.getFilePath());
             downloadInfo.deleteDownloadFile();
             downloadInfo.setFinished(0);
             if (response.isSuccessful() && downloadFile.createNewFile()) {
@@ -75,7 +75,6 @@ public class SimpleDownloadTask extends Task {
         } catch (IOException e) {
             e.printStackTrace();
             downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
-            LogUtil.e("download "+downloadInfo.getUrl()+" failed,  cause by "+e.getMessage());
         } finally {
             connection.close();
         }

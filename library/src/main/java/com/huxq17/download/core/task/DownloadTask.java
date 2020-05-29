@@ -43,7 +43,6 @@ public class DownloadTask extends Task {
             downloadInfo.setStatus(DownloadInfo.Status.WAIT);
             downloadInfo.setCompletedSize(0);
             downloadInfo.setProgress(0);
-            downloadInfo.setContentLength(CONTENT_LENGTH_NOT_FOUND);
             if (downloadInfo.getCompletedSize() > 0 &&
                     downloadInfo.getCompletedSize() == downloadInfo.getContentLength()
                     && downloadRequest.isForceReDownload()) {
@@ -88,6 +87,7 @@ public class DownloadTask extends Task {
             notifyProgressChanged(downloadInfo);
             downloadWithDownloadChain();
             notifyProgressChanged(downloadInfo);
+            downloadInfo.setDownloadTask(null);
         }
     }
 

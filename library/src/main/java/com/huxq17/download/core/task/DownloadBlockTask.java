@@ -7,7 +7,6 @@ import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.connection.DownloadConnection;
 import com.huxq17.download.core.service.IDownloadConfigService;
-import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -56,7 +55,6 @@ public class DownloadBlockTask extends Task {
         }
 
         if (startPosition != endPosition + 1) {
-            LogUtil.e("block start ="+startPosition+";end ="+endPosition);
             connection.addHeader("Range", "bytes=" + startPosition + "-" + endPosition);
             try {
                 Response response = connection.connect();

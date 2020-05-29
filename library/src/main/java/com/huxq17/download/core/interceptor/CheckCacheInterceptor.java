@@ -29,6 +29,7 @@ import okhttp3.Response;
 
 import static com.huxq17.download.utils.Util.CONTENT_LENGTH_NOT_FOUND;
 import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
+import static com.huxq17.download.utils.Util.setFilePathIfNeed;
 
 public class CheckCacheInterceptor implements DownloadInterceptor {
     private DownloadDetailsInfo downloadDetailsInfo;
@@ -43,7 +44,6 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         downloadDetailsInfo = downloadRequest.getDownloadInfo();
         downloadTask = downloadDetailsInfo.getDownloadTask();
         if (downloadRequest.isDisableBreakPointDownload()) {
-            setFilePathIfNeed(downloadRequest.getUrl(),null, null);
             downloadDetailsInfo.deleteTempDir();
             downloadDetailsInfo.setSupportBreakpoint(false);
             return chain.proceed(downloadRequest);
@@ -57,15 +57,13 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
 
             String transferEncoding = connection.getHeader("Transfer-Encoding");
             lastModified = connection.getHeader("Last-Modified");
-            setFilePathIfNeed(response.request().url().toString(),
-                    connection.getHeader("Content-Disposition"), connection.getHeader("Content-Type"));
+            setFilePathIfNeed(downloadTask,response);
             eTag = connection.getHeader("ETag");
             String contentLengthField = connection.getHeader("Content-Length");
             downloadDetailsInfo.setMD5(connection.getHeader("Content-MD5"));
 
             responseCode = response.code();
             contentLength = getContentLength(connection);
-            LogUtil.e("url="+response.request().url()+" contentLength="+contentLength+"; content range="+ connection.getHeader("Content-Range"));
             long originalContentLength = Util.parseContentLength(connection.getHeader("Content-Length"));
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 contentLength = originalContentLength;
@@ -137,23 +135,16 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
                 return name.startsWith(DOWNLOAD_PART);
             }
         });
-        if (childList != null && childList.length != downloadRequest.getThreadNum() && downloadDetailsInfo.isSupportBreakpoint()
+        if (childList != null && childList.length != downloadRequest.getThreadNum()
                 || contentLength != downloadDetailsInfo.getContentLength()
-                || contentLength == CONTENT_LENGTH_NOT_FOUND || !downloadDetailsInfo.isSupportBreakpoint()) {
+                || contentLength == CONTENT_LENGTH_NOT_FOUND
+                || !downloadDetailsInfo.isSupportBreakpoint()) {
             downloadDetailsInfo.deleteTempDir();
         }
         downloadDetailsInfo.setContentLength(contentLength);
         downloadDetailsInfo.setFinished(0);
         downloadDetailsInfo.deleteDownloadFile();
         downloadTask.updateInfo();
-    }
-
-    private void setFilePathIfNeed(String url,String contentDisposition, String contentType) {
-        if (downloadDetailsInfo.getFilePath() == null) {
-            String fileName = Util.guessFileName(url, contentDisposition, contentType);
-            downloadRequest.setFilePath(Util.getCachePath(DownloadProvider.context) + "/" + fileName);
-            downloadTask.updateInfo();
-        }
     }
 
     private DownloadConnection buildRequest(DownloadRequest downloadRequest) {

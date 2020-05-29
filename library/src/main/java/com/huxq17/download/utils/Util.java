@@ -7,10 +7,15 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.storage.StorageManager;
+
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
+
 import android.webkit.MimeTypeMap;
+
+import com.huxq17.download.DownloadProvider;
+import com.huxq17.download.core.task.DownloadTask;
 
 import java.io.Closeable;
 import java.io.File;
@@ -19,6 +24,8 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import okhttp3.Response;
 
 public class Util {
     public static final String DOWNLOAD_PART = "DOWNLOAD_PART-";
@@ -238,4 +245,14 @@ public class Util {
     private static final Pattern CONTENT_DISPOSITION_PATTERN =
             Pattern.compile("attachment;\\s*filename\\s*=\\s*(\"?)([^\"]*)\\1\\s*$",
                     Pattern.CASE_INSENSITIVE);
+
+    public static void setFilePathIfNeed(DownloadTask downloadTask, Response response) {
+        if (downloadTask.getDownloadInfo().getFilePath() == null) {
+            String contentDisposition = response.header("Content-Disposition");
+            String contentType = response.header("Content-Type");
+            String fileName = Util.guessFileName(response.request().url().toString(), contentDisposition, contentType);
+            downloadTask.getRequest().setFilePath(Util.getCachePath(DownloadProvider.context) + "/" + fileName);
+            downloadTask.updateInfo();
+        }
+    }
 }

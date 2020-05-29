@@ -193,7 +193,7 @@ public class DownloadManager implements IDownloadManager {
 
     public boolean isTaskRunning(String id) {
         DownloadTask downloadTask = getDownloadTaskById(id);
-        return downloadTask != null && downloadTask.isRunning();
+        return downloadTask != null;
     }
 
     public DownloadTask getDownloadTaskById(String id) {

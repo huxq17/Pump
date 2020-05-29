@@ -10,7 +10,7 @@ App module build.gradle：
 
 ```
 dependencies {
-   implementation'com.huxq17.pump:download:1.3.1'
+   implementation'com.huxq17.pump:download:1.3.2'
    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
 }
 

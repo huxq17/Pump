@@ -14,6 +14,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.huxq17.download.utils.Util.CONTENT_LENGTH_NOT_FOUND;
 import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
 
 public class DownloadDetailsInfo {
@@ -25,7 +26,7 @@ public class DownloadDetailsInfo {
     private final long createTime;
 
     private long completedSize;
-    private long contentLength;
+    private long contentLength = CONTENT_LENGTH_NOT_FOUND;
     private int finished;
     protected volatile DownloadInfo.Status status;
     private String speed;

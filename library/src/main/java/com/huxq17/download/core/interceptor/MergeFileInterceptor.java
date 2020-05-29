@@ -42,8 +42,6 @@ public class MergeFileInterceptor implements DownloadInterceptor {
                     return name.startsWith(DOWNLOAD_PART);
                 }
             });
-            LogUtil.e("MergeFileInterceptor contentLength="+contentLength+";completedSize="+completedSize
-            +";total="+totalFileLength);
             if (contentLength > 0 && completedSize == contentLength && downloadPartFiles != null
                     && downloadPartFiles.length == downloadTask.getRequest().getThreadNum()) {
                 File file = downloadInfo.getDownloadFile();

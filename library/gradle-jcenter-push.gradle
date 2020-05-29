@@ -24,6 +24,13 @@ task androidSourcesJar(type: Jar) {
     from android.sourceSets.main.java.sourceFiles
 }
 
+//tasks.whenTaskAdded {task->
+//    println("${task.name} is Add")
+//    if(task.name.contains("bintrayUpload")){
+//        task.dependsOn('assemble')
+//    }
+//}
+
 artifacts {
     archives androidJavadocsJar
     archives androidSourcesJar

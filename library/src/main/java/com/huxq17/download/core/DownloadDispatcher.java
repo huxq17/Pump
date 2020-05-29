@@ -29,7 +29,7 @@ public class DownloadDispatcher extends Task {
     private DownloadManager downloadManager;
     private AtomicBoolean isRunning = new AtomicBoolean();
     private AtomicBoolean isCanceled = new AtomicBoolean();
-    private ConcurrentLinkedQueue<DownloadRequest> requestQueue;
+    private final ConcurrentLinkedQueue<DownloadRequest> requestQueue = new ConcurrentLinkedQueue<>();
 
     private Lock lock = new ReentrantLock();
     private Condition consumer = lock.newCondition();
@@ -44,22 +44,21 @@ public class DownloadDispatcher extends Task {
     public synchronized void start() {
         isRunning.set(true);
         isCanceled.set(false);
-        requestQueue = new ConcurrentLinkedQueue<>();
         TaskManager.execute(this);
         downloadInfoManager = DownloadInfoManager.getInstance();
         defaultTaskExecutor = new SimpleDownloadTaskExecutor();
     }
 
-    void enqueueRequest(final DownloadRequest request) {
+    void enqueueRequest(final DownloadRequest downloadRequest) {
         if (!isRunning()) {
             start();
         }
         if (isRunning.get()) {
-            if (!requestQueue.contains(request)) {
-                requestQueue.add(request);
+            if (!requestQueue.contains(downloadRequest)) {
+                requestQueue.add(downloadRequest);
                 signalConsumer();
             } else {
-                printExistRequestWarning(request);
+                printExistRequestWarning(downloadRequest);
             }
         }
     }
@@ -67,20 +66,24 @@ public class DownloadDispatcher extends Task {
     void consumeRequest() {
         waitForConsumer();
         DownloadRequest downloadRequest = requestQueue.poll();
-        if (downloadRequest != null && !downloadManager.isTaskRunning(downloadRequest.getId())) {
-            DownloadTaskExecutor downloadTaskExecutor = downloadRequest.getDownloadExecutor();
+        DownloadTask downloadTask = null;
+        if (downloadRequest != null) {
+            if (!downloadManager.isTaskRunning(downloadRequest.getId())) {
+                downloadTask = createTaskFromRequest(downloadRequest);
+            } else {
+                printExistRequestWarning(downloadRequest);
+            }
+        }
+        if (downloadTask != null) {
+            DownloadTaskExecutor downloadTaskExecutor = downloadTask.getRequest().getDownloadExecutor();
             if (downloadTaskExecutor == null) {
-                downloadTaskExecutor = this.defaultTaskExecutor;
+                downloadTaskExecutor = defaultTaskExecutor;
             }
             if (!downloadTaskExecutors.contains(downloadTaskExecutor)) {
                 downloadTaskExecutor.init();
                 downloadTaskExecutors.add(downloadTaskExecutor);
             }
-
-            DownloadTask downloadTask = getTaskFromRequest(downloadRequest);
-            if (downloadTask != null) {
-                downloadTaskExecutor.execute(downloadTask);
-            }
+            downloadTaskExecutor.execute(downloadTask);
         }
     }
 
@@ -145,7 +148,7 @@ public class DownloadDispatcher extends Task {
         LogUtil.w("task " + request.getName() + " already enqueue,we need do nothing.");
     }
 
-    DownloadTask getTaskFromRequest(DownloadRequest downloadRequest) {
+    DownloadTask createTaskFromRequest(DownloadRequest downloadRequest) {
         String url = downloadRequest.getUrl();
         String id = downloadRequest.getId();
         String tag = downloadRequest.getTag();
