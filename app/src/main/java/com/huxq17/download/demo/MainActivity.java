@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                 progressDialog.show();
                 String downloadUrl = etDownload.getText().toString();
                 if(downloadUrl.isEmpty()){
-                    downloadUrl =url2;
+                    downloadUrl ="https://wutong.yundasys.com:9527/api/appstore/version/downPageForVersionIos?redirectUrl=https://appacce.yundasys.com/package/android/com.yunda.yunshome/201.apk&appId=com.yunda.yunshome&version=yunhome201";
                 }
 
                 Pump.newRequest(downloadUrl)

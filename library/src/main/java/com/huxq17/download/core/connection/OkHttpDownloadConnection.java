@@ -39,16 +39,16 @@ public class OkHttpDownloadConnection implements DownloadConnection {
     }
 
     @Override
-    public void connect() throws IOException {
+    public Response connect() throws IOException {
         call = okHttpClient.newCall(builder.build());
-        response = call.execute();
+        return response = call.execute();
     }
 
     @Override
-    public void connect(@NonNull String method) throws IOException {
+    public Response connect(@NonNull String method) throws IOException {
         Request request = builder.method(method, null).build();
         call = okHttpClient.newCall(request);
-        response = call.execute();
+        return response = call.execute();
     }
 
     @Override
@@ -69,16 +69,6 @@ public class OkHttpDownloadConnection implements DownloadConnection {
     @Override
     public void flushDownload() throws IOException {
         bufferedSink.flush();
-    }
-
-    @Override
-    public int getResponseCode() {
-        return response.code();
-    }
-
-    @Override
-    public boolean isSuccessful() {
-        return response.isSuccessful();
     }
 
     @Override
@@ -109,7 +99,7 @@ public class OkHttpDownloadConnection implements DownloadConnection {
 
         @Override
         public DownloadConnection create(@NonNull Request.Builder requestBuilder) {
-            return new OkHttpDownloadConnection(okHttpClient,requestBuilder);
+            return new OkHttpDownloadConnection(okHttpClient, requestBuilder);
         }
     }
 }

@@ -18,7 +18,7 @@ import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
 
 public class MergeFileInterceptor implements DownloadInterceptor {
     private DownloadDetailsInfo downloadInfo;
-
+    long totalFileLength=0;
     @Override
     public DownloadInfo intercept(DownloadChain chain) {
         DownloadRequest downloadRequest = chain.request();
@@ -34,12 +34,16 @@ public class MergeFileInterceptor implements DownloadInterceptor {
             }
 
             File tempDir = downloadInfo.getTempDir();
+
             File[] downloadPartFiles = tempDir.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
+                    totalFileLength += new File(dir,name).length();
                     return name.startsWith(DOWNLOAD_PART);
                 }
             });
+            LogUtil.e("MergeFileInterceptor contentLength="+contentLength+";completedSize="+completedSize
+            +";total="+totalFileLength);
             if (contentLength > 0 && completedSize == contentLength && downloadPartFiles != null
                     && downloadPartFiles.length == downloadTask.getRequest().getThreadNum()) {
                 File file = downloadInfo.getDownloadFile();

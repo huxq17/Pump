@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 
 import okhttp3.Request;
+import okhttp3.Response;
 
 
 public interface DownloadConnection {
@@ -13,19 +14,15 @@ public interface DownloadConnection {
 
     String getHeader(String key);
 
-    void connect() throws IOException;
+    Response connect() throws IOException;
 
-    void connect(@NonNull String method) throws IOException;
+    Response connect(@NonNull String method) throws IOException;
 
     void prepareDownload(File file) throws IOException;
 
     int downloadBuffer(byte[] buffer) throws IOException;
 
     void flushDownload() throws IOException;
-
-    int getResponseCode();
-
-    boolean isSuccessful();
 
     void close();
 

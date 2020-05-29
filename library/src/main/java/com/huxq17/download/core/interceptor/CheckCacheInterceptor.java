@@ -25,6 +25,8 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
+import okhttp3.Response;
+
 import static com.huxq17.download.utils.Util.CONTENT_LENGTH_NOT_FOUND;
 import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
 
@@ -41,7 +43,7 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         downloadDetailsInfo = downloadRequest.getDownloadInfo();
         downloadTask = downloadDetailsInfo.getDownloadTask();
         if (downloadRequest.isDisableBreakPointDownload()) {
-            setFilePathIfNeed(null, null);
+            setFilePathIfNeed(downloadRequest.getUrl(),null, null);
             downloadDetailsInfo.deleteTempDir();
             downloadDetailsInfo.setSupportBreakpoint(false);
             return chain.proceed(downloadRequest);
@@ -49,16 +51,21 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         DownloadConnection connection = buildRequest(downloadRequest);
         int responseCode;
         long contentLength;
+        Response response;
         try {
-            connection.connect("GET");
+            response = connection.connect("GET");
+
             String transferEncoding = connection.getHeader("Transfer-Encoding");
             lastModified = connection.getHeader("Last-Modified");
-            setFilePathIfNeed(connection.getHeader("Content-Disposition"), connection.getHeader("Content-Type"));
+            setFilePathIfNeed(response.request().url().toString(),
+                    connection.getHeader("Content-Disposition"), connection.getHeader("Content-Type"));
             eTag = connection.getHeader("ETag");
             String contentLengthField = connection.getHeader("Content-Length");
             downloadDetailsInfo.setMD5(connection.getHeader("Content-MD5"));
-            responseCode = connection.getResponseCode();
+
+            responseCode = response.code();
             contentLength = getContentLength(connection);
+            LogUtil.e("url="+response.request().url()+" contentLength="+contentLength+"; content range="+ connection.getHeader("Content-Range"));
             long originalContentLength = Util.parseContentLength(connection.getHeader("Content-Length"));
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 contentLength = originalContentLength;
@@ -73,11 +80,11 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         } finally {
             connection.close();
         }
-        return parseResponse(chain, responseCode, contentLength);
+        return parseResponse(chain, response, contentLength);
     }
 
-    private DownloadInfo parseResponse(DownloadChain chain, int responseCode, long contentLength) {
-        if (responseCode >= 200 && responseCode < 300) {
+    private DownloadInfo parseResponse(DownloadChain chain, Response response, long contentLength) {
+        if (response.isSuccessful()) {
             if (contentLength != CONTENT_LENGTH_NOT_FOUND) {
                 long downloadDirUsableSpace = Util.getUsableSpace(new File(downloadDetailsInfo.getFilePath()));
                 long dataFileUsableSpace = Util.getUsableSpace(Environment.getDataDirectory());
@@ -95,16 +102,15 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
                     }
                 }
             }
-            if (responseCode == HttpURLConnection.HTTP_PARTIAL) {
+            if (response.code() == HttpURLConnection.HTTP_PARTIAL) {
                 downloadDetailsInfo.setSupportBreakpoint(contentLength != CONTENT_LENGTH_NOT_FOUND);
             } else {
                 downloadDetailsInfo.setSupportBreakpoint(false);
             }
             checkDownloadFile(contentLength);
-        } else if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
+        } else if (response.code() == HttpURLConnection.HTTP_NOT_MODIFIED) {
             if (downloadDetailsInfo.isFinished()) {
                 downloadDetailsInfo.setCompletedSize(downloadDetailsInfo.getContentLength());
-                downloadDetailsInfo.setFinished(1);
                 downloadDetailsInfo.setProgress(100);
                 downloadDetailsInfo.setStatus(DownloadInfo.Status.FINISHED);
                 downloadTask.updateInfo();
@@ -113,7 +119,7 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
                 checkDownloadFile(contentLength);
             }
         } else {
-            if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+            if (response.code() == HttpURLConnection.HTTP_NOT_FOUND) {
                 downloadDetailsInfo.setErrorCode(ErrorCode.FILE_NOT_FOUND);
             } else {
                 downloadDetailsInfo.setErrorCode(ErrorCode.UNKNOWN_SERVER_ERROR);
@@ -142,9 +148,9 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         downloadTask.updateInfo();
     }
 
-    private void setFilePathIfNeed(String contentDisposition, String contentType) {
+    private void setFilePathIfNeed(String url,String contentDisposition, String contentType) {
         if (downloadDetailsInfo.getFilePath() == null) {
-            String fileName = Util.guessFileName(downloadRequest.getUrl(), contentDisposition, contentType);
+            String fileName = Util.guessFileName(url, contentDisposition, contentType);
             downloadRequest.setFilePath(Util.getCachePath(DownloadProvider.context) + "/" + fileName);
             downloadTask.updateInfo();
         }

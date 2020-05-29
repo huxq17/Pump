@@ -18,6 +18,10 @@ import com.huxq17.download.utils.Util;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
+
+import okhttp3.Request;
+import okhttp3.Response;
 
 
 public class SimpleDownloadTask extends Task {
@@ -39,9 +43,9 @@ public class SimpleDownloadTask extends Task {
             addCacheHeader();
         }
         try {
-            connection.connect();
+            Response response = connection.connect();
             setCacheBean();
-            if (connection.getResponseCode() == HttpURLConnection.HTTP_NOT_MODIFIED) {
+            if (response.code() == HttpURLConnection.HTTP_NOT_MODIFIED) {
                 downloadInfo.setCompletedSize(downloadInfo.getContentLength());
                 downloadInfo.setFinished(1);
                 downloadInfo.setProgress(100);
@@ -50,7 +54,7 @@ public class SimpleDownloadTask extends Task {
             }
             downloadInfo.deleteDownloadFile();
             downloadInfo.setFinished(0);
-            if (connection.isSuccessful() && downloadFile.createNewFile()) {
+            if (response.isSuccessful() && downloadFile.createNewFile()) {
                 long contentLength = Util.parseContentLength(connection.getHeader("Content-Length"));
                 if (contentLength > 0) {
                     downloadInfo.setContentLength(contentLength);

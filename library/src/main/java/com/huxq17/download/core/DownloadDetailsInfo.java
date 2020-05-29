@@ -182,7 +182,7 @@ public class DownloadDetailsInfo {
                 return false;
             }
             if (this.finished == 1) {
-                if (downloadFile.exists() && downloadFile.length() == this.contentLength) {
+                if (contentLength > 0 && downloadFile.exists() && downloadFile.length() == contentLength) {
                     return true;
                 } else if (downloadFile.exists()) {
                     FileUtil.deleteFile(downloadFile);
