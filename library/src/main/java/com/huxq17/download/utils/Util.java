@@ -115,14 +115,14 @@ public class Util {
     }
 
     public static long parseContentLength(@Nullable String contentLength) {
-        if (contentLength == null) return -1;
+        if (contentLength == null) return CONTENT_LENGTH_NOT_FOUND;
 
         try {
             return Long.parseLong(contentLength);
         } catch (NumberFormatException ignored) {
         }
 
-        return -1;
+        return CONTENT_LENGTH_NOT_FOUND;
     }
 
     public static String guessFileName(

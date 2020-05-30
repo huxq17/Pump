@@ -42,6 +42,7 @@ public class SimpleDownloadTask extends Task {
         }
         try {
             Response response = connection.connect();
+            downloadInfo.setMD5(connection.getHeader("Content-MD5"));
             setCacheBean();
             if (response.code() == HttpURLConnection.HTTP_NOT_MODIFIED) {
                 downloadInfo.setCompletedSize(downloadInfo.getContentLength());
@@ -74,7 +75,7 @@ public class SimpleDownloadTask extends Task {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
+            downloadInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
         } finally {
             connection.close();
         }

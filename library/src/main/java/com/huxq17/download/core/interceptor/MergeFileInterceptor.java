@@ -18,7 +18,6 @@ import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
 
 public class MergeFileInterceptor implements DownloadInterceptor {
     private DownloadDetailsInfo downloadInfo;
-    long totalFileLength=0;
     @Override
     public DownloadInfo intercept(DownloadChain chain) {
         DownloadRequest downloadRequest = chain.request();
@@ -38,7 +37,6 @@ public class MergeFileInterceptor implements DownloadInterceptor {
             File[] downloadPartFiles = tempDir.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {
-                    totalFileLength += new File(dir,name).length();
                     return name.startsWith(DOWNLOAD_PART);
                 }
             });
@@ -63,7 +61,7 @@ public class MergeFileInterceptor implements DownloadInterceptor {
                             (System.currentTimeMillis() - startTime) + "; file.length=" + file.length());
                     checkDownloadResult(contentLength, completedSize);
                 } else {
-                    downloadInfo.setErrorCode(ErrorCode.MERGE_FILE_FAILED);
+                    downloadInfo.setErrorCode(ErrorCode.ERROR_MERGE_FILE_FAILED);
                 }
             }
         }
@@ -85,17 +83,8 @@ public class MergeFileInterceptor implements DownloadInterceptor {
             downloadInfo.setCompletedSize(completedSize);
         } else {
             downloadInfo.setFinished(0);
-            downloadInfo.setErrorCode(ErrorCode.DOWNLOAD_FAILED);
+            downloadInfo.setErrorCode(ErrorCode.ERROR_DOWNLOAD_FAILED);
         }
     }
 
-//    private boolean isMd5Equals(String md5, File downloadFile, OnVerifyMd5Listener listener) {
-//        if (listener == null) {
-//            listener = PumpFactory.getService(IDownloadConfigService.class).getOnVerifyMd5Listener();
-//        }
-//        if (!TextUtils.isEmpty(md5) && listener != null) {
-//            return listener.onVerifyMd5(md5, downloadFile);
-//        }
-//        return true;
-//    }
 }

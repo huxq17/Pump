@@ -3,6 +3,7 @@ package com.huxq17.download.core;
 import android.text.TextUtils;
 
 import com.huxq17.download.DownloadProvider;
+import com.huxq17.download.ErrorCode;
 import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.db.DBService;
 import com.huxq17.download.utils.FileUtil;
@@ -30,7 +31,7 @@ public class DownloadDetailsInfo {
     private int finished;
     protected volatile DownloadInfo.Status status;
     private String speed;
-    private int errorCode;
+    private ErrorCode errorCode;
     private File tempDir;
     private List<File> downloadPartFiles = new ArrayList<>();
     private File downloadFile;
@@ -151,11 +152,11 @@ public class DownloadDetailsInfo {
         this.progress = progress;
     }
 
-    public void setErrorCode(int code) {
+    public void setErrorCode(ErrorCode code) {
         setErrorCode(code, false);
     }
 
-    public void setErrorCode(int code, boolean force) {
+    public void setErrorCode(ErrorCode code, boolean force) {
         if (status != null && (status.isRunning() || force)) {
             this.errorCode = code;
             setStatus(DownloadInfo.Status.FAILED);
@@ -163,7 +164,7 @@ public class DownloadDetailsInfo {
     }
 
     public void clearErrorCode() {
-        this.errorCode = 0;
+        this.errorCode = null;
     }
 
     public DownloadInfo.Status getStatus() {
@@ -291,7 +292,7 @@ public class DownloadDetailsInfo {
         return completedSize;
     }
 
-    public int getErrorCode() {
+    public ErrorCode getErrorCode() {
         return errorCode;
     }
 

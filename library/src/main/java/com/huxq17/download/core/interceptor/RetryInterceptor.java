@@ -6,7 +6,7 @@ import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.RealDownloadChain;
 
-import static com.huxq17.download.ErrorCode.NETWORK_UNAVAILABLE;
+import static com.huxq17.download.ErrorCode.ERROR_NETWORK_UNAVAILABLE;
 
 public class RetryInterceptor implements DownloadInterceptor {
     private int retryUpperLimit;
@@ -44,7 +44,7 @@ public class RetryInterceptor implements DownloadInterceptor {
     }
 
     private boolean shouldRetry() {
-        return downloadDetailsInfo.getErrorCode() == NETWORK_UNAVAILABLE
+        return downloadDetailsInfo.getErrorCode() == ERROR_NETWORK_UNAVAILABLE
                 && retryUpperLimit > tryCount;
     }
 }

@@ -84,7 +84,7 @@ public final class DownloadRequest {
     }
 
     public int getThreadNum() {
-        return threadNum;
+        return Math.max(threadNum, 1);
     }
 
     public String getTag() {

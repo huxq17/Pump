@@ -70,7 +70,7 @@ public class DownloadBlockTask extends Task {
                     }
                     connection.flushDownload();
                 } else {
-                    downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
+                    downloadInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
                     downloadTask.cancel();
                 }
             }
@@ -78,7 +78,7 @@ public class DownloadBlockTask extends Task {
                 e.printStackTrace();
             }catch (IOException e) {
                 e.printStackTrace();
-                downloadInfo.setErrorCode(ErrorCode.NETWORK_UNAVAILABLE);
+                downloadInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
             } finally {
                 connection.close();
             }

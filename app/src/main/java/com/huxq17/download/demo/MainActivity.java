@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                 progressDialog.show();
                 String downloadUrl = etDownload.getText().toString();
                 if(downloadUrl.isEmpty()){
-                    downloadUrl =url2;
+                    downloadUrl ="https://wutong.yundasys.com:9527/api/appstore/version/downPageForVersionIos?redirectUrl=https://appacce.yundasys.com/package/android/com.yunda.yunshome/201.apk&appId=com.yunda.yunshome&version=yunhome201";
                 }
 
                 Pump.newRequest(downloadUrl)
@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
                         .forceReDownload(true)
                         //Set how many threads are used when downloading,default 3.
                         .threadNum(3)
-                        .disableBreakPointDownload()
+//                        .disableBreakPointDownload()
                         //Pump will connect server by this OKHttp request builder,so you can customize http request.
                         .setRequestBuilder(new Request.Builder())
                         .setRetry(3, 200)

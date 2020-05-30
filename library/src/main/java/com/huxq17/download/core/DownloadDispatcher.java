@@ -185,7 +185,7 @@ public class DownloadDispatcher extends Task {
             LogUtil.e("Data directory usable space is " + dataFileAvailableSize + " and download directory usable space is " + downloadFileAvailableSize);
             DownloadDetailsInfo downloadInfo = downloadInfoManager.createDownloadInfo(downloadRequest.getUrl(),
                     filePath, downloadRequest.getTag(), downloadRequest.getId(), System.currentTimeMillis(), false);
-            downloadInfo.setErrorCode(ErrorCode.USABLE_SPACE_NOT_ENOUGH);
+            downloadInfo.setErrorCode(ErrorCode.ERROR_USABLE_SPACE_NOT_ENOUGH);
             PumpFactory.getService(IMessageCenter.class).notifyProgressChanged(downloadInfo);
             return false;
         }

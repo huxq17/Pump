@@ -27,51 +27,97 @@ import java.net.HttpURLConnection;
 
 import okhttp3.Response;
 
+import static com.huxq17.download.ErrorCode.ERROR_CONTENT_LENGTH_NOT_FOUND;
 import static com.huxq17.download.utils.Util.CONTENT_LENGTH_NOT_FOUND;
 import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
 import static com.huxq17.download.utils.Util.setFilePathIfNeed;
 
-public class CheckCacheInterceptor implements DownloadInterceptor {
+public class ConnectInterceptor implements DownloadInterceptor {
     private DownloadDetailsInfo downloadDetailsInfo;
     private DownloadRequest downloadRequest;
     private String lastModified;
     private String eTag;
     private DownloadTask downloadTask;
+    private String localETag;
+    private String localLastModified;
+    private File tempFile;
+
+    private long calculateCompletedSize() {
+        File tempDir = downloadDetailsInfo.getTempDir();
+        tempFile = new File(tempDir, DOWNLOAD_PART + 0);
+        if (tempFile.exists()) {
+            return tempFile.length();
+        } else {
+            try {
+                if (!tempDir.exists()) {
+                    tempDir.mkdirs();
+                }
+                tempFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return 0;
+        }
+    }
 
     @Override
     public DownloadInfo intercept(DownloadChain chain) {
         downloadRequest = chain.request();
         downloadDetailsInfo = downloadRequest.getDownloadInfo();
         downloadTask = downloadDetailsInfo.getDownloadTask();
-        if (downloadRequest.isDisableBreakPointDownload()) {
-            downloadDetailsInfo.deleteTempDir();
-            downloadDetailsInfo.setSupportBreakpoint(false);
-            return chain.proceed(downloadRequest);
-        }
+
         DownloadConnection connection = buildRequest(downloadRequest);
         int responseCode;
         long contentLength;
         Response response;
         try {
-            response = connection.connect("GET");
+            response = connection.connect();
 
-            String transferEncoding = connection.getHeader("Transfer-Encoding");
             lastModified = connection.getHeader("Last-Modified");
-            setFilePathIfNeed(downloadTask,response);
+            setFilePathIfNeed(downloadTask, response);
             eTag = connection.getHeader("ETag");
             String contentLengthField = connection.getHeader("Content-Length");
             downloadDetailsInfo.setMD5(connection.getHeader("Content-MD5"));
 
             responseCode = response.code();
-            contentLength = getContentLength(connection);
-            long originalContentLength = Util.parseContentLength(contentLengthField);
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                contentLength = originalContentLength;
+            contentLength = Util.parseContentLength(contentLengthField);
+            if (response.isSuccessful()) {
+                if (contentLength == CONTENT_LENGTH_NOT_FOUND) {
+                    downloadDetailsInfo.setErrorCode(ERROR_CONTENT_LENGTH_NOT_FOUND);
+                    return downloadDetailsInfo.snapshot();
+                }
+                if (checkIsSpaceNotEnough(contentLength)) {
+                    return downloadDetailsInfo.snapshot();
+                }
+            } else if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
+                if (downloadDetailsInfo.isFinished()) {
+                    downloadDetailsInfo.setCompletedSize(downloadDetailsInfo.getContentLength());
+                    downloadDetailsInfo.setProgress(100);
+                    downloadDetailsInfo.setStatus(DownloadInfo.Status.FINISHED);
+                    downloadTask.updateInfo();
+                    return downloadDetailsInfo.snapshot();
+                }
+            } else {
+                if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                    downloadDetailsInfo.setErrorCode(ErrorCode.ERROR_FILE_NOT_FOUND);
+                } else {
+                    downloadDetailsInfo.setErrorCode(ErrorCode.ERROR_UNKNOWN_SERVER_ERROR);
+                }
+                return downloadDetailsInfo.snapshot();
             }
-            if (contentLength == CONTENT_LENGTH_NOT_FOUND && isNeedHeadContentLength(contentLengthField, transferEncoding)) {
-                contentLength = headContentLength();
+            if (!TextUtils.isEmpty(lastModified) || !TextUtils.isEmpty(eTag)) {
+                downloadDetailsInfo.setCacheBean(new DownloadProvider.CacheBean(downloadRequest.getId(), lastModified, eTag));
             }
-        } catch (IOException e) {
+            DBService.getInstance().updateCache(new DownloadProvider.CacheBean(downloadRequest.getId(), "", ""));
+            checkDownloadFile(contentLength);
+            int threadCount = downloadRequest.isDisableBreakPointDownload() ? 1 : downloadRequest.getThreadNum();
+            if (threadCount == 1) {
+
+            } else {
+
+            }
+        } catch (
+                IOException e) {
             e.printStackTrace();
             downloadDetailsInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
             return downloadDetailsInfo.snapshot();
@@ -79,6 +125,20 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
             connection.close();
         }
         return parseResponse(chain, response, contentLength);
+    }
+
+    private boolean checkIsSpaceNotEnough(long contentLength) {
+        long downloadDirUsableSpace = Util.getUsableSpace(new File(downloadDetailsInfo.getFilePath()));
+        long dataFileUsableSpace = Util.getUsableSpace(Environment.getDataDirectory());
+        long minUsableStorageSpace = PumpFactory.getService(IDownloadConfigService.class).getMinUsableSpace();
+        if (downloadDirUsableSpace < contentLength * 2 || dataFileUsableSpace <= minUsableStorageSpace) {
+            downloadDetailsInfo.setErrorCode(ErrorCode.ERROR_USABLE_SPACE_NOT_ENOUGH);
+            Context context = PumpFactory.getService(IDownloadManager.class).getContext();
+            String downloadFileAvailableSize = Formatter.formatFileSize(context, downloadDirUsableSpace);
+            LogUtil.e("Download directory usable space is " + downloadFileAvailableSize + ";but download file's contentLength is " + contentLength);
+            return true;
+        }
+        return false;
     }
 
     private DownloadInfo parseResponse(DownloadChain chain, Response response, long contentLength) {
@@ -95,7 +155,7 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
                     LogUtil.e("Download directory usable space is " + downloadFileAvailableSize + ";but download file's contentLength is " + contentLength);
                     return downloadDetailsInfo.snapshot();
                 } else {
-                    if (!TextUtils.isEmpty(lastModified) || !TextUtils.isEmpty(eTag)){
+                    if (!TextUtils.isEmpty(lastModified) || !TextUtils.isEmpty(eTag)) {
                         downloadDetailsInfo.setCacheBean(new DownloadProvider.CacheBean(downloadRequest.getId(), lastModified, eTag));
                     }
                 }
@@ -137,8 +197,9 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
         });
         if (childList != null && childList.length != downloadRequest.getThreadNum()
                 || contentLength != downloadDetailsInfo.getContentLength()
-                || contentLength == CONTENT_LENGTH_NOT_FOUND
-                || !downloadDetailsInfo.isSupportBreakpoint()) {
+                || !localLastModified.equals(lastModified)
+                || !localETag.equals(eTag)
+                || downloadRequest.isDisableBreakPointDownload()) {
             downloadDetailsInfo.deleteTempDir();
         }
         downloadDetailsInfo.setContentLength(contentLength);
@@ -148,71 +209,24 @@ public class CheckCacheInterceptor implements DownloadInterceptor {
     }
 
     private DownloadConnection buildRequest(DownloadRequest downloadRequest) {
+        long completedSize = calculateCompletedSize();
         String url = downloadRequest.getUrl();
         DownloadConnection connection = createConnection(downloadRequest);
-        connection.addHeader("Range", "bytes=0-0");
         if (downloadRequest.getDownloadInfo().isFinished() && !downloadRequest.isForceReDownload()) {
             DownloadProvider.CacheBean cacheBean = DBService.getInstance().queryCache(url);
             if (cacheBean != null) {
-                String eTag = cacheBean.eTag;
-                String lastModified = cacheBean.lastModified;
+                localETag = cacheBean.eTag;
+                localLastModified = cacheBean.lastModified;
                 if (!TextUtils.isEmpty(lastModified)) {
-                    connection.addHeader("If-Modified-Since", lastModified);
+                    connection.addHeader("If-Modified-Since", localETag);
                 }
                 if (!TextUtils.isEmpty(eTag)) {
-                    connection.addHeader("If-None-Match", eTag);
+                    connection.addHeader("If-None-Match", localLastModified);
                 }
             }
 
         }
         return connection;
-    }
-
-    private long getContentLength(DownloadConnection connection) {
-        long contentLength = CONTENT_LENGTH_NOT_FOUND;
-        String contentRange = connection.getHeader("Content-Range");
-        if (contentRange != null) {
-            final String[] session = contentRange.split("/");
-            if (session.length >= 2) {
-                try {
-                    contentLength = Long.parseLong(session[1]);
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return contentLength;
-    }
-
-    private boolean isNeedHeadContentLength(String contentLengthField, String transferEncoding) {
-        if (transferEncoding != null && transferEncoding.equals("chunked")) {
-            // because of the Transfer-Encoding can certain the result is right, so pass.
-            return false;
-        }
-
-        if (contentLengthField == null || contentLengthField.length() <= 0) {
-            // because of the response header isn't contain the Content-Length so the HEAD method
-            // request is useless, because we plan to get the right instance-length on the
-            // Content-Length field through the response header of non 0-0 Range HEAD method request
-            return false;
-        }
-        // because of the response header contain Content-Length, but because of we using Range: 0-0
-        // so we the Content-Length is always 1 now, we can't use it, so we try to use HEAD method
-        // request just for get the certain instance-length.
-        return true;
-    }
-
-    private long headContentLength() {
-        DownloadConnection connection = createConnection(downloadRequest);
-        try {
-            connection.connect("HEAD");
-            return Util.parseContentLength(connection.getHeader("Content-Length"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            connection.close();
-        }
-        return CONTENT_LENGTH_NOT_FOUND;
     }
 
     private DownloadConnection createConnection(DownloadRequest downloadRequest) {

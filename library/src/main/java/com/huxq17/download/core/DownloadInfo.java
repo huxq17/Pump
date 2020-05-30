@@ -1,6 +1,8 @@
 package com.huxq17.download.core;
 
 
+import com.huxq17.download.ErrorCode;
+
 import java.io.File;
 
 public final class DownloadInfo {
@@ -13,7 +15,7 @@ public final class DownloadInfo {
     private final int finished;
     private final Status status;
     private final String speed;
-    private final int errorCode;
+    private final ErrorCode errorCode;
     private final String tag;
     private final long createTime;
     private final int progress;
@@ -21,7 +23,7 @@ public final class DownloadInfo {
     private DownloadDetailsInfo downloadDetailsInfo;
 
     DownloadInfo(String url, File downloadFile, String tag, String id, long createTime,
-                 String speed, long completedSize, long contentLength, int errorCode,
+                 String speed, long completedSize, long contentLength, ErrorCode errorCode,
                  Status status, int finished, int progress, DownloadDetailsInfo downloadDetailsInfo) {
         this.url = url;
         this.downloadFile = downloadFile;
@@ -70,7 +72,7 @@ public final class DownloadInfo {
         return createTime;
     }
 
-    public int getErrorCode() {
+    public ErrorCode getErrorCode() {
         return errorCode;
     }
 
@@ -114,7 +116,7 @@ public final class DownloadInfo {
         return status;
     }
 
-    public void setErrorCode(int errorCode) {
+    public void setErrorCode(ErrorCode errorCode) {
         downloadDetailsInfo.setErrorCode(errorCode, true);
     }
 

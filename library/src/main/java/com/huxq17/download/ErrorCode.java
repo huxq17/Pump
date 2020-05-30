@@ -1,32 +1,37 @@
 package com.huxq17.download;
 
-public class ErrorCode {
+public enum ErrorCode {
+
     /**
      * Network unavailable
      */
-    public static final int NETWORK_UNAVAILABLE = 2001;
+    ERROR_NETWORK_UNAVAILABLE,
     /**
      * create download file failed.
      */
-    public static final int ERROR_CREATE_FILE_FAILED = 2003;
+    ERROR_CREATE_FILE_FAILED,
     /**
      * Website return 404.
      */
-    public static final int FILE_NOT_FOUND = 1002;
+    ERROR_FILE_NOT_FOUND,
     /**
      * Server unknown error.
      */
-    public static final int UNKNOWN_SERVER_ERROR = 1003;
+    ERROR_UNKNOWN_SERVER_ERROR,
     /**
      * Usable space is not enough.
      */
-    public static final int USABLE_SPACE_NOT_ENOUGH = 1005;
+    ERROR_USABLE_SPACE_NOT_ENOUGH,
     /**
      * Merge file failed.
      */
-    public static final int MERGE_FILE_FAILED = 1006;
+    ERROR_MERGE_FILE_FAILED,
+    /**
+     * Network unavailable
+     */
+    ERROR_CONTENT_LENGTH_NOT_FOUND,
     /**
      * Download file failed.
      */
-    public static final int DOWNLOAD_FAILED = 1007;
+    ERROR_DOWNLOAD_FAILED;
 }
