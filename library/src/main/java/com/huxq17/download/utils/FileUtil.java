@@ -44,7 +44,7 @@ public class FileUtil {
     }
 
     public static void copyFile(File sourceFile, File destFile) {
-        if(destFile.getParentFile()!=null&&!destFile.getParentFile().exists()){
+        if (destFile.getParentFile() != null && !destFile.getParentFile().exists()) {
             destFile.getParentFile().mkdirs();
         }
         BufferedSource bufferedSource = null;
@@ -89,9 +89,9 @@ public class FileUtil {
     }
 
     public static boolean deleteFile(File file) {
+        if (file == null) return false;
         File to = new File(file.getAbsolutePath() + System.currentTimeMillis());
-        file.renameTo(to);
-        return to.delete();
+        return file.renameTo(to) && to.delete();
     }
 
     //    /**

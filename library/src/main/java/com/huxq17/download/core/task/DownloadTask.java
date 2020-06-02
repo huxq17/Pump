@@ -10,6 +10,7 @@ import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.RealDownloadChain;
 import com.huxq17.download.core.interceptor.CheckCacheInterceptor;
+import com.huxq17.download.core.interceptor.ConnectInterceptor;
 import com.huxq17.download.core.interceptor.DownloadFetchInterceptor;
 import com.huxq17.download.core.interceptor.MergeFileInterceptor;
 import com.huxq17.download.core.interceptor.RetryInterceptor;
@@ -29,7 +30,7 @@ public class DownloadTask extends Task {
     private IMessageCenter messageCenter;
     private int lastProgress;
     private DownloadRequest downloadRequest;
-    private DownloadFetchInterceptor fetchInterceptor;
+    private ConnectInterceptor connectInterceptor;
 
     public DownloadTask(DownloadRequest downloadRequest) {
         if (downloadRequest != null) {
@@ -39,7 +40,7 @@ public class DownloadTask extends Task {
             downloadInfo.setDownloadTask(this);
             dbService = DBService.getInstance();
             messageCenter = PumpFactory.getService(IMessageCenter.class);
-            downloadInfo.setErrorCode(0);
+            downloadInfo.clearErrorCode();
             downloadInfo.setStatus(DownloadInfo.Status.WAIT);
             downloadInfo.setCompletedSize(0);
             downloadInfo.setProgress(0);
@@ -94,10 +95,9 @@ public class DownloadTask extends Task {
     private void downloadWithDownloadChain() {
         List<DownloadInterceptor> interceptors = new ArrayList<>(PumpFactory.getService(IDownloadConfigService.class)
                 .getDownloadInterceptors());
-        fetchInterceptor = new DownloadFetchInterceptor();
+        connectInterceptor = new ConnectInterceptor();
         interceptors.add(new RetryInterceptor());
-        interceptors.add(new CheckCacheInterceptor());
-        interceptors.add(fetchInterceptor);
+        interceptors.add(connectInterceptor);
         interceptors.add(new MergeFileInterceptor());
         RealDownloadChain realDownloadChain = new RealDownloadChain(interceptors, downloadRequest, 0);
         realDownloadChain.proceed(downloadRequest);
@@ -159,11 +159,8 @@ public class DownloadTask extends Task {
     }
 
     public void cancel() {
-        if (fetchInterceptor != null) {
-            fetchInterceptor.cancel();
-        }
-        if (currentThread != null) {
-            currentThread.interrupt();
+        if (connectInterceptor != null) {
+            connectInterceptor.cancel();
         }
     }
 

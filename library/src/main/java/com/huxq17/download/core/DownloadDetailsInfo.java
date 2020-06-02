@@ -45,6 +45,7 @@ public class DownloadDetailsInfo {
      * True indicate that support breakpoint download.
      */
     private boolean supportBreakpoint = true;
+    private int threadNum;
 
     public DownloadDetailsInfo(String url, String filePath) {
         this(url, filePath, null, url, System.currentTimeMillis());
@@ -65,6 +66,14 @@ public class DownloadDetailsInfo {
         }
         speedMonitor = new SpeedMonitor();
 
+    }
+
+    public void setThreadNum(int threadNum) {
+        this.threadNum = threadNum;
+    }
+
+    public int getThreadNum() {
+        return threadNum;
     }
 
     public boolean isSupportBreakpoint() {
@@ -123,7 +132,7 @@ public class DownloadDetailsInfo {
         this.completedSize = completedSize;
     }
 
-    public void download(int length) {
+    public void download(long length) {
         this.completedSize += length;
         speedMonitor.download(length);
     }

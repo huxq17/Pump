@@ -20,7 +20,7 @@ public interface DownloadConnection {
 
     void prepareDownload(File file) throws IOException;
 
-    int downloadBuffer(byte[] buffer) throws IOException;
+    int downloadBuffer(byte[] buffer, int offset, int byteCount) throws IOException;
 
     void flushDownload() throws IOException;
 

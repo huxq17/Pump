@@ -8,6 +8,8 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -74,12 +76,15 @@ public class DownloadProvider extends ContentProvider {
         public String eTag;
         public String url;
 
+        public String getIfRangeField() {
+            return TextUtils.isEmpty(eTag) ? lastModified : eTag;
+        }
+
         public CacheBean(String url, String lastModified, String eTag) {
             this.lastModified = lastModified;
             this.eTag = eTag;
             this.url = url;
         }
-
     }
 
     @Nullable

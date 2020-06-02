@@ -58,8 +58,8 @@ public class OkHttpDownloadConnection implements DownloadConnection {
     }
 
     @Override
-    public int downloadBuffer(byte[] buffer) throws IOException {
-        int len = bufferedSource.read(buffer);
+    public int downloadBuffer(byte[] buffer, int offset, int byteCount) throws IOException {
+        int len = bufferedSource.read(buffer, offset, byteCount);
         if (len != -1) {
             bufferedSink.write(buffer, 0, len);
         }
@@ -75,7 +75,6 @@ public class OkHttpDownloadConnection implements DownloadConnection {
     public void close() {
         Util.closeQuietly(bufferedSink);
         Util.closeQuietly(bufferedSource);
-        Util.closeQuietly(response);
     }
 
     @Override

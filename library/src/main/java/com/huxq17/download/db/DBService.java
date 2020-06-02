@@ -5,10 +5,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
+import android.util.JsonReader;
 
 import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfoManager;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +57,8 @@ public class DBService {
         Cursor cursor = db.rawQuery(querySql, new String[]{url});
 
         if (cursor.moveToNext()) {
-            DownloadProvider.CacheBean cacheBean = new DownloadProvider.CacheBean(url, cursor.getString(2),
+            DownloadProvider.CacheBean cacheBean;
+            cacheBean = new DownloadProvider.CacheBean(url, cursor.getString(2),
                     cursor.getString(1));
             cursor.close();
             return cacheBean;
@@ -152,6 +157,11 @@ public class DBService {
     public synchronized void deleteInfo(String id) {
         SQLiteDatabase db = getWritableDatabase();
         db.delete(DownloadProvider.DownloadTable.TABLE_NAME, DownloadProvider.DownloadTable.ID + "=?", new String[]{id});
+        clearCache(id);
+    }
+
+    public synchronized void clearCache(String id) {
+        SQLiteDatabase db = getWritableDatabase();
         db.delete(DownloadProvider.CacheTable.TABLE_NAME, DownloadProvider.CacheTable.URL + "=?", new String[]{id});
     }
 

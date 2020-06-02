@@ -14,7 +14,7 @@ public class SpeedMonitor {
     double speed = 0;
     String suffix = BYTE_SUFFIX;
 
-    public void download(int length) {
+    public void download(long length) {
         totalRead += length;
         if (lastSpeedCountTime == 0) {
             lastSpeedCountTime = currentTime();
