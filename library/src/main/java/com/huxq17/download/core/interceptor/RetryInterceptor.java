@@ -26,7 +26,11 @@ public class RetryInterceptor implements DownloadInterceptor {
             downloadInfo = realDownloadChain.proceed(downloadRequest, shouldRetry);
             shouldRetry = shouldRetry();
             if (shouldRetry) {
-                tryCount++;
+                if(downloadDetailsInfo.isForceRetry()){
+                    downloadDetailsInfo.setForceRetry(false);
+                }else{
+                    tryCount++;
+                }
                 downloadDetailsInfo.setStatus(DownloadInfo.Status.RUNNING);
                 downloadDetailsInfo.clearErrorCode();
                 if (retryDelay > 0) {
@@ -44,7 +48,7 @@ public class RetryInterceptor implements DownloadInterceptor {
     }
 
     private boolean shouldRetry() {
-        return downloadDetailsInfo.getErrorCode() == ERROR_NETWORK_UNAVAILABLE
+        return downloadDetailsInfo.isForceRetry() || downloadDetailsInfo.getErrorCode() == ERROR_NETWORK_UNAVAILABLE
                 && retryUpperLimit > tryCount;
     }
 }

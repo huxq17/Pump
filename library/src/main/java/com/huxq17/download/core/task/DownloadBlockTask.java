@@ -25,7 +25,6 @@ import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
 public class DownloadBlockTask extends Task {
     private DownloadConnection connection;
     private int blockId;
-    private long completedSize;
     private File tempFile;
     private DownloadDetailsInfo downloadInfo;
     private boolean isConnected;
@@ -48,8 +47,8 @@ public class DownloadBlockTask extends Task {
 
     @Override
     public void cancel() {
-        if (!connection.isCanceled()) {
-            connection.cancel();
+        if (currentThread != null) {
+            currentThread.interrupt();
         }
     }
 
@@ -58,7 +57,8 @@ public class DownloadBlockTask extends Task {
         DownloadTask downloadTask = downloadInfo.getDownloadTask();
         long threadNum = downloadInfo.getThreadNum();
         long fileLength = downloadInfo.getContentLength();
-        long startPosition = blockId * fileLength / threadNum + completedSize;
+        long startPosition = blockId * fileLength / threadNum + getCompletedSize();
+
         long endPosition;
         if (threadNum == blockId + 1) {
             endPosition = fileLength - 1;
@@ -66,7 +66,7 @@ public class DownloadBlockTask extends Task {
             endPosition = (blockId + 1) * fileLength / threadNum - 1;
         }
 
-        if (startPosition != endPosition + 1) {
+        if (startPosition < endPosition + 1) {
             try {
                 if (!isConnected) {
                     DownloadProvider.CacheBean cacheBean = downloadInfo.getCacheBean();
@@ -83,10 +83,11 @@ public class DownloadBlockTask extends Task {
                     int code = response.code();
                     if (code == HttpURLConnection.HTTP_PARTIAL) {
                         download(connection, downloadTask, startPosition, endPosition + 1);
-                    } else if (code == HttpURLConnection.HTTP_PRECON_FAILED) {
+                    } else if (code == HttpURLConnection.HTTP_PRECON_FAILED || code == 416) {
                         downloadInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
                         downloadTask.cancel();
                         clearTemp();
+                        downloadInfo.setForceRetry(true);
                     } else {
                         downloadInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
                         downloadTask.cancel();
@@ -97,11 +98,16 @@ public class DownloadBlockTask extends Task {
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
-                e.printStackTrace();
-                downloadInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
+                if (!isCanceled()) {
+                    e.printStackTrace();
+                    downloadInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
+                }
             } finally {
                 connection.close();
             }
+        } else if (startPosition > endPosition + 1) {
+            clearTemp();
+            downloadInfo.setForceRetry(true);
         }
     }
 
@@ -115,7 +121,6 @@ public class DownloadBlockTask extends Task {
         while (!isCanceled() && startPosition < endPosition
                 && (len = connection.downloadBuffer(buffer, 0, byteCount)) != -1) {
             startPosition += len;
-            completedSize +=len;
             long remainCount = endPosition - startPosition;
             if (remainCount < byteCount) {
                 byteCount = (int) remainCount;
@@ -131,7 +136,6 @@ public class DownloadBlockTask extends Task {
         File tempDir = downloadInfo.getTempDir();
         if (tempDir != null) {
             tempFile = new File(tempDir, DOWNLOAD_PART + blockId);
-            completedSize = tempFile.length();
         }
     }
 
@@ -151,12 +155,12 @@ public class DownloadBlockTask extends Task {
     }
 
     public long getCompletedSize() {
-        return completedSize;
+        if (tempFile == null) return 0L;
+        return tempFile.length();
     }
 
     public void clearTemp() {
         FileUtil.deleteFile(tempFile);
-        completedSize = 0;
     }
 
 }

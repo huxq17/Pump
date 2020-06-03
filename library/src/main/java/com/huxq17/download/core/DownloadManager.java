@@ -113,9 +113,8 @@ public class DownloadManager implements IDownloadManager {
         checkId(id);
         DownloadDetailsInfo transferInfo = DownloadInfoManager.getInstance().get(id);
         if (transferInfo == null) return;
-        DownloadTask downloadTask = transferInfo.getDownloadTask();
-        if (downloadTask != null && downloadTask.getRequest() != null) {
-            DownloadRequest downloadRequest = downloadTask.getRequest();
+        DownloadRequest downloadRequest = transferInfo.getDownloadRequest();
+        if (downloadRequest != null) {
             submit(downloadRequest);
         } else {
             DownloadRequest.newRequest(transferInfo.getUrl(), transferInfo.getFilePath()).submit();

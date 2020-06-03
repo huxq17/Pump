@@ -164,6 +164,7 @@ public class DownloadDispatcher extends Task {
         if (downloadInfo.getFilePath() != null && downloadRequest.getFilePath() == null) {
             downloadRequest.setFilePath(downloadInfo.getFilePath());
         }
+        downloadInfo.setDownloadRequest(downloadRequest);
         downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
         return new DownloadTask(downloadRequest);
     }

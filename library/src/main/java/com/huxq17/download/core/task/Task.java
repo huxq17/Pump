@@ -6,7 +6,9 @@ public abstract class Task implements Runnable {
     @Override
     public final void run() {
         currentThread = Thread.currentThread();
-        execute();
+        if(!isCanceled()){
+            execute();
+        }
         currentThread = null;
     }
 

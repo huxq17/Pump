@@ -44,8 +44,9 @@ public class DownloadDetailsInfo {
     /**
      * True indicate that support breakpoint download.
      */
-    private boolean supportBreakpoint = true;
     private int threadNum;
+    private boolean isForceRetry = false;
+    private DownloadRequest downloadRequest;
 
     public DownloadDetailsInfo(String url, String filePath) {
         this(url, filePath, null, url, System.currentTimeMillis());
@@ -68,6 +69,14 @@ public class DownloadDetailsInfo {
 
     }
 
+    public void setForceRetry(boolean isForceRetry) {
+        this.isForceRetry = isForceRetry;
+    }
+
+    public boolean isForceRetry() {
+        return isForceRetry;
+    }
+
     public void setThreadNum(int threadNum) {
         this.threadNum = threadNum;
     }
@@ -75,15 +84,6 @@ public class DownloadDetailsInfo {
     public int getThreadNum() {
         return threadNum;
     }
-
-    public boolean isSupportBreakpoint() {
-        return supportBreakpoint;
-    }
-
-    public void setSupportBreakpoint(boolean supportBreakpoint) {
-        this.supportBreakpoint = supportBreakpoint;
-    }
-
 
     public void setFilePath(String filePath) {
         if (filePath != null && !filePath.equals(this.filePath)) {
@@ -99,6 +99,14 @@ public class DownloadDetailsInfo {
 
     public DownloadTask getDownloadTask() {
         return downloadTask;
+    }
+
+    public DownloadRequest getDownloadRequest() {
+        return downloadRequest;
+    }
+
+    public void setDownloadRequest(DownloadRequest downloadRequest) {
+        this.downloadRequest = downloadRequest;
     }
 
     public void updateFilePath(String filePath) {

@@ -85,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
                         .forceReDownload(true)
                         //Set how many threads are used when downloading,default 3.
                         .threadNum(3)
-//                        .disableBreakPointDownload()
                         //Pump will connect server by this OKHttp request builder,so you can customize http request.
                         .setRequestBuilder(new Request.Builder())
                         .setRetry(3, 200)
