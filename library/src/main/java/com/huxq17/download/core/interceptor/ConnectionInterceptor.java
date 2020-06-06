@@ -29,21 +29,21 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import okhttp3.Response;
 
 import static com.huxq17.download.ErrorCode.ERROR_CONTENT_LENGTH_NOT_FOUND;
 import static com.huxq17.download.utils.Util.CONTENT_LENGTH_NOT_FOUND;
 import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
+import static com.huxq17.download.utils.Util.TRANSFER_ENCODING_CHUNKED;
 import static com.huxq17.download.utils.Util.setFilePathIfNeed;
 
 public class ConnectionInterceptor implements DownloadInterceptor {
     private DownloadDetailsInfo downloadDetailsInfo;
     private DownloadTask downloadTask;
     private DownloadBlockTask firstBlockTask = null;
-    private final List<Task> blockList = new ArrayList<>();
+    private final List<DownloadBlockTask> blockList = new ArrayList<>();
+    private String transferEncoding;
 
     @Override
     public DownloadInfo intercept(DownloadChain chain) {
@@ -51,9 +51,9 @@ public class ConnectionInterceptor implements DownloadInterceptor {
         downloadDetailsInfo = downloadRequest.getDownloadInfo();
         downloadTask = downloadDetailsInfo.getDownloadTask();
 
-        DownloadConnection connection = buildRequest(downloadRequest);
+        DownloadConnection conn = buildRequest(downloadRequest);
         int responseCode;
-        Response response = connect(connection);
+        Response response = connect(conn);
         if (response == null) {
             if (isCancelled()) {
                 return downloadDetailsInfo.snapshot();
@@ -62,22 +62,24 @@ public class ConnectionInterceptor implements DownloadInterceptor {
                 return downloadDetailsInfo.snapshot();
             }
         }
-        String lastModified = connection.getHeader("Last-Modified");
         setFilePathIfNeed(downloadTask, response);
-        String eTag = connection.getHeader("ETag");
-        String acceptRanges = connection.getHeader("Accept-Ranges");
-        downloadDetailsInfo.setMD5(connection.getHeader("Content-MD5"));
+
+        final String lastModified = conn.getHeader("Last-Modified");
+        final String eTag = conn.getHeader("ETag");
+        final String acceptRanges = conn.getHeader("Accept-Ranges");
+        transferEncoding = conn.getHeader("Transfer-Encoding");
+        downloadDetailsInfo.setMD5(conn.getHeader("Content-MD5"));
 
         responseCode = response.code();
-        long contentLength = getContentLength(connection);
+        long contentLength = getContentLength(conn);
         if (response.isSuccessful()) {
-            if (contentLength == CONTENT_LENGTH_NOT_FOUND) {
+            if (contentLength == CONTENT_LENGTH_NOT_FOUND && !isChunked()) {
                 downloadDetailsInfo.setErrorCode(ERROR_CONTENT_LENGTH_NOT_FOUND);
-                return closeConnectionAndReturn(connection);
+                return closeConnectionAndReturn(conn);
             }
             if (checkIsSpaceNotEnough(contentLength)) {
                 downloadDetailsInfo.setErrorCode(ErrorCode.ERROR_USABLE_SPACE_NOT_ENOUGH);
-                return closeConnectionAndReturn(connection);
+                return closeConnectionAndReturn(conn);
             }
         } else if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
             if (downloadDetailsInfo.isFinished()) {
@@ -85,7 +87,7 @@ public class ConnectionInterceptor implements DownloadInterceptor {
                 downloadDetailsInfo.setProgress(100);
                 downloadDetailsInfo.setStatus(DownloadInfo.Status.FINISHED);
                 downloadTask.updateInfo();
-                return closeConnectionAndReturn(connection);
+                return closeConnectionAndReturn(conn);
             }
         } else {
             if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
@@ -93,26 +95,27 @@ public class ConnectionInterceptor implements DownloadInterceptor {
             } else {
                 downloadDetailsInfo.setErrorCode(ErrorCode.ERROR_UNKNOWN_SERVER_ERROR);
             }
-            return closeConnectionAndReturn(connection);
+            return closeConnectionAndReturn(conn);
         }
-        DownloadProvider.CacheBean cacheBean = null;
-        if (!TextUtils.isEmpty(lastModified) || !TextUtils.isEmpty(eTag)) {
-            cacheBean = new DownloadProvider.CacheBean(downloadRequest.getId(), lastModified, eTag);
-            downloadDetailsInfo.setCacheBean(cacheBean);
-            DBService.getInstance().updateCache(cacheBean);
-        }
-
-
         if (responseCode == HttpURLConnection.HTTP_OK) {
             firstBlockTask.clearTemp();
         } else if (responseCode == HttpURLConnection.HTTP_PARTIAL) {
 
         }
-        int threadNum = cacheBean != null && "bytes".equals(acceptRanges) ? downloadRequest.getThreadNum() : 1;
+        DownloadProvider.CacheBean cacheBean = null;
+        if (!TextUtils.isEmpty(lastModified) || !TextUtils.isEmpty(eTag)) {
+            cacheBean = new DownloadProvider.CacheBean(downloadRequest.getId(), lastModified, eTag);
+            downloadDetailsInfo.setCacheBean(cacheBean);
+        }
+        boolean isServerSupportBreakPointDownload = !isChunked() && cacheBean != null && "bytes".equals(acceptRanges);
+        boolean isSupportBreakPointDownload = isServerSupportBreakPointDownload && !downloadDetailsInfo.isDisableBreakPointDownload();
+        if (isServerSupportBreakPointDownload) {
+            DBService.getInstance().updateCache(cacheBean);
+        }
+        int threadNum = isSupportBreakPointDownload ? downloadRequest.getThreadNum() : 1;
         downloadDetailsInfo.setThreadNum(threadNum);
-        checkDownloadFile(contentLength);
+        checkDownloadFile(contentLength, isSupportBreakPointDownload);
 
-        List<Future> futures = new ArrayList<>(threadNum);
         long completedSize = 0L;
         synchronized (blockList) {
             for (int i = 0; i < threadNum; i++) {
@@ -121,25 +124,17 @@ public class ConnectionInterceptor implements DownloadInterceptor {
                 } else {
                     DownloadBlockTask task = new DownloadBlockTask(downloadRequest, i);
                     completedSize += task.getCompletedSize();
-                    futures.add(TaskManager.submit(task));
+                    blockList.add(task);
+                    TaskManager.execute(task);
                 }
-
             }
         }
         downloadDetailsInfo.setCompletedSize(completedSize);
         firstBlockTask.run();
-
-        for (Future future : futures) {
-            if (!future.isDone()) {
-                try {
-                    future.get();
-                } catch (ExecutionException | InterruptedException e) {
-                    cancel();
-                }
-            }
+        for (DownloadBlockTask task : blockList) {
+            task.waitForFinished();
         }
         clearBlockList();
-
         return chain.proceed(downloadRequest);
     }
 
@@ -170,7 +165,7 @@ public class ConnectionInterceptor implements DownloadInterceptor {
         return false;
     }
 
-    private void checkDownloadFile(long contentLength) {
+    private void checkDownloadFile(long contentLength, boolean isSupportBreakPointDownload) {
         File tempDir = downloadDetailsInfo.getTempDir();
         String[] childList = tempDir.list(new FilenameFilter() {
             @Override
@@ -179,6 +174,7 @@ public class ConnectionInterceptor implements DownloadInterceptor {
             }
         });
         if (childList != null && childList.length != downloadDetailsInfo.getThreadNum()
+                || !isSupportBreakPointDownload
                 || contentLength != downloadDetailsInfo.getContentLength()) {
             downloadDetailsInfo.deleteTempDir();
         }
@@ -199,7 +195,7 @@ public class ConnectionInterceptor implements DownloadInterceptor {
         }
         String eTag = cacheBean.eTag;
         String lastModified = cacheBean.lastModified;
-        if (completedSize > 0) {
+        if (completedSize > 0 && !downloadDetailsInfo.isDisableBreakPointDownload()) {
             connection.addHeader("If-Range", cacheBean.getIfRangeField());
             connection.addHeader("Range", "bytes=" + completedSize + "-");
         } else if (downloadRequest.getDownloadInfo().isFinished() && !downloadRequest.isForceReDownload()) {
@@ -226,10 +222,14 @@ public class ConnectionInterceptor implements DownloadInterceptor {
                 }
             }
         }
-        if (contentLength == CONTENT_LENGTH_NOT_FOUND) {
+        if (!isChunked() && contentLength == CONTENT_LENGTH_NOT_FOUND) {
             contentLength = Util.parseContentLength(connection.getHeader("Content-Length"));
         }
         return contentLength;
+    }
+
+    private boolean isChunked() {
+        return TRANSFER_ENCODING_CHUNKED.equals(transferEncoding);
     }
 
     private Response connect(DownloadConnection connection) {

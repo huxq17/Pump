@@ -27,6 +27,7 @@ public class RetryInterceptor implements DownloadInterceptor {
             shouldRetry = shouldRetry();
             if (shouldRetry) {
                 if(downloadDetailsInfo.isForceRetry()){
+                    downloadDetailsInfo.deleteTempDir();
                     downloadDetailsInfo.setForceRetry(false);
                 }else{
                     tryCount++;

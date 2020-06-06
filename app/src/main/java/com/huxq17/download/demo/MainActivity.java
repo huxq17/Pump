@@ -96,18 +96,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
-                Pump.newRequest(url, file1.getAbsolutePath())
-                        .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
-                        .forceReDownload(true)
-                        .submit();
+//                Pump.newRequest(url, file1.getAbsolutePath())
+//                        .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
+//                        .forceReDownload(true)
+//                        .submit();
                 Pump.newRequest(url4)
                         .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
                         .forceReDownload(true)
                         .submit();
-                Pump.newRequest(url5)
-                        .tag(TAG)
-                        .forceReDownload(true)
-                        .submit();
+//                Pump.newRequest(url5)
+//                        .tag(TAG)
+//                        .forceReDownload(true)
+//                        .submit();
             }
         });
 

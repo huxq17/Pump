@@ -120,6 +120,10 @@ public class DownloadDetailsInfo {
         }
     }
 
+    public boolean isDisableBreakPointDownload() {
+        return downloadRequest.isDisableBreakPointDownload();
+    }
+
     public void setCacheBean(DownloadProvider.CacheBean cacheBean) {
         this.cacheBean = cacheBean;
     }

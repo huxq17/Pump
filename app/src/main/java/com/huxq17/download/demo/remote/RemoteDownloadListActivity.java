@@ -148,7 +148,7 @@ public class RemoteDownloadListActivity extends AppCompatActivity {
 
     private void resumeDownloadTask() {
         for (String id : downloadingMusicList) {
-            Pump.newRequest(id).submit();
+            Pump.newRequest(id).disableBreakPointDownload().submit();
         }
     }
 
@@ -331,7 +331,7 @@ public class RemoteDownloadListActivity extends AppCompatActivity {
                             break;
                     }
                 } else {
-                    Pump.newRequest(music.url).submit();
+                    Pump.newRequest(music.url).disableBreakPointDownload().submit();
                 }
             }
 

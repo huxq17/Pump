@@ -29,6 +29,8 @@ import okhttp3.Response;
 
 public class Util {
     public static final String DOWNLOAD_PART = "DOWNLOAD_PART-";
+    public static final String BIN = "bin";
+    public static final String TRANSFER_ENCODING_CHUNKED = "chunked";
     public static final int CONTENT_LENGTH_NOT_FOUND = -1;
 
     private Util() {
@@ -174,12 +176,14 @@ public class Util {
                 // Compare the last segment of the extension against the mime type.
                 // If there's a mismatch, discard the entire extension.
                 int lastDotIndex = filename.lastIndexOf('.');
-                String typeFromExt = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                        filename.substring(lastDotIndex + 1));
+                String urlExt = filename.substring(lastDotIndex + 1);
+                String typeFromExt = MimeTypeMap.getSingleton().getMimeTypeFromExtension(urlExt);
                 if (typeFromExt != null && !typeFromExt.equalsIgnoreCase(mimeType)) {
                     extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
-                    if (extension != null) {
+                    if (extension != null&&!extension.equalsIgnoreCase(BIN)) {
                         extension = "." + extension;
+                    }else{
+                        extension = "." + urlExt;
                     }
                 }
             }
