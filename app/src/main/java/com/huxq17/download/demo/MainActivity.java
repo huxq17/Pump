@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     //http://www.httpwatch.com/httpgallery/chunked/chunkedimage.aspx
     String url4 = "http://v.nq6.com/xinqu.apk";
     //    String url5 = "http://t2.hddhhn.com/uploads/tu/201612/98/st93.png";
-    String url5 = "http://gyxza3.eymlz.com/a31/rj_zhoux1/gjhlwjggzd.apk";
+    String url5 = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
     private ProgressDialog progressDialog;
     private final static String TAG = "groupA";
 
@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                 progressDialog.show();
                 String downloadUrl = etDownload.getText().toString();
                 if(downloadUrl.isEmpty()){
-                    downloadUrl ="https://wutong.yundasys.com:9527/api/appstore/version/downPageForVersionIos?redirectUrl=https://appacce.yundasys.com/package/android/com.yunda.yunshome/201.apk&appId=com.yunda.yunshome&version=yunhome201";
+                    downloadUrl =url2;
                 }
 
                 Pump.newRequest(downloadUrl)
@@ -96,18 +96,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
-//                Pump.newRequest(url, file1.getAbsolutePath())
-//                        .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
-//                        .forceReDownload(true)
-//                        .submit();
-                Pump.newRequest(url4)
+                Pump.newRequest(url, file1.getAbsolutePath())
                         .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
                         .forceReDownload(true)
                         .submit();
-//                Pump.newRequest(url5)
-//                        .tag(TAG)
-//                        .forceReDownload(true)
-//                        .submit();
+                Pump.newRequest(url4)
+                        .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
+                        .forceReDownload(true)
+                        .disableBreakPointDownload()
+                        .submit();
+                Pump.newRequest(url5)
+                        .tag(TAG)
+                        .forceReDownload(true)
+                        .submit();
             }
         });
 
