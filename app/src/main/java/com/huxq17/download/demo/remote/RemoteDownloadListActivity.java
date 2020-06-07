@@ -22,9 +22,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.huxq17.download.Pump;
-import com.huxq17.download.RxPump;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.demo.R;
+import com.huxq17.download.demo.RxPump;
 import com.huxq17.download.demo.Utils;
 import com.huxq17.download.core.DownloadListener;
 import com.huxq17.download.utils.LogUtil;

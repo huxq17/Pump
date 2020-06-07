@@ -1,12 +1,14 @@
-package com.huxq17.download;
+package com.huxq17.download.demo;
 
 
 import androidx.annotation.NonNull;
 
+import com.huxq17.download.PumpFactory;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.service.IDownloadManager;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -107,8 +109,13 @@ public class RxPump {
         return Observable.create(new ObservableOnSubscribe<DownloadInfo>() {
             @Override
             public void subscribe(ObservableEmitter<DownloadInfo> e) {
-                e.onNext(PumpFactory.getService(IDownloadManager.class).getDownloadInfoById(id));
-                e.onComplete();
+                DownloadInfo downloadInfo =PumpFactory.getService(IDownloadManager.class).getDownloadInfoById(id);
+                if(downloadInfo!=null){
+                    e.onNext(downloadInfo);
+                    e.onComplete();
+                }else{
+                    e.onError(new Exception(id+"'s downloadInfo is null."));
+                }
             }
         });
     }
@@ -139,8 +146,14 @@ public class RxPump {
         return Observable.create(new ObservableOnSubscribe<File>() {
             @Override
             public void subscribe(ObservableEmitter<File> e) {
-                e.onNext(PumpFactory.getService(IDownloadManager.class).getFileIfSucceed(id));
-                e.onComplete();
+                File file = PumpFactory.getService(IDownloadManager.class).getFileIfSucceed(id);
+                if(file!=null){
+                    e.onNext(file);
+                    e.onComplete();
+                }else{
+                    e.onError(new FileNotFoundException(id+" have not download successful yet."));
+                }
+
             }
         });
     }
