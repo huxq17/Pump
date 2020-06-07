@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                 progressDialog.show();
                 String downloadUrl = etDownload.getText().toString();
                 if(downloadUrl.isEmpty()){
-                    downloadUrl =url2;
+                    downloadUrl =url5;
                 }
 
                 Pump.newRequest(downloadUrl)
@@ -103,9 +103,8 @@ public class MainActivity extends AppCompatActivity {
                 Pump.newRequest(url4)
                         .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
                         .forceReDownload(true)
-                        .disableBreakPointDownload()
                         .submit();
-                Pump.newRequest(url5)
+                Pump.newRequest(url2)
                         .tag(TAG)
                         .forceReDownload(true)
                         .submit();

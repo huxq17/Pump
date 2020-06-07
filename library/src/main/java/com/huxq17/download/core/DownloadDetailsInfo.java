@@ -17,6 +17,7 @@ import java.util.List;
 
 import static com.huxq17.download.utils.Util.CONTENT_LENGTH_NOT_FOUND;
 import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
+import static com.huxq17.download.utils.Util.TRANSFER_ENCODING_CHUNKED;
 
 public class DownloadDetailsInfo {
     private WeakReference<Object> wfExtraData;
@@ -39,7 +40,6 @@ public class DownloadDetailsInfo {
     private SpeedMonitor speedMonitor;
 
     private DownloadProvider.CacheBean cacheBean;
-    private String md5;
     private int progress;
     /**
      * True indicate that support breakpoint download.
@@ -47,6 +47,9 @@ public class DownloadDetailsInfo {
     private int threadNum;
     private boolean isForceRetry = false;
     private DownloadRequest downloadRequest;
+
+    private String transferEncoding;
+    private String md5;
 
     public DownloadDetailsInfo(String url, String filePath) {
         this(url, filePath, null, url, System.currentTimeMillis());
@@ -138,6 +141,14 @@ public class DownloadDetailsInfo {
 
     public void setMD5(String md5) {
         this.md5 = md5;
+    }
+
+    public void setTransferEncoding(String transferEncoding) {
+        this.transferEncoding = transferEncoding;
+    }
+
+    public boolean isChunked() {
+        return TRANSFER_ENCODING_CHUNKED.equals(transferEncoding);
     }
 
     public void setCompletedSize(long completedSize) {

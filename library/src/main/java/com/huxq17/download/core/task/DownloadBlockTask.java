@@ -11,7 +11,6 @@ import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.connection.DownloadConnection;
 import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.utils.FileUtil;
-import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,6 +19,7 @@ import java.net.HttpURLConnection;
 
 import okhttp3.Response;
 
+import static com.huxq17.download.ErrorCode.ERROR_FILE_OUT_LIMIT;
 import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
 
 
@@ -29,7 +29,7 @@ public class DownloadBlockTask extends Task {
     private File tempFile;
     private DownloadDetailsInfo downloadInfo;
     private boolean isConnected;
-    private volatile boolean isFinished;
+
 
     public DownloadBlockTask(DownloadRequest downloadRequest, int blockId) {
         this(downloadRequest, blockId, null);
@@ -45,18 +45,6 @@ public class DownloadBlockTask extends Task {
         }
         this.blockId = blockId;
         calculateCompletedSize();
-        isFinished = false;
-    }
-
-    public void waitForFinished() {
-        while (!isFinished) {
-            try {
-                synchronized (this) {
-                    wait();
-                }
-            } catch (InterruptedException ignore) {
-            }
-        }
     }
 
     @Override
@@ -81,7 +69,7 @@ public class DownloadBlockTask extends Task {
             endPosition = (blockId + 1) * fileLength / threadNum;
         }
 
-        if (startPosition < endPosition) {
+        if (startPosition < endPosition || downloadInfo.isChunked()) {
             try {
                 if (!isConnected) {
                     DownloadProvider.CacheBean cacheBean = downloadInfo.getCacheBean();
@@ -99,19 +87,25 @@ public class DownloadBlockTask extends Task {
                     if (code == HttpURLConnection.HTTP_PARTIAL) {
                         download(connection, downloadTask, startPosition, endPosition);
                     } else if (code == HttpURLConnection.HTTP_PRECON_FAILED || code == 416) {
+                        if (downloadInfo.getErrorCode() == null) {
+                            downloadInfo.setForceRetry(true);
+                        }
                         downloadInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
                         downloadTask.cancel();
-                        downloadInfo.setForceRetry(true);
+
                     } else {
                         downloadInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
                         downloadTask.cancel();
                     }
                 } else {
                     download(connection, downloadTask, startPosition, endPosition);
-                    if (downloadInfo.getThreadNum() == 1) {//for chunked encoding.
-                        downloadInfo.setContentLength(tempFile.length());
-                    }
                 }
+                connection.flushDownload();
+                if (downloadInfo.isChunked() && downloadInfo.getErrorCode() == null && !isCanceled()) {
+                    downloadInfo.setContentLength(tempFile.length());
+                    downloadInfo.setProgress(100);
+                }
+
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -123,11 +117,10 @@ public class DownloadBlockTask extends Task {
                 connection.close();
             }
         } else if (startPosition > endPosition) {
-            downloadInfo.setForceRetry(true);
-        }
-        isFinished = true;
-        synchronized (this) {
-            notify();
+            if (downloadInfo.getErrorCode() == null) {
+                downloadInfo.setForceRetry(true);
+            }
+            downloadInfo.setErrorCode(ERROR_FILE_OUT_LIMIT);
         }
     }
 
@@ -137,21 +130,26 @@ public class DownloadBlockTask extends Task {
         createTempFileIfNeed();
         connection.prepareDownload(tempFile);
         byte[] buffer = new byte[8092];
-        int byteCount = Math.min(buffer.length, (int) (endPosition - startPosition));
+        int byteCount = buffer.length;
+        if (!downloadInfo.isChunked()) {
+            if (endPosition - startPosition < buffer.length) {
+                byteCount = (int) (endPosition - startPosition);
+            }
+        }
         if (isCanceled()) return;
-        while (startPosition < endPosition
+        while ((downloadInfo.isChunked() || startPosition < endPosition)
                 && (len = connection.downloadBuffer(buffer, 0, byteCount)) != -1 && !isCanceled()) {
             startPosition += len;
-            long remainCount = endPosition - startPosition;
-            if (remainCount < byteCount) {
-                byteCount = (int) remainCount;
+            if (!downloadInfo.isChunked()) {
+                long remainCount = endPosition - startPosition;
+                if (remainCount < byteCount) {
+                    byteCount = (int) remainCount;
+                }
             }
             if (!downloadTask.onDownload(len)) {
-                LogUtil.e("download task is cancel current block id=" + blockId);
                 break;
             }
         }
-        connection.flushDownload();
     }
 
     private void calculateCompletedSize() {
