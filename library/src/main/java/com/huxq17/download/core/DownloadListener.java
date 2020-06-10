@@ -2,6 +2,7 @@ package com.huxq17.download.core;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.Lifecycle;
 
 import android.text.TextUtils;
 
@@ -12,17 +13,16 @@ public class DownloadListener {
     private String id;
     private DownloadInfo.Status status;
     private boolean enable;
-    private Object view;
 
     public DownloadListener() {
     }
 
     public DownloadListener(FragmentActivity activity) {
-        view = activity;
+        ViewLifecycleHandler.handleLifecycle(activity.getLifecycle(), this);
     }
 
     public DownloadListener(Fragment fragment) {
-        view = fragment;
+        ViewLifecycleHandler.handleLifecycleForFragment(fragment, fragment.getLifecycle(), this);
     }
 
     /**
@@ -34,8 +34,6 @@ public class DownloadListener {
 
     void setEnable(boolean enable) {
         this.enable = enable;
-        ViewLifecycleHandler.handleLifecycleForView(view, this);
-        view = null;
     }
 
     void setId(String id) {
@@ -116,6 +114,13 @@ public class DownloadListener {
             return id.hashCode();
         }
         return super.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "DownloadListener{" +
+                "id='" + id + '\'' +
+                '}';
     }
 
     @Override

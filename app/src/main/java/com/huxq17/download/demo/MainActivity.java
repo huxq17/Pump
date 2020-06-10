@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     //http://www.httpwatch.com/httpgallery/chunked/chunkedimage.aspx
     String url4 = "http://v.nq6.com/xinqu.apk";
     //    String url5 = "http://t2.hddhhn.com/uploads/tu/201612/98/st93.png";
-    String url5 = "http://xiazai.3733.com/pojie/game/podsctjpjb.apk";
+    String url5 = "http://dl-cdn.coolapkmarket.com/down/apk_file/2020/0520/Coolapk-v10.2.1-2005201-coolapk-app-release.apk?_upt=7dd496041591690213";
     private ProgressDialog progressDialog;
     private final static String TAG = "groupA";
 
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
                         //Set whether to repeatedly download the downloaded file,default false.
                         .forceReDownload(true)
                         //Set how many threads are used when downloading,default 3.
-                        .threadNum(3)
+                        .threadNum(1)
                         //Pump will connect server by this OKHttp request builder,so you can customize http request.
                         .setRequestBuilder(new Request.Builder())
                         .setRetry(3, 200)

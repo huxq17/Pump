@@ -5,6 +5,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
+import androidx.annotation.NonNull;
+
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.core.service.IDownloadManager;
 import com.huxq17.download.core.service.IMessageCenter;
@@ -17,7 +19,7 @@ public class MessageCenter implements IMessageCenter {
     private ConcurrentLinkedQueue<DownloadListener> observers = new ConcurrentLinkedQueue<>();
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
-        public void handleMessage(Message msg) {
+        public void handleMessage(@NonNull Message msg) {
             if (isShutdown()) {
                 return;
             }
