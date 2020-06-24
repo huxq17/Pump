@@ -9,7 +9,7 @@ import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.RealDownloadChain;
-import com.huxq17.download.core.interceptor.ConnectionInterceptor;
+import com.huxq17.download.core.interceptor.ConnectInterceptor;
 import com.huxq17.download.core.interceptor.MergeFileInterceptor;
 import com.huxq17.download.core.interceptor.RetryInterceptor;
 import com.huxq17.download.core.service.IDownloadConfigService;
@@ -26,7 +26,7 @@ public class DownloadTask extends Task {
     private IMessageCenter messageCenter;
     private int lastProgress;
     private DownloadRequest downloadRequest;
-    private ConnectionInterceptor connectionInterceptor;
+    private ConnectInterceptor connectInterceptor;
 
     public DownloadTask(DownloadRequest downloadRequest) {
         if (downloadRequest != null) {
@@ -91,9 +91,9 @@ public class DownloadTask extends Task {
     private void downloadWithDownloadChain() {
         List<DownloadInterceptor> interceptors = new ArrayList<>(PumpFactory.getService(IDownloadConfigService.class)
                 .getDownloadInterceptors());
-        connectionInterceptor = new ConnectionInterceptor();
+        connectInterceptor = new ConnectInterceptor();
         interceptors.add(new RetryInterceptor());
-        interceptors.add(connectionInterceptor);
+        interceptors.add(connectInterceptor);
         interceptors.add(new MergeFileInterceptor());
         RealDownloadChain realDownloadChain = new RealDownloadChain(interceptors, downloadRequest, 0);
         realDownloadChain.proceed(downloadRequest);
@@ -155,8 +155,8 @@ public class DownloadTask extends Task {
     }
 
     public void cancel() {
-        if (connectionInterceptor != null) {
-            connectionInterceptor.cancel();
+        if (connectInterceptor != null) {
+            connectInterceptor.cancel();
         }
         if(currentThread!=null){
             currentThread.interrupt();

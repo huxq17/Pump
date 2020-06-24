@@ -180,9 +180,9 @@ public class Util {
                 String typeFromExt = MimeTypeMap.getSingleton().getMimeTypeFromExtension(urlExt);
                 if (typeFromExt != null && !typeFromExt.equalsIgnoreCase(mimeType)) {
                     extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
-                    if (extension != null&&!extension.equalsIgnoreCase(BIN)) {
+                    if (extension != null && !extension.equalsIgnoreCase(BIN)) {
                         extension = "." + extension;
-                    }else{
+                    } else {
                         extension = "." + urlExt;
                     }
                 }

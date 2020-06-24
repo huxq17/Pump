@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     //http://www.httpwatch.com/httpgallery/chunked/chunkedimage.aspx
     String url4 = "http://v.nq6.com/xinqu.apk";
     //    String url5 = "http://t2.hddhhn.com/uploads/tu/201612/98/st93.png";
-    String url5 = "http://dl-cdn.coolapkmarket.com/down/apk_file/2020/0520/Coolapk-v10.2.1-2005201-coolapk-app-release.apk?_upt=7dd496041591690213";
+    String url5 = "http://wap.apk.anzhi.com/data5/apk/202006/11/6fd0efef754daacf87fa72e3770f5927_82253600.apk";
     private ProgressDialog progressDialog;
     private final static String TAG = "groupA";
 

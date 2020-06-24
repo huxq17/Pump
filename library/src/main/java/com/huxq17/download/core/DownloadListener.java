@@ -1,10 +1,9 @@
 package com.huxq17.download.core;
 
+import android.text.TextUtils;
+
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.Lifecycle;
-
-import android.text.TextUtils;
 
 import com.huxq17.download.Pump;
 import com.huxq17.download.android.ViewLifecycleHandler;

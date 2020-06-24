@@ -37,12 +37,26 @@ import static com.huxq17.download.utils.Util.CONTENT_LENGTH_NOT_FOUND;
 import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
 import static com.huxq17.download.utils.Util.setFilePathIfNeed;
 
-public class ConnectionInterceptor implements DownloadInterceptor {
+public class ConnectInterceptor implements DownloadInterceptor {
     private DownloadDetailsInfo downloadInfo;
     private DownloadTask downloadTask;
     private DownloadBlockTask firstBlockTask = null;
     private final List<DownloadBlockTask> blockList = new ArrayList<>();
 
+    private void deleteTempIfThreadNumChanged(DownloadDetailsInfo downloadInfo) {
+        File tempDir = downloadInfo.getTempDir();
+        if (tempDir != null) {
+            String[] childList = tempDir.list(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.startsWith(DOWNLOAD_PART);
+                }
+            });
+            if (childList != null && childList.length != downloadInfo.getThreadNum()) {
+                downloadInfo.deleteTempDir();
+            }
+        }
+    }
 
     @Override
     public DownloadInfo intercept(DownloadChain chain) {
@@ -50,6 +64,7 @@ public class ConnectionInterceptor implements DownloadInterceptor {
         downloadInfo = downloadRequest.getDownloadInfo();
         downloadTask = downloadInfo.getDownloadTask();
 
+        deleteTempIfThreadNumChanged(downloadInfo);
         DownloadConnection conn = buildRequest(downloadRequest);
         int responseCode;
         Response response = connect(conn);
@@ -165,15 +180,7 @@ public class ConnectionInterceptor implements DownloadInterceptor {
     }
 
     private void checkDownloadFile(long contentLength, boolean isSupportBreakPointDownload) {
-        File tempDir = downloadInfo.getTempDir();
-        String[] childList = tempDir.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.startsWith(DOWNLOAD_PART);
-            }
-        });
-        if (childList != null && childList.length != downloadInfo.getThreadNum()
-                || !isSupportBreakPointDownload
+        if (!isSupportBreakPointDownload
                 || contentLength != downloadInfo.getContentLength()) {
             downloadInfo.deleteTempDir();
         }

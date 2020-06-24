@@ -68,7 +68,6 @@ public class DownloadBlockTask extends Task {
         } else {
             endPosition = (blockId + 1) * fileLength / threadNum;
         }
-
         if (startPosition < endPosition || downloadInfo.isChunked()) {
             try {
                 if (!isConnected) {
@@ -120,6 +119,7 @@ public class DownloadBlockTask extends Task {
             if (downloadInfo.getErrorCode() == null) {
                 downloadInfo.setForceRetry(true);
             }
+            downloadTask.cancel();
             downloadInfo.setErrorCode(ERROR_FILE_OUT_LIMIT);
         }
     }
