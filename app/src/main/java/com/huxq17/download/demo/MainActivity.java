@@ -2,7 +2,9 @@ package com.huxq17.download.demo;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -44,15 +46,15 @@ public class MainActivity extends AppCompatActivity {
 //                    .invoke(null, httpCacheDir, httpCacheSize);
 //        } catch (Exception httpResponseCacheNotAvailable) {
 //        }
-       final EditText etDownload = findViewById(R.id.etDownload);
+        final EditText etDownload = findViewById(R.id.etDownload);
         findViewById(R.id.add_task).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 progressDialog.setProgress(0);
                 progressDialog.show();
                 String downloadUrl = etDownload.getText().toString();
-                if(downloadUrl.isEmpty()){
-                    downloadUrl =url5;
+                if (downloadUrl.isEmpty()) {
+                    downloadUrl = url5;
                 }
 
                 Pump.newRequest(downloadUrl)

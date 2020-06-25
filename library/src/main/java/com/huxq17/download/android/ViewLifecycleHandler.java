@@ -13,8 +13,8 @@ import com.huxq17.download.utils.LogUtil;
 
 public class ViewLifecycleHandler {
     public static void handleLifecycle(Lifecycle lifecycle, DownloadListener downloadListener) {
-        if (lifecycle.getCurrentState().isAtLeast(Lifecycle.State.DESTROYED)) {
-            LogUtil.w(lifecycle + " is destroyed, so disable " + downloadListener);
+        if (!lifecycle.getCurrentState().isAtLeast(Lifecycle.State.INITIALIZED)) {
+            LogUtil.w(lifecycle + " is "+lifecycle.getCurrentState()+", so disable " + downloadListener);
             downloadListener.disable();
             return;
         }
@@ -24,7 +24,7 @@ public class ViewLifecycleHandler {
     public static void handleLifecycleForFragment(Fragment fragment, Lifecycle lifecycle,
                                                   DownloadListener downloadListener) {
         if (!lifecycle.getCurrentState().isAtLeast(Lifecycle.State.INITIALIZED)) {
-            LogUtil.w(lifecycle + " is destroyed, so disable " + downloadListener);
+            LogUtil.w(lifecycle + " is "+lifecycle.getCurrentState()+", so disable " + downloadListener);
             downloadListener.disable();
             return;
         }
