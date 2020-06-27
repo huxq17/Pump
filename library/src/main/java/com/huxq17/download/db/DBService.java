@@ -5,22 +5,20 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
-import android.util.JsonReader;
 
 import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfoManager;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DBService {
     private DBOpenHelper helper;
     private static DBService instance;
     private DownloadInfoManager downloadInfoManager;
+    private AtomicInteger mOpenCounter = new AtomicInteger();
 
     public static void init(Context context) {
         instance = new DBService(context);
@@ -31,141 +29,112 @@ public class DBService {
         downloadInfoManager = DownloadInfoManager.getInstance();
     }
 
-    public static DBService getInstance() {
+    public static synchronized DBService getInstance() {
         return instance;
     }
 
-    public SQLiteDatabase getWritableDatabase() {
-        return helper.getWritableDatabase();
-    }
-
-    public synchronized void updateCache(DownloadProvider.CacheBean cacheBean) {
+    public void updateCache(DownloadProvider.CacheBean cacheBean) {
         if (TextUtils.isEmpty(cacheBean.lastModified) && TextUtils.isEmpty(cacheBean.eTag)) {
             return;
         }
-        SQLiteDatabase db = getWritableDatabase();
+        SQLiteDatabase db = getDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(DownloadProvider.CacheTable.URL, cacheBean.url);
         contentValues.put(DownloadProvider.CacheTable.LAST_MODIFIED, cacheBean.lastModified);
         contentValues.put(DownloadProvider.CacheTable.ETAG, cacheBean.eTag);
         db.replace(DownloadProvider.CacheTable.TABLE_NAME, null, contentValues);
+        closeDatabase();
     }
 
-    public synchronized DownloadProvider.CacheBean queryCache(String url) {
-        SQLiteDatabase db = getWritableDatabase();
+    public DownloadProvider.CacheBean queryCache(String url) {
+        SQLiteDatabase db = getDatabase();
         String querySql = "select * from " + DownloadProvider.CacheTable.TABLE_NAME + " where " + DownloadProvider.CacheTable.URL + "=?";
         Cursor cursor = db.rawQuery(querySql, new String[]{url});
-
+        DownloadProvider.CacheBean cacheBean = null;
         if (cursor.moveToNext()) {
-            DownloadProvider.CacheBean cacheBean;
             cacheBean = new DownloadProvider.CacheBean(url, cursor.getString(2),
                     cursor.getString(1));
-            cursor.close();
-            return cacheBean;
         }
         cursor.close();
-        return null;
+        closeDatabase();
+        return cacheBean;
     }
 
-    public synchronized void updateInfo(DownloadDetailsInfo downloadInfo) {
+    public void updateInfo(DownloadDetailsInfo downloadInfo) {
         if (downloadInfo.isDeleted()) {
             return;
         }
-        SQLiteDatabase db = getWritableDatabase();
-        String[] args = {downloadInfo.getId()};
-        Cursor cursor = db.query(DownloadProvider.DownloadTable.TABLE_NAME, new String[]{DownloadProvider.DownloadTable.URL}, DownloadProvider.DownloadTable.ID + "=?", args, null, null, null, null);
-        if (cursor.getCount() == 1) {
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(DownloadProvider.DownloadTable.URL, downloadInfo.getUrl());
-            contentValues.put(DownloadProvider.DownloadTable.PATH, downloadInfo.getFilePath());
-            contentValues.put(DownloadProvider.DownloadTable.THREAD_NUM, 0);
-            contentValues.put(DownloadProvider.DownloadTable.FILE_LENGTH, downloadInfo.getContentLength());
-            contentValues.put(DownloadProvider.DownloadTable.FINISHED, downloadInfo.getFinished());
-            contentValues.put(DownloadProvider.DownloadTable.TAG, downloadInfo.getTag());
-            contentValues.put(DownloadProvider.DownloadTable.ID, downloadInfo.getId());
-            db.update(DownloadProvider.DownloadTable.TABLE_NAME, contentValues,
-                    DownloadProvider.DownloadTable.ID + "=?", new String[]{downloadInfo.getId()});
-        } else {
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(DownloadProvider.DownloadTable.URL, downloadInfo.getUrl());
-            contentValues.put(DownloadProvider.DownloadTable.PATH, downloadInfo.getFilePath());
-            contentValues.put(DownloadProvider.DownloadTable.THREAD_NUM, 0);
-            contentValues.put(DownloadProvider.DownloadTable.FILE_LENGTH, downloadInfo.getContentLength());
-            contentValues.put(DownloadProvider.DownloadTable.FINISHED, downloadInfo.getFinished());
-            contentValues.put(DownloadProvider.DownloadTable.CREATE_TIME, downloadInfo.getCreateTime());
-            contentValues.put(DownloadProvider.DownloadTable.TAG, downloadInfo.getTag());
-            contentValues.put(DownloadProvider.DownloadTable.ID, downloadInfo.getId());
-            db.insert(DownloadProvider.DownloadTable.TABLE_NAME, null, contentValues);
-        }
-        cursor.close();
+        SQLiteDatabase db = getDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DownloadProvider.DownloadTable.URL, downloadInfo.getUrl());
+        contentValues.put(DownloadProvider.DownloadTable.PATH, downloadInfo.getFilePath());
+        contentValues.put(DownloadProvider.DownloadTable.THREAD_NUM, downloadInfo.getThreadNum());
+        contentValues.put(DownloadProvider.DownloadTable.FILE_LENGTH, downloadInfo.getContentLength());
+        contentValues.put(DownloadProvider.DownloadTable.FINISHED, downloadInfo.getFinished());
+        contentValues.put(DownloadProvider.DownloadTable.TAG, downloadInfo.getTag());
+        contentValues.put(DownloadProvider.DownloadTable.ID, downloadInfo.getId());
+        contentValues.put(DownloadProvider.DownloadTable.CREATE_TIME, downloadInfo.getCreateTime());
+        db.replace(DownloadProvider.DownloadTable.TABLE_NAME, null, contentValues);
+        closeDatabase();
     }
 
-    public synchronized long queryLocalLength(DownloadDetailsInfo info) {
-        long length = 0;
-        SQLiteDatabase db = getWritableDatabase();
-        String[] args = {info.getId()};
-        Cursor cursor = db.query(DownloadProvider.DownloadTable.TABLE_NAME, new String[]{DownloadProvider.DownloadTable.FILE_LENGTH}, DownloadProvider.DownloadTable.ID + "=?", args, null, null, null, null);
-        while (cursor.moveToNext()) {
-//            info.threadNum = cursor.getInt(2);
-            length = cursor.getLong(0);
-            break;
-        }
-        cursor.close();
-        return length;
-    }
-
-    public synchronized List<DownloadDetailsInfo> getDownloadList() {
+    public List<DownloadDetailsInfo> getDownloadList() {
         return getDownloadListByTag(null);
     }
 
-    public synchronized List<DownloadDetailsInfo> getDownloadListByTag(String tag) {
+    public List<DownloadDetailsInfo> getDownloadListByTag(String tag) {
         List<DownloadDetailsInfo> tasks = new ArrayList<>();
-        SQLiteDatabase db = getWritableDatabase();
+        SQLiteDatabase db = getDatabase();
         Cursor cursor;
         if (tag == null) {
             cursor = db.query(DownloadProvider.DownloadTable.TABLE_NAME, null,
                     null, null, null, null,
-                    DownloadProvider.DownloadTable.CREATE_TIME, null);
+                    DownloadProvider.DownloadTable.CREATE_TIME+" DESC", null);
         } else {
             cursor = db.query(DownloadProvider.DownloadTable.TABLE_NAME, null,
                     DownloadProvider.DownloadTable.TAG + " = ?", new String[]{tag},
-                    null, null, DownloadProvider.DownloadTable.CREATE_TIME, null);
+                    null, null, DownloadProvider.DownloadTable.CREATE_TIME+" DESC", null);
         }
         while (cursor.moveToNext()) {
             DownloadDetailsInfo info = downloadInfoManager.createInfoByCursor(cursor);
             tasks.add(info);
         }
         cursor.close();
+        closeDatabase();
         return tasks;
     }
 
-    public synchronized DownloadDetailsInfo getDownloadInfo(String id) {
+    public DownloadDetailsInfo getDownloadInfo(String id) {
         if (id == null || id.length() == 0) {
             throw new IllegalArgumentException("id is empty.");
         }
         DownloadDetailsInfo info = null;
-        SQLiteDatabase db = getWritableDatabase();
+        SQLiteDatabase db = getDatabase();
         Cursor cursor = db.query(DownloadProvider.DownloadTable.TABLE_NAME, null,
                 DownloadProvider.DownloadTable.ID + "=?", new String[]{id}, null, null, null, null);
-        while (cursor.moveToNext()) {
+        if (cursor.moveToNext()) {
             info = downloadInfoManager.createInfoByCursor(cursor);
         }
         cursor.close();
+        closeDatabase();
         return info;
     }
 
-    public synchronized void deleteInfo(String id) {
-        SQLiteDatabase db = getWritableDatabase();
+    public void deleteInfo(String id) {
+        SQLiteDatabase db = getDatabase();
         db.delete(DownloadProvider.DownloadTable.TABLE_NAME, DownloadProvider.DownloadTable.ID + "=?", new String[]{id});
-        clearCache(id);
-    }
-
-    public synchronized void clearCache(String id) {
-        SQLiteDatabase db = getWritableDatabase();
         db.delete(DownloadProvider.CacheTable.TABLE_NAME, DownloadProvider.CacheTable.URL + "=?", new String[]{id});
+        closeDatabase();
     }
 
-    public synchronized void close() {
-        helper.close();
+    private synchronized SQLiteDatabase getDatabase() {
+        mOpenCounter.incrementAndGet();
+        return helper.getWritableDatabase();
+    }
+
+    private synchronized void closeDatabase() {
+        if (mOpenCounter.decrementAndGet() == 0) {
+            helper.close();
+        }
     }
 }

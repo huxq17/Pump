@@ -115,8 +115,4 @@ public class DownloadProvider extends ContentProvider {
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
         throw new SQLException("Not support to update.");
     }
-
-    private SQLiteDatabase getDatabase() {
-        return DBService.getInstance().getWritableDatabase();
-    }
 }

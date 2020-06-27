@@ -105,7 +105,7 @@ public class DownloadDispatcher extends Task {
     }
 
     @Override
-    public void cancel() {
+    public synchronized void cancel() {
         isCanceled.set(true);
         signalConsumer();
         downloadTaskExecutors.clear();

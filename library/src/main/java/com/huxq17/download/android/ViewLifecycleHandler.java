@@ -4,9 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
-import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.OnLifecycleEvent;
 
 import com.huxq17.download.core.DownloadListener;
 import com.huxq17.download.utils.LogUtil;
@@ -58,7 +56,6 @@ public class ViewLifecycleHandler {
         }
 
         private void onDestroy() {
-            LogUtil.e("disable " + downloadListener);
             downloadListener.disable();
         }
 

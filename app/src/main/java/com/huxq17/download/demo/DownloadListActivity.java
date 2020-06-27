@@ -4,13 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,14 +11,18 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.huxq17.download.Pump;
 import com.huxq17.download.core.DownloadInfo;
-import com.huxq17.download.utils.LogUtil;
-import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.core.DownloadListener;
+import com.huxq17.download.demo.installapk.APK;
+import com.huxq17.download.utils.LogUtil;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
@@ -73,13 +70,13 @@ public class DownloadListActivity extends AppCompatActivity {
         //Get all download list.
         downloadInfoList = TextUtils.isEmpty(tag) ? Pump.getAllDownloadList() : Pump.getDownloadListByTag(tag);
 
-        //Sort download list if need.
-        Collections.sort(downloadInfoList, new Comparator<DownloadInfo>() {
-            @Override
-            public int compare(DownloadInfo o1, DownloadInfo o2) {
-                return (int) (o1.getCreateTime() - o2.getCreateTime());
-            }
-        });
+        //Sort download list if need，default sort by createTime DESC
+//        Collections.sort(downloadInfoList, new Comparator<DownloadInfo>() {
+//            @Override
+//            public int compare(DownloadInfo o1, DownloadInfo o2) {
+//                return (int) (o1.getCreateTime() - o2.getCreateTime());
+//            }
+//        });
         recyclerView.setLayoutManager(linearLayoutManager);
         downloadAdapter = new DownloadAdapter(map, downloadInfoList);
         recyclerView.setAdapter(downloadAdapter);
@@ -91,7 +88,7 @@ public class DownloadListActivity extends AppCompatActivity {
         for (DownloadInfo downloadInfo : downloadInfoList) {
             Pump.stop(downloadInfo.getId());
         }
-        Pump.shutdown();
+//        Pump.shutdown();
     }
 
     public static class DownloadAdapter extends RecyclerView.Adapter<DownloadViewHolder> {
@@ -111,8 +108,8 @@ public class DownloadListActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull DownloadViewHolder viewHolder, int i) {
-            DownloadInfo downloadInfo = downloadInfoList.get(i);
+        public void onBindViewHolder(@NonNull DownloadViewHolder viewHolder, int position) {
+            DownloadInfo downloadInfo = downloadInfoList.get(position);
             downloadInfo.setExtraData(viewHolder);
             map.put(viewHolder, downloadInfo);
 

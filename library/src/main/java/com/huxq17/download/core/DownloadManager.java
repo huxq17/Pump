@@ -111,7 +111,7 @@ public class DownloadManager implements IDownloadManager {
     @Override
     public void resume(String id) {
         checkId(id);
-        DownloadDetailsInfo transferInfo = DownloadInfoManager.getInstance().get(id);
+        DownloadDetailsInfo transferInfo = downloadInfoManager.get(id);
         if (transferInfo == null) return;
         DownloadRequest downloadRequest = transferInfo.getDownloadRequest();
         if (downloadRequest != null) {
@@ -217,7 +217,6 @@ public class DownloadManager implements IDownloadManager {
         downloadDispatcher.cancel();
         downloadInfoManager.clear();
         DownloadInfoSnapshot.release();
-        DBService.getInstance().close();
         hasFetchDownloadList = false;
     }
 

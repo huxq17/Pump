@@ -84,8 +84,8 @@ public class DownloadTask extends Task {
             notifyProgressChanged(downloadInfo);
             downloadWithDownloadChain();
             notifyProgressChanged(downloadInfo);
-            downloadInfo.setDownloadTask(null);
         }
+        downloadInfo.setDownloadTask(null);
     }
 
     private void downloadWithDownloadChain() {
