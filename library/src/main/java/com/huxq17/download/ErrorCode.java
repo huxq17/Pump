@@ -35,7 +35,7 @@ public enum ErrorCode {
      */
     ERROR_DOWNLOAD_FAILED,
     /**
-     * file's end < start
+     * file's end is less than it's start.
      */
     ERROR_FILE_OUT_LIMIT;
 }

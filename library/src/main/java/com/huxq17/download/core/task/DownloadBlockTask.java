@@ -112,8 +112,6 @@ public class DownloadBlockTask extends Task {
                     e.printStackTrace();
                     downloadInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
                 }
-            } finally {
-                connection.close();
             }
         } else if (startPosition > endPosition) {
             if (downloadInfo.getErrorCode() == null) {
@@ -122,6 +120,7 @@ public class DownloadBlockTask extends Task {
             downloadTask.cancel();
             downloadInfo.setErrorCode(ERROR_FILE_OUT_LIMIT);
         }
+        connection.close();
     }
 
     private void download(DownloadConnection connection, DownloadTask downloadTask,

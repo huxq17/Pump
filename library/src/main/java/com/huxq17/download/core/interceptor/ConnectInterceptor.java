@@ -42,6 +42,7 @@ public class ConnectInterceptor implements DownloadInterceptor {
     private DownloadTask downloadTask;
     private DownloadBlockTask firstBlockTask = null;
     private final List<DownloadBlockTask> blockList = new ArrayList<>();
+    private boolean isConditionRequest;
 
     private void deleteTempIfThreadNumChanged(DownloadDetailsInfo downloadInfo) {
         File tempDir = downloadInfo.getTempDir();
@@ -60,6 +61,7 @@ public class ConnectInterceptor implements DownloadInterceptor {
 
     @Override
     public DownloadInfo intercept(DownloadChain chain) {
+        isConditionRequest = false;
         DownloadRequest downloadRequest = chain.request();
         downloadInfo = downloadRequest.getDownloadInfo();
         downloadTask = downloadInfo.getDownloadTask();
@@ -69,6 +71,7 @@ public class ConnectInterceptor implements DownloadInterceptor {
         int responseCode;
         Response response = connect(conn);
         if (response == null) {
+            conn.close();
             if (isCancelled()) {
                 return downloadInfo.snapshot();
             } else {
@@ -121,7 +124,7 @@ public class ConnectInterceptor implements DownloadInterceptor {
             cacheBean = new DownloadProvider.CacheBean(downloadRequest.getId(), lastModified, eTag);
             downloadInfo.setCacheBean(cacheBean);
         }
-        boolean isServerSupportBreakPointDownload = !downloadInfo.isChunked() && cacheBean != null && "bytes".equals(acceptRanges);
+        boolean isServerSupportBreakPointDownload = !downloadInfo.isChunked() && cacheBean != null && (isConditionRequest || "bytes".equals(acceptRanges));
         boolean isSupportBreakPointDownload = isServerSupportBreakPointDownload && !downloadInfo.isDisableBreakPointDownload();
         if (isServerSupportBreakPointDownload) {
             DBService.getInstance().updateCache(cacheBean);
@@ -204,6 +207,7 @@ public class ConnectInterceptor implements DownloadInterceptor {
         if (completedSize > 0 && !downloadInfo.isDisableBreakPointDownload()) {
             connection.addHeader("If-Range", cacheBean.getIfRangeField());
             connection.addHeader("Range", "bytes=" + completedSize + "-");
+            isConditionRequest = true;
         } else if (downloadRequest.getDownloadInfo().isFinished() && !downloadRequest.isForceReDownload()) {
             if (!TextUtils.isEmpty(lastModified)) {
                 connection.addHeader("If-Modified-Since", cacheBean.lastModified);
