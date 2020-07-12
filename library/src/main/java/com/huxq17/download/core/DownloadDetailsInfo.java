@@ -148,7 +148,7 @@ public class DownloadDetailsInfo {
     }
 
     public boolean isChunked() {
-        return TRANSFER_ENCODING_CHUNKED.equals(transferEncoding);
+        return TRANSFER_ENCODING_CHUNKED.equalsIgnoreCase(transferEncoding);
     }
 
     public void setCompletedSize(long completedSize) {

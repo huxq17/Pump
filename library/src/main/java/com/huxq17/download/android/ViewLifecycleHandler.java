@@ -31,7 +31,6 @@ public class ViewLifecycleHandler {
         } else {
             lifecycle.addObserver(new DownloadListenerObserver(downloadListener, fragment));
         }
-
     }
 
     private static class DownloadListenerObserver implements LifecycleEventObserver {

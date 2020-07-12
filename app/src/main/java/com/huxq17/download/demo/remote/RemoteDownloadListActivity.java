@@ -1,6 +1,5 @@
 package com.huxq17.download.demo.remote;
 
-import android.annotation.SuppressLint;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,12 +7,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.core.content.FileProvider;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,12 +14,19 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.huxq17.download.Pump;
 import com.huxq17.download.core.DownloadInfo;
+import com.huxq17.download.core.DownloadListener;
 import com.huxq17.download.demo.R;
 import com.huxq17.download.demo.RxPump;
 import com.huxq17.download.demo.Utils;
-import com.huxq17.download.core.DownloadListener;
 import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
