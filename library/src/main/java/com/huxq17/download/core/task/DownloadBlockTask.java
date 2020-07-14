@@ -91,7 +91,6 @@ public class DownloadBlockTask extends Task {
                         }
                         downloadInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
                         downloadTask.cancel();
-
                     } else {
                         downloadInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
                         downloadTask.cancel();
@@ -99,7 +98,6 @@ public class DownloadBlockTask extends Task {
                 } else {
                     download(connection, downloadTask, startPosition, endPosition);
                 }
-                connection.flushDownload();
                 if (downloadInfo.isChunked() && downloadInfo.getErrorCode() == null && !isCanceled()) {
                     downloadInfo.setContentLength(tempFile.length());
                     downloadInfo.setProgress(100);
@@ -149,6 +147,7 @@ public class DownloadBlockTask extends Task {
                 break;
             }
         }
+        connection.flushDownload();
     }
 
     private void calculateCompletedSize() {

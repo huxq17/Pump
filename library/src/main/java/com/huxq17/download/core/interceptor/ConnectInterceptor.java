@@ -72,12 +72,10 @@ public class ConnectInterceptor implements DownloadInterceptor {
         Response response = connect(conn);
         if (response == null) {
             conn.close();
-            if (isCancelled()) {
-                return downloadInfo.snapshot();
-            } else {
+            if (!isCancelled()) {
                 downloadInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
-                return downloadInfo.snapshot();
             }
+            return downloadInfo.snapshot();
         }
         setFilePathIfNeed(downloadTask, response);
 

@@ -63,6 +63,7 @@ public class DownloadInfoManager {
         if (info == null) {
             info = new DownloadDetailsInfo(id, cursor.getString(1),
                     cursor.getString(6), cursor.getString(7), cursor.getLong(5));
+            info.setThreadNum(cursor.getInt(2));
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));
             info.calculateDownloadProgress();
