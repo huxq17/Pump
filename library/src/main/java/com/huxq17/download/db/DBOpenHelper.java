@@ -55,7 +55,7 @@ public class DBOpenHelper extends SQLiteOpenHelper {
             newVersion3(db, oldVersion);
         }
         try {
-            db.execSQL("ALTER TABLE " + DownloadProvider.DownloadTable.TABLE_NAME + " ADD COLUMN " + DownloadProvider.DownloadTable.TAG + " CHAR efault('');");
+            db.execSQL("ALTER TABLE " + DownloadProvider.DownloadTable.TABLE_NAME + " ADD COLUMN " + DownloadProvider.DownloadTable.TAG + " CHAR default('');");
         } catch (SQLiteException ignore) {
         }
         String tempTable = DownloadProvider.DownloadTable.TABLE_NAME + "_temp";
