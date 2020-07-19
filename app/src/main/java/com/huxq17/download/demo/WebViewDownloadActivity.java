@@ -57,7 +57,7 @@ public class WebViewDownloadActivity extends AppCompatActivity {
         };
         initProgressDialog();
         webView.setWebViewClient(webViewClient);
-        webView.loadUrl("https://gofile.io/?c=XMYJSX");
+        webView.loadUrl("https://www20.zippyshare.com/v/mgb8cJ2B/file.html");
         webView.setDownloadListener(new DownloadListener() {
             @Override
             public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {

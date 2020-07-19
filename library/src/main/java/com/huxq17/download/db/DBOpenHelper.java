@@ -2,6 +2,7 @@ package com.huxq17.download.db;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.huxq17.download.DownloadProvider;
@@ -47,12 +48,15 @@ public class DBOpenHelper extends SQLiteOpenHelper {
         if (oldVersion < 2) {
             onCreate(db);
         }
-        db.execSQL("ALTER TABLE " + DownloadProvider.DownloadTable.TABLE_NAME + " ADD COLUMN " + DownloadProvider.DownloadTable.TAG + " CHAR default('');");
     }
 
     private void newVersion4(SQLiteDatabase db, int oldVersion) {
         if (oldVersion < 3) {
             newVersion3(db, oldVersion);
+        }
+        try {
+            db.execSQL("ALTER TABLE " + DownloadProvider.DownloadTable.TABLE_NAME + " ADD COLUMN " + DownloadProvider.DownloadTable.TAG + " CHAR efault('');");
+        } catch (SQLiteException ignore) {
         }
         String tempTable = DownloadProvider.DownloadTable.TABLE_NAME + "_temp";
         //新建临时下载表

@@ -10,7 +10,7 @@ App模块的build.gradle：
 
 ```
 dependencies {
-   implementation'com.huxq17.pump:download:1.3.6'
+   implementation'com.huxq17.pump:download:1.3.7'
    implementation 'com.squareup.okhttp3:okhttp:lastversion'
 }
 
