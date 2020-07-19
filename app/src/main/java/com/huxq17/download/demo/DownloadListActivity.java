@@ -3,6 +3,8 @@ package com.huxq17.download.demo;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -14,6 +16,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,6 +26,7 @@ import com.huxq17.download.core.DownloadListener;
 import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.utils.LogUtil;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 
@@ -222,6 +226,19 @@ public class DownloadListActivity extends AppCompatActivity {
                         APK.with(itemView.getContext())
                                 .from(downloadInfo.getFilePath())
                                 .install();
+//                        Context context = v.getContext();
+//                        File videoFile = new File(downloadInfo.getFilePath());
+//                        Intent intent = new Intent(Intent.ACTION_VIEW);
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+//                            Uri contentUri = FileProvider.getUriForFile(context, context.getPackageName() + ".fileProvider-installApk", videoFile);
+//                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//                            intent.setDataAndType(contentUri, "video/*");
+//                        } else {
+//                            Uri contentUri = Uri.fromFile(videoFile);
+//                            intent.setDataAndType(contentUri, "video/*");
+//                        }
+//                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                        v.getContext().startActivity(Intent.createChooser(intent, "播放"));
                         break;
                 }
             }

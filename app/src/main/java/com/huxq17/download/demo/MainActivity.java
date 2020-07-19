@@ -16,6 +16,7 @@ import com.huxq17.download.demo.remote.RemoteDownloadListActivity;
 import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
+import java.net.URLEncoder;
 
 import okhttp3.Request;
 
@@ -28,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     //http://www.httpwatch.com/httpgallery/chunked/chunkedimage.aspx
     String url4 = "http://v.nq6.com/xinqu.apk";
     //    String url5 = "http://t2.hddhhn.com/uploads/tu/201612/98/st93.png";
-    String url5 = "http://wap.apk.anzhi.com/data5/apk/202006/11/6fd0efef754daacf87fa72e3770f5927_82253600.apk";
+    String url5 = "http://13303988.169.ctc.data.bego.cc/down/7b70f0f66130bc7e53548dde949d30d8/%E7%8E%8B%E7%BB%8E%E9%BE%99%5ESunny-%E6%91%87%E5%95%8A%E6%91%87_%E5%9B%BD%E8%AF%AD_%E6%83%85%E6%AD%8C%E5%AF%B9%E5%94%B1_NCB13263_%5Bmvmkv.com%5D_MV%E5%88%86%E4%BA%AB%E7%B2%BE%E7%81%B5_MTVP2P.mkv?cts=dir-048e357796657f660297bd902d097a10&ctp=210A22A80A138&ctt=1595164316&limit=2&spd=1500000&ctk=7b70f0f66130bc7e53548dde949d30d8&chk=ca23c1dd061a6554d0458d7d4bfe7ad6-51074337";
     private ProgressDialog progressDialog;
     private final static String TAG = "groupA";
 
@@ -58,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 Pump.newRequest(downloadUrl)
+                        .setRequestBuilder(new Request.Builder()
+                                .addHeader("referer", "http://www.mtv-ktv.net/mv/mtv15/ktv143092.htm"))
                         .listener(new DownloadListener(MainActivity.this) {
 
                             @Override
