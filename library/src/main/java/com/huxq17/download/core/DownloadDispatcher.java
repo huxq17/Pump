@@ -42,6 +42,9 @@ public class DownloadDispatcher extends Task {
     }
 
     public synchronized void start() {
+        if (isRunning()) {
+            return;
+        }
         isRunning.set(true);
         isCanceled.set(false);
         TaskManager.execute(this);
@@ -50,10 +53,8 @@ public class DownloadDispatcher extends Task {
     }
 
     void enqueueRequest(final DownloadRequest downloadRequest) {
-        if (!isRunning()) {
-            start();
-        }
-        if (isRunning.get()) {
+        start();
+        if (isRunning()) {
             if (!requestQueue.contains(downloadRequest)) {
                 requestQueue.add(downloadRequest);
                 signalConsumer();

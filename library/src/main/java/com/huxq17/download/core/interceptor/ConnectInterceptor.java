@@ -35,7 +35,6 @@ import okhttp3.Response;
 import static com.huxq17.download.ErrorCode.ERROR_CONTENT_LENGTH_NOT_FOUND;
 import static com.huxq17.download.utils.Util.CONTENT_LENGTH_NOT_FOUND;
 import static com.huxq17.download.utils.Util.DOWNLOAD_PART;
-import static com.huxq17.download.utils.Util.setFilePathIfNeed;
 
 public class ConnectInterceptor implements DownloadInterceptor {
     private DownloadDetailsInfo downloadInfo;
@@ -77,7 +76,7 @@ public class ConnectInterceptor implements DownloadInterceptor {
             }
             return downloadInfo.snapshot();
         }
-        setFilePathIfNeed(downloadTask, response);
+        Util.setFilePathIfNeed(downloadTask, response);
 
         final String lastModified = conn.getHeader("Last-Modified");
         final String eTag = conn.getHeader("ETag");
