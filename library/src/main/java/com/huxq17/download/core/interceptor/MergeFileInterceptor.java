@@ -22,8 +22,11 @@ public class MergeFileInterceptor implements DownloadInterceptor {
         DownloadRequest downloadRequest = chain.request();
         downloadInfo = downloadRequest.getDownloadInfo();
         DownloadTask downloadTask = downloadInfo.getDownloadTask();
-
-        synchronized (downloadTask.getLock()) {
+        Object lock = downloadTask.getLock();
+        if (lock == null) {
+            return downloadInfo.snapshot();
+        }
+        synchronized (lock) {
             long contentLength = downloadInfo.getContentLength();
             long completedSize = downloadInfo.getCompletedSize();
             File tempDir = downloadInfo.getTempDir();
