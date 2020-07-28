@@ -1,5 +1,6 @@
 package com.huxq17.download.demo.remote;
 
+import android.annotation.SuppressLint;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -178,15 +179,30 @@ public class RemoteDownloadListActivity extends AppCompatActivity {
             return new DownloadViewHolder(v, this);
         }
 
+        @SuppressLint("CheckResult")
         @Override
-        public void onBindViewHolder(@NonNull DownloadViewHolder viewHolder, int i) {
-            Music music = musicList.get(i);
+        public void onBindViewHolder(@NonNull final DownloadViewHolder viewHolder, int i) {
+            final Music music = musicList.get(i);
             DownloadInfo downloadInfo = music.downloadInfo;
             if (downloadInfo != null) {
                 downloadInfo.setExtraData(viewHolder);
             }
             map.put(music.id, viewHolder);
-            viewHolder.bindData(music);
+            RxPump.getDownloadInfoById(music.id)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Consumer<DownloadInfo>() {
+                        @Override
+                        public void accept(DownloadInfo downloadInfo) throws Exception {
+                            music.downloadInfo = downloadInfo;
+                            viewHolder.bindData(music);
+                        }
+                    }, new Consumer<Throwable>() {
+                        @Override
+                        public void accept(Throwable throwable) throws Exception {
+                            viewHolder.bindData(music);
+                        }
+                    });
         }
 
         public void delete(DownloadViewHolder viewHolder) {
@@ -245,6 +261,7 @@ public class RemoteDownloadListActivity extends AppCompatActivity {
 
         public void bindData(Music music) {
             this.music = music;
+
             DownloadInfo downloadInfo = music.downloadInfo;
             if (downloadInfo != null) {
                 this.status = downloadInfo.getStatus();
