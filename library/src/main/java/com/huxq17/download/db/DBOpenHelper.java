@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.huxq17.download.DownloadProvider;
-import com.huxq17.download.utils.LogUtil;
 
 
 public class DBOpenHelper extends SQLiteOpenHelper {

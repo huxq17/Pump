@@ -58,11 +58,11 @@ public class DownloadInfoManager {
     }
 
     public DownloadDetailsInfo createInfoByCursor(Cursor cursor) {
-        String id = cursor.getString(0);
+        String id = cursor.getString(7);
         DownloadDetailsInfo info = downloadInfoMap.get(id);
         if (info == null) {
-            info = new DownloadDetailsInfo(id, cursor.getString(1),
-                    cursor.getString(6), cursor.getString(7), cursor.getLong(5));
+            info = new DownloadDetailsInfo(cursor.getString(0), cursor.getString(1),
+                    cursor.getString(6),id, cursor.getLong(5));
             info.setThreadNum(cursor.getInt(2));
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));
