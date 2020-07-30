@@ -3,6 +3,7 @@ package com.huxq17.download;
 
 import androidx.annotation.NonNull;
 
+import com.huxq17.download.config.DownloadConfig;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.service.IDownloadManager;
@@ -13,6 +14,9 @@ import java.io.File;
 import java.util.List;
 
 public class Pump {
+    public static DownloadConfig.Builder newConfigBuilder(){
+        return DownloadConfig.newBuilder();
+    }
     /**
      * Create a new download request,download file will store in cache path.
      *

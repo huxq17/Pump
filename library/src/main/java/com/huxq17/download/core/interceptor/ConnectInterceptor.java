@@ -191,11 +191,11 @@ public class ConnectInterceptor implements DownloadInterceptor {
     }
 
     private DownloadConnection buildRequest(DownloadRequest downloadRequest) {
-        String url = downloadRequest.getUrl();
+        String id = downloadRequest.getId();
         DownloadConnection connection = createConnection(downloadRequest);
         firstBlockTask = new DownloadBlockTask(downloadRequest, 0, connection);
         long completedSize = firstBlockTask.getCompletedSize();
-        DownloadProvider.CacheBean cacheBean = DBService.getInstance().queryCache(url);
+        DownloadProvider.CacheBean cacheBean = DBService.getInstance().queryCache(id);
         if (cacheBean == null) {
             return connection;
         }

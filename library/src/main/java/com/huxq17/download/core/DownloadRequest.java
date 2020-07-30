@@ -52,7 +52,7 @@ public final class DownloadRequest {
     }
 
     public int getRetryDelay() {
-        return retryDelay < 0 ? 0 : retryDelay;
+        return Math.max(retryDelay, 0);
     }
 
     public DownloadDetailsInfo getDownloadInfo() {
@@ -68,7 +68,7 @@ public final class DownloadRequest {
     }
 
     public int getRetryCount() {
-        return retryCount < 0 ? 0 : retryCount;
+        return Math.max(retryCount, 0);
     }
 
     public String getUrl() {

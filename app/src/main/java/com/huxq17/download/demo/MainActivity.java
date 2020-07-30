@@ -89,7 +89,8 @@ public class MainActivity extends AppCompatActivity {
                         //Set whether to repeatedly download the downloaded file,default false.
                         .forceReDownload(true)
                         //Set how many threads are used when downloading,default 3.
-                        .threadNum(1)
+                        .threadNum(3)
+                        .setId("123")
                         //Pump will connect server by this OKHttp request builder,so you can customize http request.
                         .setRequestBuilder(new Request.Builder())
                         .setRetry(3, 200)
