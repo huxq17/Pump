@@ -186,8 +186,8 @@ public final class DownloadRequest {
         }
 
         /**
-         * Pump will connect server by this OKHttp request builder,so you can customize http request.
-         * For example,you can specify http method,http head and http params.
+         * Pump will connect server by this OKHttp request builder,so you can customize download's http request.
+         * For example,you can specify http method, head and params.
          * If http method isn't GET,will use {@link DownloadGenerator#disableBreakPointDownload()} to improve download speed.
          *
          * @param httpRequestBuilder OKHttp request builder

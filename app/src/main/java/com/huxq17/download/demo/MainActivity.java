@@ -59,8 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 Pump.newRequest(downloadUrl)
-//                        .setRequestBuilder(new Request.Builder()
-//                                .addHeader("referer", "http://www.mtv-ktv.net/mv/mtv15/ktv143092.htm"))
+                        .setRequestBuilder(new Request.Builder())
                         .listener(new DownloadListener(MainActivity.this) {
 
                             @Override
