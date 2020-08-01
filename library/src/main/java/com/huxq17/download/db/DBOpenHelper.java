@@ -69,7 +69,16 @@ public class DBOpenHelper extends SQLiteOpenHelper {
                 + DownloadProvider.DownloadTable.TAG + " CHAR,"
                 + DownloadProvider.DownloadTable.ID + " CHAR primary key);");
         //复制老下载表数据到临时下载表
-        db.execSQL("INSERT INTO " + tempTable + " SELECT *" + " FROM " + DownloadProvider.DownloadTable.TABLE_NAME + ";");
+        db.execSQL("INSERT INTO " + tempTable + " SELECT "
+                + DownloadProvider.DownloadTable.URL + ","
+                + DownloadProvider.DownloadTable.PATH + ","
+                + DownloadProvider.DownloadTable.THREAD_NUM + ","
+                + DownloadProvider.DownloadTable.FILE_LENGTH + ","
+                + DownloadProvider.DownloadTable.FINISHED + ","
+                + DownloadProvider.DownloadTable.CREATE_TIME + ","
+                + DownloadProvider.DownloadTable.TAG + ","
+                + DownloadProvider.DownloadTable.URL
+                + " FROM " + DownloadProvider.DownloadTable.TABLE_NAME + ";");
         //删除老下载表
         db.execSQL(String.format("DROP TABLE %s;", DownloadProvider.DownloadTable.TABLE_NAME));
         //重建下载表，并把临时下载表数据copy过去
