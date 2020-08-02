@@ -76,6 +76,7 @@ public class WebViewDownloadActivity extends AppCompatActivity {
                     Pump.newRequest(url)
                             .setRequestBuilder(new Request.Builder()
                                     .addHeader("referer", "http://www.mtv-ktv.net/mv/mtv15/ktv143092.htm"))
+                            .setId(WebViewDownloadActivity.class.getCanonicalName())
                             .listener(downloadListener)
                             .threadNum(1)
                             .submit();
