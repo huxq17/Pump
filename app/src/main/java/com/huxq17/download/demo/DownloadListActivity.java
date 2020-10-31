@@ -38,7 +38,7 @@ public class DownloadListActivity extends AppCompatActivity {
         context.startActivity(intent);
     }
 
-    DownloadListener downloadListener = new DownloadListener(this) {
+    private DownloadListener downloadListener = new DownloadListener(this) {
         @Override
         public void onProgress(int progress) {
             DownloadInfo downloadInfo = getDownloadInfo();
@@ -57,7 +57,7 @@ public class DownloadListActivity extends AppCompatActivity {
             LogUtil.e("onFailed code=" + getDownloadInfo().getErrorCode());
         }
     };
-    private HashMap<DownloadViewHolder, DownloadInfo> map = new HashMap<>();
+    private final HashMap<DownloadViewHolder, DownloadInfo> map = new HashMap<>();
     private RecyclerView recyclerView;
     private DownloadAdapter downloadAdapter;
     private List<DownloadInfo> downloadInfoList;
@@ -68,7 +68,6 @@ public class DownloadListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         tag = getIntent().getStringExtra("tag");
         setContentView(R.layout.activity_download_list);
-        downloadListener.enable();
         recyclerView = findViewById(R.id.rvDownloadList);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         //Get all download list.

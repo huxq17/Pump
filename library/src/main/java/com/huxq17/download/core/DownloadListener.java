@@ -21,7 +21,7 @@ public class DownloadListener {
     }
 
     public DownloadListener(Fragment fragment) {
-        ViewLifecycleHandler.handleLifecycleForFragment(fragment, fragment.getLifecycle(), this);
+        ViewLifecycleHandler.handleLifecycleForFragment(fragment, this);
     }
 
     /**

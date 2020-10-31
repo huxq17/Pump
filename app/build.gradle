@@ -19,14 +19,14 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
 //            signingConfig signingConfigs.myConfig
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-//        debug {
-//            minifyEnabled false
-//            testCoverageEnabled true
-//        }
+        debug {
+            minifyEnabled true
+            testCoverageEnabled true
+        }
 
     }
     lintOptions {
