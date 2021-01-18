@@ -41,12 +41,11 @@ public class DownloadDispatcher extends Task {
         this.downloadManager = downloadManager;
     }
 
-    public synchronized void start() {
-        if (isRunning()) {
+    public void start() {
+        if (!isRunning.getAndSet(true)) {
             return;
         }
-        isRunning.set(true);
-        isCanceled.set(false);
+        isCanceled.getAndSet(false);
         TaskManager.execute(this);
         downloadInfoManager = DownloadInfoManager.getInstance();
         defaultTaskExecutor = new SimpleDownloadTaskExecutor();
@@ -93,7 +92,7 @@ public class DownloadDispatcher extends Task {
         while (isRunnable()) {
             consumeRequest();
         }
-        isRunning.set(false);
+        isRunning.getAndSet(false);
     }
 
 
@@ -101,13 +100,9 @@ public class DownloadDispatcher extends Task {
         return isRunning.get();
     }
 
-    void setIsRunning(boolean isRunning) {
-        this.isRunning.set(isRunning);
-    }
-
     @Override
     public synchronized void cancel() {
-        isCanceled.set(true);
+        isCanceled.getAndSet(true);
         signalConsumer();
         downloadTaskExecutors.clear();
         if (defaultTaskExecutor != null) {
