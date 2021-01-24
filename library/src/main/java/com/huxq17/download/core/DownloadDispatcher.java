@@ -42,7 +42,7 @@ public class DownloadDispatcher extends Task {
     }
 
     public void start() {
-        if (!isRunning.getAndSet(true)) {
+        if (isRunning.getAndSet(true)) {
             return;
         }
         isCanceled.getAndSet(false);
@@ -94,7 +94,6 @@ public class DownloadDispatcher extends Task {
         }
         isRunning.getAndSet(false);
     }
-
 
     public boolean isRunning() {
         return isRunning.get();
@@ -149,9 +148,10 @@ public class DownloadDispatcher extends Task {
         String id = downloadRequest.getId();
         String tag = downloadRequest.getTag();
         String filePath = downloadRequest.getFilePath();
-        if (!isUsableSpaceEnough(downloadRequest)) {
-            return null;
-        }
+        //TODO 后续要加上剩余存储空间size的校验
+//        if (!isUsableSpaceEnough(downloadRequest)) {
+//            return null;
+//        }
         DownloadDetailsInfo downloadInfo = downloadRequest.getDownloadInfo();
         if (downloadInfo == null) {
             downloadInfo = createDownloadInfo(id, url, filePath, tag);
@@ -169,7 +169,7 @@ public class DownloadDispatcher extends Task {
         long downloadDirUsableSpace;
         String filePath = downloadRequest.getFilePath();
         if (filePath == null) {
-            downloadDirUsableSpace = Util.getUsableSpace(new File(Util.getCachePath(PumpFactory.getService(IDownloadManager.class).getContext())));
+            downloadDirUsableSpace = Util.getUsableSpace(new File(Util.getPumpCachePath(PumpFactory.getService(IDownloadManager.class).getContext())));
         } else {
             downloadDirUsableSpace = Util.getUsableSpace(new File(filePath));
         }

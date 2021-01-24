@@ -57,25 +57,6 @@ public class DemoApplication extends Application {
         }
     };
 
-    /**
-     * Use for move download file to another directory.
-     */
-    private DownloadInterceptor changePathInterceptor = new DownloadInterceptor() {
-        @Override
-        public DownloadInfo intercept(DownloadChain chain) {
-            DownloadInfo downloadInfo = chain.proceed(chain.request());
-            if (downloadInfo.getStatus() == DownloadInfo.Status.FINISHED) {
-                File oldFile = new File(downloadInfo.getFilePath());
-                File newFile = new File(Environment.getExternalStorageDirectory(), "AE6-1D01" + File.separatorChar + "Test" + File.separatorChar + oldFile.getName());
-                if(!oldFile.equals(newFile)){
-                    FileUtil.copyFile(oldFile, newFile);
-                    downloadInfo.updateFilePath(newFile.getAbsolutePath());
-                }
-            }
-            return downloadInfo;
-        }
-    };
-
     @Override
     public void onCreate() {
         super.onCreate();

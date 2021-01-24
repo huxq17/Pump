@@ -7,7 +7,7 @@ import java.io.File;
 
 public final class DownloadInfo {
     private final String url;
-    private final File downloadFile;
+    private final PumpFile downloadFile;
     private final String id;
 
     private final long completedSize;
@@ -22,7 +22,7 @@ public final class DownloadInfo {
 
     private DownloadDetailsInfo downloadDetailsInfo;
 
-    DownloadInfo(String url, File downloadFile, String tag, String id, long createTime,
+    DownloadInfo(String url, PumpFile downloadFile, String tag, String id, long createTime,
                  String speed, long completedSize, long contentLength, ErrorCode errorCode,
                  Status status, int finished, int progress, DownloadDetailsInfo downloadDetailsInfo) {
         this.url = url;
@@ -42,10 +42,6 @@ public final class DownloadInfo {
 
     DownloadDetailsInfo getDownloadDetailsInfo() {
         return downloadDetailsInfo;
-    }
-
-    public void updateFilePath(String filePath) {
-        downloadDetailsInfo.updateFilePath(filePath);
     }
 
     public void setExtraData(Object extraData) {

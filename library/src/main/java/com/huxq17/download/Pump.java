@@ -1,51 +1,65 @@
 package com.huxq17.download;
 
 
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 
 import com.huxq17.download.config.DownloadConfig;
 import com.huxq17.download.core.DownloadInfo;
+import com.huxq17.download.core.DownloadListener;
 import com.huxq17.download.core.DownloadRequest;
 import com.huxq17.download.core.service.IDownloadManager;
-import com.huxq17.download.core.DownloadListener;
 import com.huxq17.download.core.service.IMessageCenter;
 
 import java.io.File;
 import java.util.List;
 
 public class Pump {
-    public static DownloadConfig.Builder newConfigBuilder(){
+    public static DownloadConfig.Builder newConfigBuilder() {
         return DownloadConfig.newBuilder();
     }
+
     /**
      * Create a new download request,download file will store in cache path.
      *
      * @param url remote url
      */
     public static DownloadRequest.DownloadGenerator newRequest(String url) {
-        return newRequest(url, null);
+        return newRequest(url, null, null);
     }
 
     /**
      * Create a new download request.
      *
-     * @param url      remote url
-     * @param filePath file download path
+     * @param url       remote url
+     * @param directory the directory that save download file or full path.
      */
-    public static DownloadRequest.DownloadGenerator newRequest(String url, String filePath) {
-        return DownloadRequest.newRequest(url, filePath);
+    public static DownloadRequest.DownloadGenerator newRequest(String url, String directory) {
+        return newRequest(url, directory, null);
     }
 
     /**
-     * Use {@link Pump#newRequest(String, String)} instead.
-     * Download file from remote url to local file path.
+     * Create a new download request.
      *
-     * @param url      remote url
-     * @param filePath file download path
+     * @param url       remote url
+     * @param directory the directory that save download file
+     * @param fileName  specify file name
      */
-    @Deprecated
-    public static void download(String url, String filePath) {
-        DownloadRequest.newRequest(url, filePath).submit();
+    public static DownloadRequest.DownloadGenerator newRequest(String url, String directory, String fileName) {
+        return newRequest(url, directory, null, null);
+    }
+
+    /**
+     * Create a new download request.
+     *
+     * @param url       remote url
+     * @param directory the directory that save download file
+     * @param fileName  specify file name
+     */
+    public static DownloadRequest.DownloadGenerator newRequest(String url, String directory, String fileName, Uri uri) {
+        String filePath = directory != null ? (directory + File.separator + (fileName == null ? "" : fileName)) : null;
+        return DownloadRequest.newRequest(url, filePath, uri);
     }
 
     /**

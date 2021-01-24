@@ -5,8 +5,8 @@ import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.DownloadRequest;
+import com.huxq17.download.core.PumpFile;
 import com.huxq17.download.core.task.DownloadTask;
-import com.huxq17.download.utils.FileUtil;
 import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
@@ -38,15 +38,16 @@ public class MergeFileInterceptor implements DownloadInterceptor {
             });
             if (contentLength > 0 && completedSize == contentLength && downloadPartFiles != null
                     && downloadPartFiles.length == downloadInfo.getThreadNum()) {
-                File file = downloadInfo.getDownloadFile();
+                PumpFile file = downloadInfo.getDownloadFile();
                 downloadInfo.deleteDownloadFile();
                 long startTime = System.currentTimeMillis();
-                boolean mergeSuccess = false;
-                if (downloadPartFiles.length == 1) {
-                    mergeSuccess = FileUtil.renameTo(downloadPartFiles[0], file);
-                } else {
-                    mergeSuccess = FileUtil.mergeFiles(downloadPartFiles, file);
-                }
+                boolean mergeSuccess = file.mergeFiles(downloadPartFiles);
+//                if (downloadPartFiles.length == 1) {
+//                    mergeSuccess = FileUtil.renameTo(downloadPartFiles[0], file);
+//                } else {
+//                    mergeSuccess = FileUtil.mergeFiles(downloadPartFiles, file);
+//                }
+
                 downloadInfo.deleteTempDir();
                 if (mergeSuccess) {
                     LogUtil.d("Merge " + downloadInfo.getName() + " spend=" +
@@ -61,8 +62,7 @@ public class MergeFileInterceptor implements DownloadInterceptor {
     }
 
     private void checkDownloadResult(long contentLength, long completedSize) {
-        File downloadFile = downloadInfo.getDownloadFile();
-        long downloadFileLength = downloadFile == null ? 0 : downloadFile.length();
+        long downloadFileLength = downloadInfo.getDownloadFile().length();
         if (downloadInfo.getStatus() != DownloadInfo.Status.FAILED &&
                 downloadFileLength > 0 && downloadFileLength == contentLength
                 && downloadFileLength == completedSize) {

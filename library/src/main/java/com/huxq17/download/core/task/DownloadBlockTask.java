@@ -162,14 +162,7 @@ public class DownloadBlockTask extends Task {
 
         File tempDir = downloadInfo.getTempDir();
         tempFile = new File(tempDir, DOWNLOAD_PART + blockId);
-        try {
-            if (!tempDir.exists()) {
-                tempDir.mkdirs();
-            }
-            tempFile.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FileUtil.createNewFile(tempFile);
     }
 
     public long getCompletedSize() {

@@ -21,7 +21,7 @@ public class FileUtil {
             return false;
         }
         if (dirFile.isFile()) {
-            return dirFile.delete();
+            return deleteFile(dirFile);
         } else {
             File[] children = dirFile.listFiles();
             if (children != null) {
@@ -30,7 +30,7 @@ public class FileUtil {
                 }
             }
         }
-        return dirFile.delete();
+        return deleteFile(dirFile);
     }
 
     public static boolean renameTo(File source, File dest) {
@@ -62,6 +62,19 @@ public class FileUtil {
             closeQuietly(bufferedSource);
         }
 
+    }
+
+    public static boolean createNewFile(File file) {
+        File fileParent = file.getParentFile();
+        if (fileParent == null || !fileParent.exists() && !fileParent.mkdirs()) {
+            return false;
+        }
+        try {
+            return  file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     public static boolean rename(String filePathName, String newPathName) {

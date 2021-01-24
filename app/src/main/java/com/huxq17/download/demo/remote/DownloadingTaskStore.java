@@ -15,7 +15,7 @@ public class DownloadingTaskStore {
     private static final String FILE_NAME = "download_list_cf.txt";
 
     public static void storeDownloadingList(LinkedHashSet<String> downloadingList) {
-        File cf = new File(Util.getCachePath(DemoApplication.getInstance()), FILE_NAME);
+        File cf = new File(Util.getPumpCachePath(DemoApplication.getInstance()), FILE_NAME);
         ObjectOutputStream objectOutputStream = null;
         try {
             if (cf.exists() || cf.createNewFile()) {
@@ -31,7 +31,7 @@ public class DownloadingTaskStore {
 
     public static LinkedHashSet<String> restoreDownloadingList() {
         LinkedHashSet<String> result = null;
-        File cf = new File(Util.getCachePath(DemoApplication.getInstance()), FILE_NAME);
+        File cf = new File(Util.getPumpCachePath(DemoApplication.getInstance()), FILE_NAME);
         ObjectInputStream objectInputStream = null;
         try {
             if (cf.exists() || cf.createNewFile()) {

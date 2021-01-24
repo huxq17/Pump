@@ -1,12 +1,13 @@
 package com.huxq17.download.core;
 
+import android.net.Uri;
 import android.text.TextUtils;
 
 import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.core.task.DownloadTask;
-import com.huxq17.download.db.DBService;
 import com.huxq17.download.utils.FileUtil;
+import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.utils.Util;
 
 import java.io.File;
@@ -35,7 +36,7 @@ public class DownloadDetailsInfo {
     private ErrorCode errorCode;
     private File tempDir;
     private List<File> downloadPartFiles = new ArrayList<>();
-    private File downloadFile;
+    private PumpFile downloadFile;
     private DownloadTask downloadTask;
     private SpeedMonitor speedMonitor;
 
@@ -51,11 +52,35 @@ public class DownloadDetailsInfo {
     private String transferEncoding;
     private String md5;
 
+    private final Uri schemaUri;
+    private PumpFile.UriProvider uriProvider = new PumpFile.UriProvider() {
+        @Override
+        public Uri getUri() {
+            if (schemaUri != null) {
+                return schemaUri;
+            }
+            return downloadRequest != null ? downloadRequest.getUri() : null;
+        }
+
+        @Override
+        public void modifyFilePath(String filePath) {
+            if (filePath != null && !filePath.equals(DownloadDetailsInfo.this.filePath)) {
+                DownloadDetailsInfo.this.filePath = filePath;
+                deleteTempDir();
+            }
+        }
+    };
+
+
     public DownloadDetailsInfo(String url, String filePath) {
         this(url, filePath, null, url, System.currentTimeMillis());
     }
 
     public DownloadDetailsInfo(String url, String filePath, String tag, String id, long createTime) {
+        this(url, filePath, tag, id, createTime, null);
+    }
+
+    public DownloadDetailsInfo(String url, String filePath, String tag, String id, long createTime, Uri schemaUri) {
         this.url = url;
         if (TextUtils.isEmpty(id)) {
             this.id = url;
@@ -65,11 +90,11 @@ public class DownloadDetailsInfo {
         this.tag = tag;
         this.filePath = filePath;
         this.createTime = createTime;
+        this.schemaUri = schemaUri;
         if (filePath != null) {
-            downloadFile = new File(filePath);
+            downloadFile = new PumpFile(filePath, uriProvider);
         }
         speedMonitor = new SpeedMonitor();
-
     }
 
     public void setForceRetry(boolean isForceRetry) {
@@ -92,7 +117,8 @@ public class DownloadDetailsInfo {
         if (filePath != null && !filePath.equals(this.filePath)) {
             this.filePath = filePath;
             deleteTempDir();
-            downloadFile = new File(filePath);
+            downloadFile = new PumpFile(filePath, uriProvider);
+            LogUtil.e("setFilePath filePath="+filePath);
         }
     }
 
@@ -110,17 +136,6 @@ public class DownloadDetailsInfo {
 
     public void setDownloadRequest(DownloadRequest downloadRequest) {
         this.downloadRequest = downloadRequest;
-    }
-
-    public void updateFilePath(String filePath) {
-        if (filePath == null || filePath.isEmpty()) {
-            return;
-        }
-        synchronized (this) {
-            setFilePath(filePath);
-            deleteDownloadFile();
-            DBService.getInstance().updateInfo(this);
-        }
     }
 
     public boolean isDisableBreakPointDownload() {
@@ -204,8 +219,8 @@ public class DownloadDetailsInfo {
     }
 
     public File getTempDir() {
-        if (tempDir == null && this.filePath != null) {
-            tempDir = Util.getTempDir(this.filePath);
+        if (tempDir == null && this.url != null) {
+            tempDir = Util.getTempDir(this.url);
         }
         return tempDir;
     }
@@ -216,10 +231,10 @@ public class DownloadDetailsInfo {
                 return false;
             }
             if (this.finished == 1) {
-                if (contentLength > 0 && downloadFile.exists() && downloadFile.length() == contentLength) {
+                if (contentLength > 0 && downloadFile.length() == contentLength) {
                     return true;
-                } else if (downloadFile.exists()) {
-                    FileUtil.deleteFile(downloadFile);
+                } else {
+                    deleteDownloadFile();
                 }
             }
             this.finished = 0;
@@ -232,7 +247,7 @@ public class DownloadDetailsInfo {
      */
     private void loadDownloadFiles() {
         if (this.filePath == null) return;
-        File tempDir = Util.getTempDir(this.filePath);
+        getTempDir();
         tempDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -272,17 +287,18 @@ public class DownloadDetailsInfo {
                 errorCode, status, finished, progress, this);
     }
 
-    public File getDownloadFile() {
+    public PumpFile getDownloadFile() {
         return downloadFile;
     }
 
     public void deleteDownloadFile() {
         if (downloadFile != null) {
-            FileUtil.deleteFile(downloadFile);
+            downloadFile.delete();
         }
     }
 
     public void deleteTempDir() {
+        //TODO 要改成Android Q 的删除方式
         if (getTempDir() != null) {
             FileUtil.deleteDir(getTempDir());
         }
@@ -298,6 +314,13 @@ public class DownloadDetailsInfo {
 
     public String getUrl() {
         return url;
+    }
+
+    public Uri getSchemaUri() {
+        if (downloadRequest != null) {
+            return downloadRequest.getUri();
+        }
+        return null;
     }
 
     public String getId() {

@@ -117,7 +117,7 @@ public class DownloadManager implements IDownloadManager {
         if (downloadRequest != null) {
             submit(downloadRequest);
         } else {
-            DownloadRequest.newRequest(transferInfo.getUrl(), transferInfo.getFilePath()).submit();
+            DownloadRequest.newRequest(transferInfo.getUrl(), transferInfo.getFilePath(),transferInfo.getSchemaUri()).submit();
         }
     }
 
@@ -207,7 +207,7 @@ public class DownloadManager implements IDownloadManager {
     public File getFileIfSucceed(String id) {
         if (hasDownloadSucceed(id)) {
             DownloadDetailsInfo info = DBService.getInstance().getDownloadInfo(id);
-            return info.getDownloadFile();
+            return info.getDownloadFile().getFile();
         }
         return null;
     }

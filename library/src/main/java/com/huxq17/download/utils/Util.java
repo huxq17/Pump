@@ -7,14 +7,15 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.storage.StorageManager;
+import android.webkit.MimeTypeMap;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 
-import android.webkit.MimeTypeMap;
-
 import com.huxq17.download.DownloadProvider;
+import com.huxq17.download.core.DownloadDetailsInfo;
+import com.huxq17.download.core.PumpFile;
 import com.huxq17.download.core.task.DownloadTask;
 
 import java.io.Closeable;
@@ -29,6 +30,7 @@ import okhttp3.Response;
 
 public class Util {
     public static final String DOWNLOAD_PART = "DOWNLOAD_PART-";
+    public static final String PUMP_CACHE_DIRECTORY_SUB = "pump_cache" + File.separatorChar;
     public static final String BIN = "bin";
     public static final String TRANSFER_ENCODING_CHUNKED = "chunked";
     public static final int CONTENT_LENGTH_NOT_FOUND = -1;
@@ -51,31 +53,28 @@ public class Util {
         return ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
-    public static String getCachePath(Context context) {
-        File externalCacheDir = context.getExternalCacheDir();
+    public static String getPumpCachePath(Context context) {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            if (externalCacheDir != null) {
-                return externalCacheDir.getAbsolutePath();
-            } else {
-                if (hasStoragePermission(context)) {
-                    File cacheFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + context.getPackageName() + "/cache/");
-                    if (!cacheFile.exists()) {
-                        cacheFile.mkdirs();
-                    }
+            File cacheFile = context.getExternalFilesDir(PUMP_CACHE_DIRECTORY_SUB);
+            if (cacheFile != null) {
+                if (cacheFile.exists()) {
                     return cacheFile.getAbsolutePath();
                 } else {
-                    return context.getCacheDir().getAbsolutePath();
+                    if (cacheFile.mkdirs()) {
+                        return cacheFile.getAbsolutePath();
+                    }
                 }
             }
-        } else {
-            return context.getCacheDir().getAbsolutePath();
         }
+        File cacheFile = new File(context.getFilesDir(), PUMP_CACHE_DIRECTORY_SUB);
+        if (!cacheFile.exists()) {
+            cacheFile.mkdirs();
+        }
+        return cacheFile.getAbsolutePath();
     }
 
-    public static File getTempDir(String filePath) {
-        File file = new File(filePath);
-        File parentFile = file.getParentFile();
-        return new File(parentFile, "." + file.getName() + ".temp" + File.separatorChar);
+    public static File getTempDir(String url) {
+        return new File(getPumpCachePath(DownloadProvider.context), url.replace(File.separator, "_") + File.separatorChar);
     }
 
     public static long getUsableSpace(File file) {
@@ -250,11 +249,18 @@ public class Util {
                     Pattern.CASE_INSENSITIVE);
 
     public static void setFilePathIfNeed(DownloadTask downloadTask, Response response) {
-        if (downloadTask.getDownloadInfo().getFilePath() == null) {
+        DownloadDetailsInfo downloadDetailsInfo = downloadTask.getDownloadInfo();
+        PumpFile downloadFile = downloadDetailsInfo.getDownloadFile();
+        Uri schemaUri = downloadDetailsInfo.getSchemaUri();
+        //if download path is null or name is not set.
+        if (downloadFile == null || downloadFile.isDirectory()) {
+            String cachePath = Util.getPumpCachePath(DownloadProvider.context);
+            String parentDirectory = downloadFile == null ? cachePath :
+                    schemaUri == null ? cachePath : downloadFile.getPath();
             String contentDisposition = response.header("Content-Disposition");
             String contentType = response.header("Content-Type");
             String fileName = Util.guessFileName(response.request().url().toString(), contentDisposition, contentType);
-            downloadTask.getRequest().setFilePath(Util.getCachePath(DownloadProvider.context) + "/" + fileName);
+            downloadTask.getRequest().setFilePath(parentDirectory + File.separatorChar + fileName);
             downloadTask.updateInfo();
         }
     }

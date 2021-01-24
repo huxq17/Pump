@@ -46,15 +46,13 @@ public class DownloadInfoManager {
             id = url;
         }
         DownloadDetailsInfo downloadInfo = downloadInfoMap.get(id);
-        if (downloadInfo != null) {
-            return downloadInfo;
-        } else {
+        if (downloadInfo == null) {
             downloadInfo = new DownloadDetailsInfo(url, filePath, tag, id, createTime);
             if (addInMap) {
                 downloadInfoMap.put(id, downloadInfo);
             }
-            return downloadInfo;
         }
+        return downloadInfo;
     }
 
     public DownloadDetailsInfo createInfoByCursor(Cursor cursor) {

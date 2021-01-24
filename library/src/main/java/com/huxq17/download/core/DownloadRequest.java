@@ -1,11 +1,15 @@
 package com.huxq17.download.core;
 
 
+import android.net.Uri;
 import android.text.TextUtils;
 
 import com.huxq17.download.Pump;
 import com.huxq17.download.PumpFactory;
 import com.huxq17.download.core.service.IDownloadManager;
+import com.huxq17.download.utils.LogUtil;
+
+import java.io.File;
 
 import okhttp3.Request;
 
@@ -13,7 +17,7 @@ import okhttp3.Request;
 public final class DownloadRequest {
     private final String id;
     private final String url;
-    private final String filePath;
+    private String filePath;
     private final int threadNum;
     private final String tag;
     private final boolean forceReDownload;
@@ -26,6 +30,8 @@ public final class DownloadRequest {
     private final Request.Builder httpRequestBuilder;
 
     private DownloadDetailsInfo downloadInfo;
+
+    private final Uri uri;
 
 
     DownloadRequest(DownloadGenerator downloadGenerator) {
@@ -44,10 +50,23 @@ public final class DownloadRequest {
         if (httpRequestBuilder != null) {
             httpRequestBuilder.url(url);
         }
+        this.uri = downloadGenerator.uri;
+    }
+
+    public Uri getUri() {
+        return uri;
     }
 
     void setDownloadInfo(DownloadDetailsInfo downloadInfo) {
         this.downloadInfo = downloadInfo;
+        String oldFilePath = downloadInfo.getFilePath();
+        File downloadFile = new File(oldFilePath);
+        String temp = filePath;
+
+        if (filePath.endsWith(File.separator) && !oldFilePath.endsWith(File.separator)) {
+            filePath = filePath + downloadFile.getName();
+        }
+        LogUtil.e("request setDownloadInfo filePath="+temp+";oldFilePath="+oldFilePath+";newPath="+filePath);
         downloadInfo.setFilePath(filePath);
     }
 
@@ -117,8 +136,8 @@ public final class DownloadRequest {
         return httpRequestBuilder.build().newBuilder();
     }
 
-    public static DownloadGenerator newRequest(String url, String filePath) {
-        return new DownloadGenerator(url, filePath);
+    public static DownloadGenerator newRequest(String url, String filePath, Uri uri) {
+        return new DownloadGenerator(url, filePath, uri);
     }
 
     public static class DownloadGenerator {
@@ -136,15 +155,21 @@ public final class DownloadRequest {
         private DownloadTaskExecutor downloadTaskExecutor;
         private boolean disableBreakPointDownload;
         private Request.Builder httpRequestBuilder;
+        private final Uri uri;
 
-        public DownloadGenerator(String url, String filePath) {
+        public DownloadGenerator(String url, String filePath, Uri uri) {
             this.url = url;
             this.filePath = filePath;
+            this.uri = uri;
         }
 
         public DownloadGenerator setId(String id) {
             this.id = id;
             return this;
+        }
+
+        public Uri getUri() {
+            return uri;
         }
 
         public DownloadGenerator threadNum(int threadNum) {

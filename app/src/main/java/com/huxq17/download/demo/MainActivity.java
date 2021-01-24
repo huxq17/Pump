@@ -1,13 +1,15 @@
 package com.huxq17.download.demo;
 
 import android.app.ProgressDialog;
+import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.huxq17.download.Pump;
 import com.huxq17.download.core.DownloadListener;
@@ -16,7 +18,6 @@ import com.huxq17.download.demo.remote.RemoteDownloadListActivity;
 import com.huxq17.download.utils.LogUtil;
 
 import java.io.File;
-import java.net.URLEncoder;
 
 import okhttp3.Request;
 
@@ -100,19 +101,20 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.add_download_list).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File file1 = new File(getExternalCacheDir().getAbsolutePath(), "download1.apk");
-                Pump.newRequest(url, file1.getAbsolutePath())
+                Uri uri = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
+                Pump.newRequest(url, Environment.DIRECTORY_DOWNLOADS+"/bpump", null, uri)
                         .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
                         .forceReDownload(true)
+//                        .disableBreakPointDownload()
                         .submit();
-                Pump.newRequest(url4)
-                        .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
-                        .forceReDownload(true)
-                        .submit();
-                Pump.newRequest(url2)
-                        .tag(TAG)
-                        .forceReDownload(true)
-                        .submit();
+//                Pump.newRequest(url4)
+//                        .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
+//                        .forceReDownload(true)
+//                        .submit();
+//                Pump.newRequest(url2)
+//                        .tag(TAG)
+//                        .forceReDownload(true)
+//                        .submit();
             }
         });
 
