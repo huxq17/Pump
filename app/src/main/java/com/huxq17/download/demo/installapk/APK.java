@@ -17,7 +17,7 @@ public class APK {
     public static class APKBuilder {
         private Context context;
         private String apkPath;
-        private String uri;
+        private Uri uri;
         private boolean forceInstall;
 
         public APKBuilder(Context context) {
@@ -29,7 +29,7 @@ public class APK {
             return this;
         }
 
-        public APKBuilder fromUri(String apkUri) {
+        public APKBuilder from(Uri apkUri) {
             this.uri = apkUri;
             return this;
         }
@@ -41,15 +41,19 @@ public class APK {
 
         public void install() {
             Intent intent = new Intent(Intent.ACTION_VIEW);
-            File file = new File(apkPath);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Uri contentUri = this.uri;
+            if (contentUri == null) {
+                File file = new File(apkPath);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-                Uri contentUri = FileProvider.getUriForFile(context, context.getPackageName() + ".fileProvider-installApk", file);
-                intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
-            } else {
-                intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+                     contentUri = FileProvider.getUriForFile(context, context.getPackageName() + ".fileProvider-installApk", file);
+                } else {
+                    contentUri = Uri.fromFile(file);
+                }
             }
+            intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
+
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
         }

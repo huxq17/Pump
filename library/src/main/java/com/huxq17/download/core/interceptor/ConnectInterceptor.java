@@ -76,7 +76,7 @@ public class ConnectInterceptor implements DownloadInterceptor {
             }
             return downloadInfo.snapshot();
         }
-        Util.setFilePathIfNeed(downloadTask, response);
+        Util.modifyFilePathIfNeed(downloadTask, response);
 
         final String lastModified = conn.getHeader("Last-Modified");
         final String eTag = conn.getHeader("ETag");

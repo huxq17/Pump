@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -16,7 +15,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,7 +24,6 @@ import com.huxq17.download.core.DownloadListener;
 import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.utils.LogUtil;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 
@@ -222,9 +219,17 @@ public class DownloadListActivity extends AppCompatActivity {
                         Pump.pause(downloadInfo.getId());
                         break;
                     case FINISHED:
-                        APK.with(itemView.getContext())
-                                .from(downloadInfo.getFilePath())
-                                .install();
+                        Uri contentUri = downloadInfo.getContentUri();
+                        if(contentUri!=null){
+                            APK.with(itemView.getContext())
+                                    .from(contentUri)
+                                    .install();
+                        }else{
+                            APK.with(itemView.getContext())
+                                    .from(downloadInfo.getFilePath())
+                                    .install();
+                        }
+
 //                        Context context = v.getContext();
 //                        File videoFile = new File(downloadInfo.getFilePath());
 //                        Intent intent = new Intent(Intent.ACTION_VIEW);

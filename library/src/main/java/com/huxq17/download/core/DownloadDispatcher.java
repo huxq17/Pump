@@ -1,6 +1,7 @@
 package com.huxq17.download.core;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Environment;
 import android.text.format.Formatter;
 
@@ -144,17 +145,18 @@ public class DownloadDispatcher extends Task {
     }
 
     DownloadTask createTaskFromRequest(DownloadRequest downloadRequest) {
-        String url = downloadRequest.getUrl();
-        String id = downloadRequest.getId();
-        String tag = downloadRequest.getTag();
-        String filePath = downloadRequest.getFilePath();
         //TODO 后续要加上剩余存储空间size的校验
 //        if (!isUsableSpaceEnough(downloadRequest)) {
 //            return null;
 //        }
+        String url = downloadRequest.getUrl();
+        String id = downloadRequest.getId();
+        String tag = downloadRequest.getTag();
+        String filePath = downloadRequest.getFilePath();
+        Uri schemaUri = downloadRequest.getUri();
         DownloadDetailsInfo downloadInfo = downloadRequest.getDownloadInfo();
         if (downloadInfo == null) {
-            downloadInfo = createDownloadInfo(id, url, filePath, tag);
+            downloadInfo = createDownloadInfo(id, url, filePath, tag,schemaUri);
             downloadRequest.setDownloadInfo(downloadInfo);
         }
         if (downloadInfo.getFilePath() != null && downloadRequest.getFilePath() == null) {
@@ -181,7 +183,7 @@ public class DownloadDispatcher extends Task {
             String downloadFileAvailableSize = Formatter.formatFileSize(context, downloadDirUsableSpace);
             LogUtil.e("Data directory usable space is " + dataFileAvailableSize + " and download directory usable space is " + downloadFileAvailableSize);
             DownloadDetailsInfo downloadInfo = downloadInfoManager.createDownloadInfo(downloadRequest.getUrl(),
-                    filePath, downloadRequest.getTag(), downloadRequest.getId(), System.currentTimeMillis(), false);
+                    filePath, downloadRequest.getTag(), downloadRequest.getId(), System.currentTimeMillis(), downloadRequest.getUri(),false);
             downloadInfo.setErrorCode(ErrorCode.ERROR_USABLE_SPACE_NOT_ENOUGH);
             PumpFactory.getService(IMessageCenter.class).notifyProgressChanged(downloadInfo);
             return false;
@@ -193,13 +195,13 @@ public class DownloadDispatcher extends Task {
         return PumpFactory.getService(IDownloadConfigService.class).getMinUsableSpace();
     }
 
-    DownloadDetailsInfo createDownloadInfo(String id, String url, String filePath, String tag) {
+    DownloadDetailsInfo createDownloadInfo(String id, String url, String filePath, String tag,Uri schemaUri) {
         DownloadDetailsInfo downloadInfo = DBService.getInstance().getDownloadInfo(id);
         if (downloadInfo != null) {
             return downloadInfo;
         }
         //create a new instance if not found.
-        downloadInfo = downloadInfoManager.createDownloadInfo(url, filePath, tag, id, System.currentTimeMillis());
+        downloadInfo = downloadInfoManager.createDownloadInfo(url, filePath, tag, id, System.currentTimeMillis(),schemaUri);
         DBService.getInstance().updateInfo(downloadInfo);
         return downloadInfo;
     }

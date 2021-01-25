@@ -1,6 +1,8 @@
 package com.huxq17.download.core;
 
 
+import android.net.Uri;
+
 import com.huxq17.download.ErrorCode;
 
 import java.io.File;
@@ -74,6 +76,10 @@ public final class DownloadInfo {
 
     public String getUrl() {
         return url;
+    }
+
+    public Uri getContentUri() {
+        return downloadFile.getContentUri();
     }
 
     public String getFilePath() {

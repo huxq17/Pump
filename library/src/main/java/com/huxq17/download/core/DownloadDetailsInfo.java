@@ -53,17 +53,10 @@ public class DownloadDetailsInfo {
     private String md5;
 
     private final Uri schemaUri;
-    private PumpFile.UriProvider uriProvider = new PumpFile.UriProvider() {
-        @Override
-        public Uri getUri() {
-            if (schemaUri != null) {
-                return schemaUri;
-            }
-            return downloadRequest != null ? downloadRequest.getUri() : null;
-        }
+    private PumpFile.onPathChangedListener pathChangedListener = new PumpFile.onPathChangedListener() {
 
         @Override
-        public void modifyFilePath(String filePath) {
+        public void onPathChanged(String filePath) {
             if (filePath != null && !filePath.equals(DownloadDetailsInfo.this.filePath)) {
                 DownloadDetailsInfo.this.filePath = filePath;
                 deleteTempDir();
@@ -73,11 +66,7 @@ public class DownloadDetailsInfo {
 
 
     public DownloadDetailsInfo(String url, String filePath) {
-        this(url, filePath, null, url, System.currentTimeMillis());
-    }
-
-    public DownloadDetailsInfo(String url, String filePath, String tag, String id, long createTime) {
-        this(url, filePath, tag, id, createTime, null);
+        this(url, filePath, null, url, System.currentTimeMillis(), null);
     }
 
     public DownloadDetailsInfo(String url, String filePath, String tag, String id, long createTime, Uri schemaUri) {
@@ -92,7 +81,7 @@ public class DownloadDetailsInfo {
         this.createTime = createTime;
         this.schemaUri = schemaUri;
         if (filePath != null) {
-            downloadFile = new PumpFile(filePath, uriProvider);
+            createDownloadFile(filePath);
         }
         speedMonitor = new SpeedMonitor();
     }
@@ -114,12 +103,28 @@ public class DownloadDetailsInfo {
     }
 
     public void setFilePath(String filePath) {
-        if (filePath != null && !filePath.equals(this.filePath)) {
-            this.filePath = filePath;
-            deleteTempDir();
-            downloadFile = new PumpFile(filePath, uriProvider);
-            LogUtil.e("setFilePath filePath="+filePath);
+        if (filePath != null ) {
+            //if change directory, append the name.
+            if (filePath.endsWith(File.separator) && !this.filePath.endsWith(File.separator)) {
+                filePath = filePath + downloadFile.getName();
+            }
+            if(!filePath.equals(this.filePath)){
+                this.filePath = filePath;
+                createDownloadFile(filePath);
+                LogUtil.e("setFilePath filePath=" + filePath);
+            }
         }
+    }
+
+    private PumpFile createDownloadFile(String filePath) {
+        if (downloadFile == null) {
+            downloadFile = new PumpFile(filePath, schemaUri);
+            downloadFile.setPathChangedListener(pathChangedListener);
+        } else {
+            deleteDownloadFile();
+            downloadFile.setPath(filePath);
+        }
+        return downloadFile;
     }
 
     public void setDownloadTask(DownloadTask downloadTask) {

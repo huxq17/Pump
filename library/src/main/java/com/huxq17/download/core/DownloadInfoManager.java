@@ -1,6 +1,7 @@
 package com.huxq17.download.core;
 
 import android.database.Cursor;
+import android.net.Uri;
 
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,11 +35,11 @@ public class DownloadInfoManager {
         downloadInfoMap.clear();
     }
 
-    public DownloadDetailsInfo createDownloadInfo(String url, String filePath, String tag, String id, long createTime) {
-        return createDownloadInfo(url, filePath, tag, id, createTime, true);
+    public DownloadDetailsInfo createDownloadInfo(String url, String filePath, String tag, String id, long createTime, Uri schemaUri) {
+        return createDownloadInfo(url, filePath, tag, id, createTime, schemaUri, true);
     }
 
-    public DownloadDetailsInfo createDownloadInfo(String url, String filePath, String tag, String id, long createTime, boolean addInMap) {
+    public DownloadDetailsInfo createDownloadInfo(String url, String filePath, String tag, String id, long createTime, Uri schemaUri, boolean addInMap) {
         if (url == null || url.length() == 0) {
             throw new IllegalArgumentException("url==null or url.length()==0");
         }
@@ -47,7 +48,7 @@ public class DownloadInfoManager {
         }
         DownloadDetailsInfo downloadInfo = downloadInfoMap.get(id);
         if (downloadInfo == null) {
-            downloadInfo = new DownloadDetailsInfo(url, filePath, tag, id, createTime);
+            downloadInfo = new DownloadDetailsInfo(url, filePath, tag, id, createTime, schemaUri);
             if (addInMap) {
                 downloadInfoMap.put(id, downloadInfo);
             }
@@ -59,8 +60,9 @@ public class DownloadInfoManager {
         String id = cursor.getString(7);
         DownloadDetailsInfo info = downloadInfoMap.get(id);
         if (info == null) {
+            String uriString = cursor.getString(8);
             info = new DownloadDetailsInfo(cursor.getString(0), cursor.getString(1),
-                    cursor.getString(6),id, cursor.getLong(5));
+                    cursor.getString(6), id, cursor.getLong(5), uriString.isEmpty() ? null : Uri.parse(uriString));
             info.setThreadNum(cursor.getInt(2));
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));

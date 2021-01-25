@@ -29,15 +29,25 @@ import static com.huxq17.download.utils.Util.closeQuietly;
 public class PumpFile {
     private File file;
     private String filePath;
-    private final UriProvider uriProvider;
+    private onPathChangedListener pathChangedListener;
     private final ContentResolver contentResolver;
     private Uri contentUri;
+    private final Uri schemaUri;
 
-    public PumpFile(String filePath, UriProvider uriProvider) {
+    public PumpFile(String filePath, Uri schemaUri) {
         this.file = new File(filePath);
         this.filePath = filePath;
-        this.uriProvider = uriProvider;
+        this.schemaUri = schemaUri;
         contentResolver = DownloadProvider.context.getContentResolver();
+    }
+
+    public void setPath(String filePath) {
+        this.file = new File(filePath);
+        this.filePath = filePath;
+    }
+
+    public void setPathChangedListener(onPathChangedListener pathChangedListener) {
+        this.pathChangedListener = pathChangedListener;
     }
 
     public File getFile() {
@@ -53,21 +63,19 @@ public class PumpFile {
     }
 
     public String getName() {
-        return file.getName();
+        return isDirectory() ? "" : file.getName();
     }
 
     public String getParent() {
         return file.getParent();
     }
 
-    private Uri schemaUri;
-
     public Uri getSchemaUri() {
-        if (schemaUri == null) {
-            schemaUri = uriProvider.getUri();
-            return schemaUri;
-        }
         return schemaUri;
+    }
+
+    public Uri getContentUri() {
+        return contentUri;
     }
 
     public long length() {
@@ -84,7 +92,9 @@ public class PumpFile {
                     if (!name.equals(file.getName())) {
                         file = new File(path, name);
                         filePath = file.getPath();
-                        uriProvider.modifyFilePath(filePath);
+                        if (pathChangedListener != null) {
+                            pathChangedListener.onPathChanged(filePath);
+                        }
                     }
                 }
                 Util.closeQuietly(cursor);
@@ -99,18 +109,19 @@ public class PumpFile {
                     relativePath = relativePath + File.separator;
                 }
                 Cursor cursor = contentResolver.query(schemaUri,
-                        new String[]{MediaStore.MediaColumns.SIZE},
+                        new String[]{MediaStore.MediaColumns._ID, MediaStore.MediaColumns.SIZE},
                         selection,
                         new String[]{relativePath, file.getName()}, null);
                 if (cursor != null && cursor.moveToFirst()) {
                     length = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns.SIZE));
+                    contentUri = Uri.withAppendedPath(schemaUri, "" + cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID)));
                 }
                 Util.closeQuietly(cursor);
             }
         } else {
             length = file.length();
         }
-        LogUtil.e("length=" + length);
+        LogUtil.e("length=" + length+";contentUri="+contentUri);
         return length;
     }
 
@@ -120,9 +131,7 @@ public class PumpFile {
             contentValues.put(MediaStore.Files.FileColumns.DISPLAY_NAME, file.getName());
             contentValues.put(MediaStore.Files.FileColumns.RELATIVE_PATH, file.getParent());
             contentValues.put(MediaStore.Images.ImageColumns.IS_PENDING, 1);
-
             contentUri = contentResolver.insert(schemaUri, contentValues);
-            LogUtil.e("createNewFile schemaUri=" + schemaUri + ";contentUri=" + contentUri);
             return contentUri != null;
         } else {
             return FileUtil.createNewFile(file);
@@ -255,9 +264,7 @@ public class PumpFile {
         }
     }
 
-    interface UriProvider {
-        Uri getUri();
-
-        void modifyFilePath(String filePath);
+    interface onPathChangedListener {
+        void onPathChanged(String filePath);
     }
 }

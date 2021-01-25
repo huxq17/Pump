@@ -10,7 +10,7 @@ import com.huxq17.download.DownloadProvider;
 
 public class DBOpenHelper extends SQLiteOpenHelper {
     public DBOpenHelper(Context context) {
-        super(context, "pump.db", null, 5);
+        super(context, "pump.db", null, 6);
     }
 
     @Override
@@ -35,7 +35,8 @@ public class DBOpenHelper extends SQLiteOpenHelper {
                 + DownloadProvider.DownloadTable.FINISHED + " INTEGER,"
                 + DownloadProvider.DownloadTable.CREATE_TIME + " TIMESTAMP NOT NULL default (strftime('%s','now','localtime')*1000+(strftime('%f','now','localtime')-strftime('%S','now','localtime'))*1000),"
                 + DownloadProvider.DownloadTable.TAG + " CHAR,"
-                + DownloadProvider.DownloadTable.ID + " CHAR primary key);");
+                + DownloadProvider.DownloadTable.ID + " CHAR primary key,"
+                + DownloadProvider.DownloadTable.SCHEMA_URI + " CHAR);");
         db.execSQL("CREATE TABLE IF NOT EXISTS " + DownloadProvider.CacheTable.TABLE_NAME + " ("
                 + DownloadProvider.CacheTable.URL + " CHAR primary key,"
                 + DownloadProvider.CacheTable.ETAG + " CHAR,"
@@ -129,19 +130,29 @@ public class DBOpenHelper extends SQLiteOpenHelper {
         db.execSQL(String.format("DROP TABLE %s", tempTable));
     }
 
+    private void newVersion6(SQLiteDatabase db, int oldVersion) {
+        //add uri to support android Q download.
+        if (oldVersion < 5) {
+            newVersion5(db, oldVersion);
+        }
+        db.execSQL("ALTER TABLE " + DownloadProvider.DownloadTable.TABLE_NAME + " ADD COLUMN " + DownloadProvider.DownloadTable.SCHEMA_URI + " CHAR default('');");
+    }
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         if (oldVersion == 0) {
             onCreate(db);
         } else {
-            if (newVersion == 2) {
-                onCreate(db);
-            } else if (newVersion == 3) {
-                newVersion3(db, oldVersion);
-            } else if (newVersion == 4) {
-                newVersion4(db, oldVersion);
+            if (newVersion == 6) {
+                newVersion6(db, oldVersion);
             } else if (newVersion == 5) {
                 newVersion5(db, oldVersion);
+            } else if (newVersion == 4) {
+                newVersion4(db, oldVersion);
+            } else if (newVersion == 3) {
+                newVersion3(db, oldVersion);
+            } else if (newVersion == 2) {
+                onCreate(db);
             }
         }
     }

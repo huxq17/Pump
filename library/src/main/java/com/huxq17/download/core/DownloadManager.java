@@ -43,6 +43,7 @@ public class DownloadManager implements IDownloadManager {
         DownloadDetailsInfo downloadInfo = downloadInfoManager.get(id);
         if (downloadInfo != null) {
             downloadRequest.setDownloadInfo(downloadInfo);
+            downloadInfo.setFilePath(downloadRequest.getFilePath());
         }
         downloadDispatcher.enqueueRequest(downloadRequest);
     }

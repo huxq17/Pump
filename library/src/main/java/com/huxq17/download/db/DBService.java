@@ -74,6 +74,7 @@ public class DBService {
         contentValues.put(DownloadProvider.DownloadTable.TAG, downloadInfo.getTag());
         contentValues.put(DownloadProvider.DownloadTable.ID, downloadInfo.getId());
         contentValues.put(DownloadProvider.DownloadTable.CREATE_TIME, downloadInfo.getCreateTime());
+        contentValues.put(DownloadProvider.DownloadTable.SCHEMA_URI, downloadInfo.getSchemaUri() == null ? "" : downloadInfo.getSchemaUri().toString());
         db.replace(DownloadProvider.DownloadTable.TABLE_NAME, null, contentValues);
         closeDatabase();
     }
@@ -89,11 +90,11 @@ public class DBService {
         if (tag == null) {
             cursor = db.query(DownloadProvider.DownloadTable.TABLE_NAME, null,
                     null, null, null, null,
-                    DownloadProvider.DownloadTable.CREATE_TIME+" DESC", null);
+                    DownloadProvider.DownloadTable.CREATE_TIME + " DESC", null);
         } else {
             cursor = db.query(DownloadProvider.DownloadTable.TABLE_NAME, null,
                     DownloadProvider.DownloadTable.TAG + " = ?", new String[]{tag},
-                    null, null, DownloadProvider.DownloadTable.CREATE_TIME+" DESC", null);
+                    null, null, DownloadProvider.DownloadTable.CREATE_TIME + " DESC", null);
         }
         while (cursor.moveToNext()) {
             DownloadDetailsInfo info = downloadInfoManager.createInfoByCursor(cursor);

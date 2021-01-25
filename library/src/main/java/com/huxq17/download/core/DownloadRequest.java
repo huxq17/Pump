@@ -59,15 +59,6 @@ public final class DownloadRequest {
 
     void setDownloadInfo(DownloadDetailsInfo downloadInfo) {
         this.downloadInfo = downloadInfo;
-        String oldFilePath = downloadInfo.getFilePath();
-        File downloadFile = new File(oldFilePath);
-        String temp = filePath;
-
-        if (filePath.endsWith(File.separator) && !oldFilePath.endsWith(File.separator)) {
-            filePath = filePath + downloadFile.getName();
-        }
-        LogUtil.e("request setDownloadInfo filePath="+temp+";oldFilePath="+oldFilePath+";newPath="+filePath);
-        downloadInfo.setFilePath(filePath);
     }
 
     public int getRetryDelay() {
