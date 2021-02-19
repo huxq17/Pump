@@ -23,7 +23,6 @@ import static com.huxq17.download.utils.Util.TRANSFER_ENCODING_CHUNKED;
 public class DownloadDetailsInfo {
     private WeakReference<Object> wfExtraData;
     protected final String url;
-    private String filePath;
     protected final String id;
     private final String tag;
     private final long createTime;
@@ -53,17 +52,6 @@ public class DownloadDetailsInfo {
     private String md5;
 
     private final Uri schemaUri;
-    private PumpFile.onPathChangedListener pathChangedListener = new PumpFile.onPathChangedListener() {
-
-        @Override
-        public void onPathChanged(String filePath) {
-            if (filePath != null && !filePath.equals(DownloadDetailsInfo.this.filePath)) {
-                DownloadDetailsInfo.this.filePath = filePath;
-                deleteTempDir();
-            }
-        }
-    };
-
 
     public DownloadDetailsInfo(String url, String filePath) {
         this(url, filePath, null, url, System.currentTimeMillis(), null);
@@ -77,7 +65,6 @@ public class DownloadDetailsInfo {
             this.id = id;
         }
         this.tag = tag;
-        this.filePath = filePath;
         this.createTime = createTime;
         this.schemaUri = schemaUri;
         if (filePath != null) {
@@ -103,15 +90,14 @@ public class DownloadDetailsInfo {
     }
 
     public void setFilePath(String filePath) {
-        if (filePath != null ) {
+        String oldFilePath = getFilePath();
+        if (filePath != null) {
             //if change directory, append the name.
-            if (filePath.endsWith(File.separator) && !this.filePath.endsWith(File.separator)) {
+            if (filePath.endsWith(File.separator) && !oldFilePath.endsWith(File.separator)) {
                 filePath = filePath + downloadFile.getName();
             }
-            if(!filePath.equals(this.filePath)){
-                this.filePath = filePath;
+            if (!filePath.equals(oldFilePath)) {
                 createDownloadFile(filePath);
-                LogUtil.e("setFilePath filePath=" + filePath);
             }
         }
     }
@@ -119,7 +105,6 @@ public class DownloadDetailsInfo {
     private PumpFile createDownloadFile(String filePath) {
         if (downloadFile == null) {
             downloadFile = new PumpFile(filePath, schemaUri);
-            downloadFile.setPathChangedListener(pathChangedListener);
         } else {
             deleteDownloadFile();
             downloadFile.setPath(filePath);
@@ -251,7 +236,7 @@ public class DownloadDetailsInfo {
      * load completedSize if not finished.
      */
     private void loadDownloadFiles() {
-        if (this.filePath == null) return;
+        if (getFilePath() == null) return;
         getTempDir();
         tempDir.listFiles(new FilenameFilter() {
             @Override
@@ -310,7 +295,7 @@ public class DownloadDetailsInfo {
     }
 
     public String getFilePath() {
-        return filePath;
+        return downloadFile != null ? downloadFile.getPath() : null;
     }
 
     public String getName() {

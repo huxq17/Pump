@@ -53,7 +53,6 @@ public class APK {
                 }
             }
             intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
-
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
         }

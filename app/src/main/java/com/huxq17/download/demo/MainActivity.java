@@ -107,14 +107,14 @@ public class MainActivity extends AppCompatActivity {
                         .forceReDownload(true)
 //                        .disableBreakPointDownload()
                         .submit();
-//                Pump.newRequest(url4)
-//                        .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
-//                        .forceReDownload(true)
-//                        .submit();
-//                Pump.newRequest(url2)
-//                        .tag(TAG)
-//                        .forceReDownload(true)
-//                        .submit();
+                Pump.newRequest(url4)
+                        .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
+                        .forceReDownload(true)
+                        .submit();
+                Pump.newRequest(url2)
+                        .tag(TAG)
+                        .forceReDownload(true)
+                        .submit();
             }
         });
 

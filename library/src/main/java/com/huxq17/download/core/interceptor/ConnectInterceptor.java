@@ -1,6 +1,8 @@
 package com.huxq17.download.core.interceptor;
 
 import android.content.Context;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.text.format.Formatter;
@@ -13,6 +15,7 @@ import com.huxq17.download.core.DownloadDetailsInfo;
 import com.huxq17.download.core.DownloadInfo;
 import com.huxq17.download.core.DownloadInterceptor;
 import com.huxq17.download.core.DownloadRequest;
+import com.huxq17.download.core.PumpFile;
 import com.huxq17.download.core.connection.DownloadConnection;
 import com.huxq17.download.core.service.IDownloadConfigService;
 import com.huxq17.download.core.service.IDownloadManager;
@@ -42,6 +45,7 @@ public class ConnectInterceptor implements DownloadInterceptor {
     private DownloadBlockTask firstBlockTask = null;
     private final List<DownloadBlockTask> blockList = new ArrayList<>();
     private boolean isConditionRequest;
+    private DownloadConnection connection;
 
     private void deleteTempIfThreadNumChanged(DownloadDetailsInfo downloadInfo) {
         File tempDir = downloadInfo.getTempDir();
@@ -71,12 +75,13 @@ public class ConnectInterceptor implements DownloadInterceptor {
         Response response = connect(conn);
         if (response == null) {
             conn.close();
+            connection = null;
             if (!isCancelled()) {
                 downloadInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
             }
             return downloadInfo.snapshot();
         }
-        Util.modifyFilePathIfNeed(downloadTask, response);
+        prepareDownloadFile(downloadTask, response);
 
         final String lastModified = conn.getHeader("Last-Modified");
         final String eTag = conn.getHeader("ETag");
@@ -89,11 +94,11 @@ public class ConnectInterceptor implements DownloadInterceptor {
         if (response.isSuccessful()) {
             if (contentLength == CONTENT_LENGTH_NOT_FOUND && !downloadInfo.isChunked()) {
                 downloadInfo.setErrorCode(ERROR_CONTENT_LENGTH_NOT_FOUND);
-                return closeConnectionAndReturn(conn);
+                return closeConnectionAndReturn();
             }
             if (checkIsSpaceNotEnough(contentLength)) {
                 downloadInfo.setErrorCode(ErrorCode.ERROR_USABLE_SPACE_NOT_ENOUGH);
-                return closeConnectionAndReturn(conn);
+                return closeConnectionAndReturn();
             }
         } else if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
             if (downloadInfo.isFinished()) {
@@ -101,7 +106,7 @@ public class ConnectInterceptor implements DownloadInterceptor {
                 downloadInfo.setProgress(100);
                 downloadInfo.setStatus(DownloadInfo.Status.FINISHED);
                 downloadTask.updateInfo();
-                return closeConnectionAndReturn(conn);
+                return closeConnectionAndReturn();
             }
         } else {
             if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
@@ -109,7 +114,7 @@ public class ConnectInterceptor implements DownloadInterceptor {
             } else {
                 downloadInfo.setErrorCode(ErrorCode.ERROR_UNKNOWN_SERVER_ERROR);
             }
-            return closeConnectionAndReturn(conn);
+            return closeConnectionAndReturn();
         }
         if (responseCode == HttpURLConnection.HTTP_OK) {
             firstBlockTask.clearTemp();
@@ -153,6 +158,9 @@ public class ConnectInterceptor implements DownloadInterceptor {
     }
 
     public void cancel() {
+        if (connection != null) {
+            connection.cancel();
+        }
         synchronized (blockList) {
             for (Task task : blockList) {
                 task.cancel();
@@ -187,13 +195,13 @@ public class ConnectInterceptor implements DownloadInterceptor {
         }
         downloadInfo.setContentLength(contentLength);
         downloadInfo.setFinished(0);
-        downloadInfo.deleteDownloadFile();
         downloadTask.updateInfo();
     }
 
     private DownloadConnection buildRequest(DownloadRequest downloadRequest) {
         String id = downloadRequest.getId();
         DownloadConnection connection = createConnection(downloadRequest);
+        this.connection = connection;
         firstBlockTask = new DownloadBlockTask(downloadRequest, 0, connection);
         long completedSize = firstBlockTask.getCompletedSize();
         DownloadProvider.CacheBean cacheBean = DBService.getInstance().queryCache(id);
@@ -255,8 +263,9 @@ public class ConnectInterceptor implements DownloadInterceptor {
         return Thread.currentThread().isInterrupted();
     }
 
-    private DownloadInfo closeConnectionAndReturn(DownloadConnection connection) {
+    private DownloadInfo closeConnectionAndReturn() {
         connection.close();
+        connection = null;
         return downloadInfo.snapshot();
     }
 
@@ -265,4 +274,29 @@ public class ConnectInterceptor implements DownloadInterceptor {
                 .create(downloadRequest.getHttpRequestBuilder());
     }
 
+    private void prepareDownloadFile(DownloadTask downloadTask, Response response) {
+        DownloadDetailsInfo downloadDetailsInfo = downloadTask.getDownloadInfo();
+        PumpFile downloadFile = downloadDetailsInfo.getDownloadFile();
+        Uri schemaUri = downloadDetailsInfo.getSchemaUri();
+        String cachePath = Util.getPumpCachePath(DownloadProvider.context);
+        boolean shouldUseInternalStorageAboveQ = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                schemaUri == null && (downloadFile == null || !downloadFile.getPath().contains(cachePath));
+        //set download path if download path is null or name is absent.
+        if (downloadFile == null || downloadFile.isDirectory() || shouldUseInternalStorageAboveQ) {
+            String parentDirectory = shouldUseInternalStorageAboveQ ? cachePath :
+                    downloadFile != null ? downloadFile.getPath() : cachePath;
+            String fileName;
+            if (downloadFile == null || downloadFile.isDirectory()) {
+                String contentDisposition = response.header("Content-Disposition");
+                String contentType = response.header("Content-Type");
+                fileName = Util.guessFileName(response.request().url().toString(), contentDisposition, contentType);
+            } else {
+                fileName = downloadFile.getName();
+            }
+            downloadDetailsInfo.setFilePath(parentDirectory + File.separatorChar + fileName);
+        }
+        downloadDetailsInfo.deleteDownloadFile();
+        downloadDetailsInfo.getDownloadFile().createNewFile();
+        downloadTask.updateInfo();
+    }
 }

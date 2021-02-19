@@ -39,7 +39,6 @@ public class MergeFileInterceptor implements DownloadInterceptor {
             if (contentLength > 0 && completedSize == contentLength && downloadPartFiles != null
                     && downloadPartFiles.length == downloadInfo.getThreadNum()) {
                 PumpFile file = downloadInfo.getDownloadFile();
-                downloadInfo.deleteDownloadFile();
                 long startTime = System.currentTimeMillis();
                 boolean mergeSuccess = file.mergeFiles(downloadPartFiles);
 //                if (downloadPartFiles.length == 1) {

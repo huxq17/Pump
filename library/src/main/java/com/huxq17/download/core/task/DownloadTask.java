@@ -43,7 +43,6 @@ public class DownloadTask extends Task {
             if (downloadInfo.getCompletedSize() > 0 &&
                     downloadInfo.getCompletedSize() == downloadInfo.getContentLength()
                     && downloadRequest.isForceReDownload()) {
-                downloadInfo.deleteDownloadFile();
                 updateInfo();
             }
             notifyProgressChanged(downloadInfo);

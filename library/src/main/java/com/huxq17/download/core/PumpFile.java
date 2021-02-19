@@ -11,7 +11,6 @@ import androidx.annotation.RequiresApi;
 
 import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.utils.FileUtil;
-import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.utils.Util;
 
 import java.io.File;
@@ -29,7 +28,6 @@ import static com.huxq17.download.utils.Util.closeQuietly;
 public class PumpFile {
     private File file;
     private String filePath;
-    private onPathChangedListener pathChangedListener;
     private final ContentResolver contentResolver;
     private Uri contentUri;
     private final Uri schemaUri;
@@ -46,10 +44,6 @@ public class PumpFile {
         this.filePath = filePath;
     }
 
-    public void setPathChangedListener(onPathChangedListener pathChangedListener) {
-        this.pathChangedListener = pathChangedListener;
-    }
-
     public File getFile() {
         return file;
     }
@@ -59,7 +53,7 @@ public class PumpFile {
     }
 
     public String getPath() {
-        return file.getPath();
+        return filePath;
     }
 
     public String getName() {
@@ -83,19 +77,10 @@ public class PumpFile {
         if (getSchemaUri() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (contentUri != null) {
                 Cursor cursor = contentResolver.query(contentUri,
-                        new String[]{MediaStore.MediaColumns.RELATIVE_PATH, MediaStore.MediaColumns.DISPLAY_NAME, MediaStore.MediaColumns.SIZE},
+                        new String[]{MediaStore.MediaColumns.SIZE},
                         null, null, null);
                 if (cursor != null && cursor.moveToFirst()) {
                     length = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns.SIZE));
-                    String path = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.RELATIVE_PATH));
-                    String name = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME));
-                    if (!name.equals(file.getName())) {
-                        file = new File(path, name);
-                        filePath = file.getPath();
-                        if (pathChangedListener != null) {
-                            pathChangedListener.onPathChanged(filePath);
-                        }
-                    }
                 }
                 Util.closeQuietly(cursor);
             } else {
@@ -121,7 +106,6 @@ public class PumpFile {
         } else {
             length = file.length();
         }
-        LogUtil.e("length=" + length+";contentUri="+contentUri);
         return length;
     }
 
@@ -132,6 +116,21 @@ public class PumpFile {
             contentValues.put(MediaStore.Files.FileColumns.RELATIVE_PATH, file.getParent());
             contentValues.put(MediaStore.Images.ImageColumns.IS_PENDING, 1);
             contentUri = contentResolver.insert(schemaUri, contentValues);
+            //correct file name.
+            if (contentUri != null) {
+                Cursor cursor = contentResolver.query(contentUri,
+                        new String[]{MediaStore.MediaColumns.RELATIVE_PATH, MediaStore.MediaColumns.DISPLAY_NAME},
+                        null, null, null);
+                if (cursor != null && cursor.moveToFirst()) {
+                    String path = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.RELATIVE_PATH));
+                    String name = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME));
+                    if (!name.equals(file.getName())) {
+                        file = new File(path, name);
+                        filePath = file.getPath();
+                    }
+                }
+                Util.closeQuietly(cursor);
+            }
             return contentUri != null;
         } else {
             return FileUtil.createNewFile(file);
@@ -153,9 +152,7 @@ public class PumpFile {
             if (contentUri != null) {
                 int result = DownloadProvider.context.getContentResolver().delete(contentUri, null, null);
                 contentUri = null;
-                LogUtil.e("delete result=" + result);
-            } else {
-                LogUtil.e("delete but file not exist");
+                return result == 1;
             }
         }
         return FileUtil.deleteFile(file);
@@ -262,9 +259,5 @@ public class PumpFile {
         if (fileMediaStoreId != null) {
             contentUri = Uri.withAppendedPath(schemaUri, fileMediaStoreId.toString());
         }
-    }
-
-    interface onPathChangedListener {
-        void onPathChanged(String filePath);
     }
 }

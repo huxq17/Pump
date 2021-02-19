@@ -247,28 +247,4 @@ public class Util {
     private static final Pattern CONTENT_DISPOSITION_PATTERN =
             Pattern.compile("attachment;\\s*filename\\s*=\\s*(\"?)([^\"]*)\\1\\s*$",
                     Pattern.CASE_INSENSITIVE);
-
-    public static void modifyFilePathIfNeed(DownloadTask downloadTask, Response response) {
-        DownloadDetailsInfo downloadDetailsInfo = downloadTask.getDownloadInfo();
-        PumpFile downloadFile = downloadDetailsInfo.getDownloadFile();
-        Uri schemaUri = downloadDetailsInfo.getSchemaUri();
-        String cachePath = Util.getPumpCachePath(DownloadProvider.context);
-        boolean shouldUseInternalStorageAboveQ = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-                schemaUri == null && (downloadFile==null||!downloadFile.getPath().contains(cachePath));
-        //set download path if download path is null or name is not set.
-        if (downloadFile == null || downloadFile.isDirectory() || shouldUseInternalStorageAboveQ) {
-            String parentDirectory = shouldUseInternalStorageAboveQ ? cachePath :
-                    downloadFile != null ? downloadFile.getPath() : cachePath;
-            String fileName;
-            if (downloadFile == null || downloadFile.isDirectory()) {
-                String contentDisposition = response.header("Content-Disposition");
-                String contentType = response.header("Content-Type");
-                fileName = Util.guessFileName(response.request().url().toString(), contentDisposition, contentType);
-            } else {
-                fileName = downloadFile.getName();
-            }
-            downloadDetailsInfo.setFilePath(parentDirectory + File.separatorChar + fileName);
-            downloadTask.updateInfo();
-        }
-    }
 }
