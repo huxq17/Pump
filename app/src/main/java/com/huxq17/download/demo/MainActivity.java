@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Uri uri = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
-                Pump.newRequest(url, Environment.DIRECTORY_DOWNLOADS+"/bpump", null, uri)
+                Pump.newRequest(url, Environment.DIRECTORY_DOWNLOADS+"/aaapump", null, uri)
                         .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
                         .forceReDownload(true)
 //                        .disableBreakPointDownload()

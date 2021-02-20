@@ -35,12 +35,12 @@ public class SimpleDownloadTaskExecutor extends ThreadPoolExecutor implements Do
             throw new NullPointerException();
         }
         super.execute(downloadTask);
-        LogUtil.d("Task " + downloadTask.getName() + " is ready.");
+        LogUtil.d("Task " + downloadTask.getDownloadName() + " is ready.");
         if (getQueue().size() + getActiveCount() > getMaxDownloadNumber()) {
             String printName = getSafeName();
             LogUtil.w(printName + " only " + getMaxDownloadNumber()
                     + " tasks can be run at the same time;but " + getActiveCount()
-                    + " tasks have been run,so " + downloadTask.getName() + " is waiting.");
+                    + " tasks have been run,so " + downloadTask.getDownloadName() + " is waiting.");
         }
     }
 
@@ -62,17 +62,17 @@ public class SimpleDownloadTaskExecutor extends ThreadPoolExecutor implements Do
     protected final void beforeExecute(Thread t, Runnable r) {
         checkIsDownloadTask(r);
         DownloadTask downloadTask = (DownloadTask) r;
-        LogUtil.d("start run " + downloadTask.getName() + " at thread name=" + t.getName());
-        countTimeMap.put(downloadTask.getId(), System.currentTimeMillis());
+        LogUtil.d("start run " + downloadTask.getDownloadName() + " at thread name=" + t.getName());
+        countTimeMap.put(downloadTask.getDownloadId(), System.currentTimeMillis());
     }
 
     @Override
     protected final void afterExecute(Runnable r, Throwable t) {
         checkIsDownloadTask(r);
         DownloadTask downloadTask = (DownloadTask) r;
-        Long startTime = countTimeMap.remove(downloadTask.getId());
+        Long startTime = countTimeMap.remove(downloadTask.getDownloadId());
         if (startTime != null) {
-            LogUtil.d("download " + downloadTask.getName() + " is stopped,and spend=" + (System.currentTimeMillis() - startTime));
+            LogUtil.d("download " + downloadTask.getDownloadName() + " is stopped,and spend=" + (System.currentTimeMillis() - startTime));
         }
     }
 

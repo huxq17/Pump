@@ -5,15 +5,14 @@ import android.net.Uri;
 import android.os.Environment;
 import android.text.format.Formatter;
 
+import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.PumpFactory;
-import com.huxq17.download.TaskManager;
 import com.huxq17.download.core.service.IDownloadConfigService;
-import com.huxq17.download.core.task.DownloadTask;
-import com.huxq17.download.core.task.Task;
-import com.huxq17.download.db.DBService;
 import com.huxq17.download.core.service.IDownloadManager;
 import com.huxq17.download.core.service.IMessageCenter;
+import com.huxq17.download.core.task.DownloadTask;
+import com.huxq17.download.db.DBService;
 import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.utils.Util;
 
@@ -22,17 +21,15 @@ import java.util.HashSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 
-public class DownloadDispatcher extends Task {
+public class DownloadDispatcher extends Thread {
     private DownloadManager downloadManager;
-    private AtomicBoolean isRunning = new AtomicBoolean();
     private AtomicBoolean isCanceled = new AtomicBoolean();
     private final ConcurrentLinkedQueue<DownloadRequest> requestQueue = new ConcurrentLinkedQueue<>();
 
-    private Lock lock = new ReentrantLock();
+    private ReentrantLock lock = new ReentrantLock();
     private Condition consumer = lock.newCondition();
     private HashSet<DownloadTaskExecutor> downloadTaskExecutors = new HashSet<>(1);
     private DownloadTaskExecutor defaultTaskExecutor;
@@ -43,24 +40,22 @@ public class DownloadDispatcher extends Task {
     }
 
     public void start() {
-        if (isRunning.getAndSet(true)) {
+        if (isAlive()) {
             return;
         }
         isCanceled.getAndSet(false);
-        TaskManager.execute(this);
+        super.start();
         downloadInfoManager = DownloadInfoManager.getInstance();
         defaultTaskExecutor = new SimpleDownloadTaskExecutor();
     }
 
     void enqueueRequest(final DownloadRequest downloadRequest) {
         start();
-        if (isRunning()) {
-            if (!requestQueue.contains(downloadRequest)) {
-                requestQueue.add(downloadRequest);
-                signalConsumer();
-            } else {
-                printExistRequestWarning(downloadRequest);
-            }
+        if (!requestQueue.contains(downloadRequest)) {
+            requestQueue.add(downloadRequest);
+            signalConsumer();
+        } else {
+            printExistRequestWarning(downloadRequest);
         }
     }
 
@@ -89,18 +84,12 @@ public class DownloadDispatcher extends Task {
     }
 
     @Override
-    public void execute() {
+    public void run() {
         while (isRunnable()) {
             consumeRequest();
         }
-        isRunning.getAndSet(false);
     }
 
-    public boolean isRunning() {
-        return isRunning.get();
-    }
-
-    @Override
     public synchronized void cancel() {
         isCanceled.getAndSet(true);
         signalConsumer();
@@ -123,12 +112,12 @@ public class DownloadDispatcher extends Task {
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
-            lock.unlock();
+            unlockSafely();
         }
     }
 
     boolean isRunnable() {
-        return isRunning() && !isCanceled.get();
+        return isAlive() && !isCanceled.get();
     }
 
     void signalConsumer() {
@@ -136,6 +125,12 @@ public class DownloadDispatcher extends Task {
         try {
             consumer.signal();
         } finally {
+            unlockSafely();
+        }
+    }
+
+    private void unlockSafely(){
+        if(lock.isHeldByCurrentThread()){
             lock.unlock();
         }
     }
@@ -171,7 +166,7 @@ public class DownloadDispatcher extends Task {
         long downloadDirUsableSpace;
         String filePath = downloadRequest.getFilePath();
         if (filePath == null) {
-            downloadDirUsableSpace = Util.getUsableSpace(new File(Util.getPumpCachePath(PumpFactory.getService(IDownloadManager.class).getContext())));
+            downloadDirUsableSpace = Util.getUsableSpace(new File(Util.getPumpCachePath(DownloadProvider.context)));
         } else {
             downloadDirUsableSpace = Util.getUsableSpace(new File(filePath));
         }

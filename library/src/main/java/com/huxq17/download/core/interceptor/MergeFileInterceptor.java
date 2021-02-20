@@ -47,8 +47,8 @@ public class MergeFileInterceptor implements DownloadInterceptor {
 //                    mergeSuccess = FileUtil.mergeFiles(downloadPartFiles, file);
 //                }
 
-                downloadInfo.deleteTempDir();
                 if (mergeSuccess) {
+                    downloadInfo.deleteTempDir();
                     LogUtil.d("Merge " + downloadInfo.getName() + " spend=" +
                             (System.currentTimeMillis() - startTime) + "; file.length=" + file.length());
                     checkDownloadResult(contentLength, completedSize);

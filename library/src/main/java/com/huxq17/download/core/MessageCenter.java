@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class MessageCenter implements IMessageCenter {
     private Context context;
-    private ConcurrentLinkedQueue<DownloadListener> observers = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<DownloadListener> observers = new ConcurrentLinkedQueue<>();
     private Handler handler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(@NonNull Message msg) {

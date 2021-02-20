@@ -42,14 +42,14 @@ public class APK {
         public void install() {
             Intent intent = new Intent(Intent.ACTION_VIEW);
             Uri contentUri = this.uri;
-            if (contentUri == null) {
-                File file = new File(apkPath);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-                     contentUri = FileProvider.getUriForFile(context, context.getPackageName() + ".fileProvider-installApk", file);
-                } else {
-                    contentUri = Uri.fromFile(file);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                if (contentUri == null) {
+                    contentUri = FileProvider.getUriForFile(context, context.getPackageName() + ".fileProvider-installApk", new File(apkPath));
+                }
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            } else {
+                if (contentUri == null) {
+                    contentUri = Uri.fromFile(new File(apkPath));
                 }
             }
             intent.setDataAndType(contentUri, "application/vnd.android.package-archive");

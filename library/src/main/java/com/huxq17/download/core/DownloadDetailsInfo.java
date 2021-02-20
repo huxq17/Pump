@@ -310,7 +310,7 @@ public class DownloadDetailsInfo {
         if (downloadRequest != null) {
             return downloadRequest.getUri();
         }
-        return null;
+        return schemaUri;
     }
 
     public String getId() {

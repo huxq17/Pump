@@ -64,11 +64,11 @@ public class DownloadTask extends Task {
         return downloadRequest.getUrl();
     }
 
-    public String getId() {
+    public String getDownloadId() {
         return downloadRequest.getId();
     }
 
-    public String getName() {
+    public String getDownloadName() {
         String name = downloadRequest.getDownloadInfo().getName();
         if (TextUtils.isEmpty(name)) {
             name = downloadRequest.getName();
@@ -134,7 +134,7 @@ public class DownloadTask extends Task {
         return downloadInfo;
     }
 
-    public void pause() {
+    public void pauseDownload() {
         synchronized (lock) {
             if (isRunning()) {
                 downloadInfo.setStatus(DownloadInfo.Status.PAUSING);
@@ -144,7 +144,7 @@ public class DownloadTask extends Task {
         }
     }
 
-    public void stop() {
+    public void stopDownload() {
         synchronized (lock) {
             if (downloadInfo.getStatus().shouldStop()) {
                 downloadInfo.setStatus(DownloadInfo.Status.STOPPED);

@@ -111,6 +111,8 @@ public class DownloadBlockTask extends Task {
                     downloadInfo.setErrorCode(ErrorCode.ERROR_NETWORK_UNAVAILABLE);
                 }
             }
+        } else if (startPosition == endPosition) {
+            downloadTask.onDownload(0);
         } else if (startPosition > endPosition) {
             if (downloadInfo.getErrorCode() == null) {
                 downloadInfo.setForceRetry(true);

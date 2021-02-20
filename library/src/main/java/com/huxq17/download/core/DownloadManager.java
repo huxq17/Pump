@@ -90,7 +90,7 @@ public class DownloadManager implements IDownloadManager {
         checkId(id);
         DownloadTask downloadTask = getDownloadTaskById(id);
         if (downloadTask != null) {
-            downloadTask.stop();
+            downloadTask.stopDownload();
         }
     }
 
@@ -99,7 +99,7 @@ public class DownloadManager implements IDownloadManager {
         checkId(id);
         DownloadTask downloadTask = getDownloadTaskById(id);
         if (downloadTask != null) {
-            downloadTask.pause();
+            downloadTask.pauseDownload();
         }
     }
 
@@ -222,7 +222,7 @@ public class DownloadManager implements IDownloadManager {
     }
 
     public boolean isShutdown() {
-        return !downloadDispatcher.isRunning();
+        return !downloadDispatcher.isAlive();
     }
 
     @Override

@@ -114,7 +114,7 @@ public class PumpFile {
             ContentValues contentValues = new ContentValues();
             contentValues.put(MediaStore.Files.FileColumns.DISPLAY_NAME, file.getName());
             contentValues.put(MediaStore.Files.FileColumns.RELATIVE_PATH, file.getParent());
-            contentValues.put(MediaStore.Images.ImageColumns.IS_PENDING, 1);
+//            contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, 1);
             contentUri = contentResolver.insert(schemaUri, contentValues);
             //correct file name.
             if (contentUri != null) {
@@ -152,7 +152,7 @@ public class PumpFile {
             if (contentUri != null) {
                 int result = DownloadProvider.context.getContentResolver().delete(contentUri, null, null);
                 contentUri = null;
-                return result == 1;
+                return result==1;
             }
         }
         return FileUtil.deleteFile(file);

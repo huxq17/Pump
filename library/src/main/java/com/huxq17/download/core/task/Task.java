@@ -30,6 +30,10 @@ public abstract class Task implements Runnable {
         }
     }
 
+    public boolean isAlive() {
+        return currentThread != null && currentThread.isAlive();
+    }
+
     protected abstract void execute();
 
     protected boolean isCanceled() {
