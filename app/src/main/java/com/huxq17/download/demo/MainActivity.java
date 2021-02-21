@@ -102,19 +102,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Uri uri = MediaStore.Downloads.EXTERNAL_CONTENT_URI;
-                Pump.newRequest(url, Environment.DIRECTORY_DOWNLOADS+"/aaapump", null, uri)
+                Pump.newRequest(url, Environment.DIRECTORY_DOWNLOADS+"/abbcabcpump", null, uri)
                         .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
                         .forceReDownload(true)
 //                        .disableBreakPointDownload()
                         .submit();
-                Pump.newRequest(url4)
-                        .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
-                        .forceReDownload(true)
-                        .submit();
-                Pump.newRequest(url2)
-                        .tag(TAG)
-                        .forceReDownload(true)
-                        .submit();
+//                Pump.newRequest(url4)
+//                        .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
+//                        .forceReDownload(true)
+//                        .submit();
+//                Pump.newRequest(url2)
+//                        .tag(TAG)
+//                        .forceReDownload(true)
+//                        .submit();
             }
         });
 

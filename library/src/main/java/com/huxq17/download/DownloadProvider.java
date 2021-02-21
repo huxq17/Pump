@@ -38,6 +38,7 @@ public class DownloadProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
+
         context = getContext();
         DBService.init(context);
         DownloadManager downloadManager = ReflectUtil.newInstance(DownloadManager.class);

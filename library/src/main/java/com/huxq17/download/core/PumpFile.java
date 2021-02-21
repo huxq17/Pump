@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.provider.MediaStore;
 
 import androidx.annotation.RequiresApi;
@@ -76,9 +77,9 @@ public class PumpFile {
         long length = 0;
         if (getSchemaUri() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (contentUri != null) {
-                Cursor cursor = contentResolver.query(contentUri,
+                Cursor cursor = contentResolver.query(getQueryUri(contentUri),
                         new String[]{MediaStore.MediaColumns.SIZE},
-                        null, null, null);
+                        buildQueryBundle(null, null), null);
                 if (cursor != null && cursor.moveToFirst()) {
                     length = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns.SIZE));
                 }
@@ -93,10 +94,10 @@ public class PumpFile {
                 if (!relativePath.endsWith(File.separator)) {
                     relativePath = relativePath + File.separator;
                 }
-                Cursor cursor = contentResolver.query(schemaUri,
+                Cursor cursor = contentResolver.query(getQueryUri(schemaUri),
                         new String[]{MediaStore.MediaColumns._ID, MediaStore.MediaColumns.SIZE},
-                        selection,
-                        new String[]{relativePath, file.getName()}, null);
+                        buildQueryBundle(selection, new String[]{relativePath, file.getName()}),
+                        null);
                 if (cursor != null && cursor.moveToFirst()) {
                     length = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns.SIZE));
                     contentUri = Uri.withAppendedPath(schemaUri, "" + cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID)));
@@ -114,13 +115,13 @@ public class PumpFile {
             ContentValues contentValues = new ContentValues();
             contentValues.put(MediaStore.Files.FileColumns.DISPLAY_NAME, file.getName());
             contentValues.put(MediaStore.Files.FileColumns.RELATIVE_PATH, file.getParent());
-//            contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, 1);
+            contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, 1);
             contentUri = contentResolver.insert(schemaUri, contentValues);
             //correct file name.
             if (contentUri != null) {
-                Cursor cursor = contentResolver.query(contentUri,
+                Cursor cursor = contentResolver.query(getQueryUri(contentUri),
                         new String[]{MediaStore.MediaColumns.RELATIVE_PATH, MediaStore.MediaColumns.DISPLAY_NAME},
-                        null, null, null);
+                        buildQueryBundle(null, null), null);
                 if (cursor != null && cursor.moveToFirst()) {
                     String path = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.RELATIVE_PATH));
                     String name = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME));
@@ -149,11 +150,18 @@ public class PumpFile {
     public boolean delete() {
         if (getSchemaUri() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             queryFileContentUri();
+            int result = 0;
+            String selection = null;
+            String[] selectionArgs = null;
             if (contentUri != null) {
-                int result = DownloadProvider.context.getContentResolver().delete(contentUri, null, null);
-                contentUri = null;
-                return result==1;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    result = DownloadProvider.context.getContentResolver().delete(contentUri, buildQueryBundle(selection, selectionArgs));
+                } else {
+                    result = DownloadProvider.context.getContentResolver().delete(getQueryUri(contentUri), selection, selectionArgs);
+                }
             }
+            contentUri = null;
+            return result == 1;
         }
         return FileUtil.deleteFile(file);
     }
@@ -189,10 +197,13 @@ public class PumpFile {
             if (contentUri != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 ContentValues contentValues = new ContentValues();
                 contentValues.put(MediaStore.Downloads.IS_PENDING, 0);
-                contentResolver.update(contentUri, contentValues, null, null);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    contentResolver.update(contentUri, contentValues, buildQueryBundle(null, null));
+                } else {
+                    contentResolver.update(getQueryUri(contentUri), contentValues, null, null);
+                }
             }
         }
-
         return false;
     }
 
@@ -247,11 +258,9 @@ public class PumpFile {
         if (!relativePath.endsWith(File.separator)) {
             relativePath = relativePath + File.separator;
         }
-
-        Cursor cursor = contentResolver.query(schemaUri,
-                new String[]{MediaStore.MediaColumns._ID, queryPathKey, MediaStore.MediaColumns.DISPLAY_NAME/*, MediaStore.MediaColumns.SIZE*/},
-                selection,
-                new String[]{relativePath, file.getName()}, null);
+        String[] selectionArgs = new String[]{relativePath, file.getName()};
+        Cursor cursor = contentResolver.query(getQueryUri(schemaUri), new String[]{MediaStore.MediaColumns._ID, queryPathKey, MediaStore.MediaColumns.DISPLAY_NAME},
+                buildQueryBundle(selection, selectionArgs), null);
         if (cursor != null && cursor.moveToFirst()) {
             fileMediaStoreId = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
         }
@@ -259,5 +268,21 @@ public class PumpFile {
         if (fileMediaStoreId != null) {
             contentUri = Uri.withAppendedPath(schemaUri, fileMediaStoreId.toString());
         }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private Uri getQueryUri(Uri uri) {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.R ? MediaStore.setIncludePending(uri) : uri;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private Bundle buildQueryBundle(String selection, String[] selectionArgs) {
+        Bundle queryBundle = new Bundle();
+        queryBundle.putString(ContentResolver.QUERY_ARG_SQL_SELECTION, selection);
+        queryBundle.putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, selectionArgs);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            queryBundle.putInt(MediaStore.QUERY_ARG_MATCH_PENDING, MediaStore.MATCH_INCLUDE);
+        }
+        return queryBundle;
     }
 }
