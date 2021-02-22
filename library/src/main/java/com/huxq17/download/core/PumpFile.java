@@ -80,7 +80,7 @@ public class PumpFile {
     }
 
     public String getRealPath() {
-        if (getSchemaUri() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (shouldUseUri()) {
             queryFileContentUri();
             return pathAboveQ;
         } else {
@@ -90,7 +90,7 @@ public class PumpFile {
 
     public long length() {
         long length = 0;
-        if (getSchemaUri() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (shouldUseUri()) {
             if (contentUri != null) {
                 Cursor cursor = contentResolver.query(getQueryUri(contentUri),
                         new String[]{MediaStore.MediaColumns.SIZE},
@@ -130,7 +130,7 @@ public class PumpFile {
     }
 
     public boolean createNewFile(boolean isPending) {
-        if (getSchemaUri() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (shouldUseUri()) {
             ContentValues contentValues = new ContentValues();
             contentValues.put(MediaStore.Files.FileColumns.DISPLAY_NAME, file.getName());
             contentValues.put(MediaStore.Files.FileColumns.RELATIVE_PATH, file.getParent());
@@ -158,7 +158,7 @@ public class PumpFile {
     }
 
     public boolean exists() {
-        if (getSchemaUri() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (shouldUseUri()) {
             queryFileContentUri();
             return contentUri != null;
         } else {
@@ -167,7 +167,7 @@ public class PumpFile {
     }
 
     public boolean delete() {
-        if (getSchemaUri() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (shouldUseUri()) {
             queryFileContentUri();
             int result = 0;
             String selection = null;
@@ -255,7 +255,7 @@ public class PumpFile {
         if (!exists() && !createNewFile()) {
             return null;
         }
-        if (getSchemaUri() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        if (shouldUseUri()) {
             if (contentUri == null) {
                 return null;
             }
@@ -304,5 +304,9 @@ public class PumpFile {
             queryBundle.putInt(MediaStore.QUERY_ARG_MATCH_PENDING, MediaStore.MATCH_INCLUDE);
         }
         return queryBundle;
+    }
+
+    public boolean shouldUseUri(){
+        return getSchemaUri() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 }
