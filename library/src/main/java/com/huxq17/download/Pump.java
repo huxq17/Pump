@@ -47,7 +47,7 @@ public class Pump {
      * @param fileName  specify file name
      */
     public static DownloadRequest.DownloadGenerator newRequest(String url, String directory, String fileName) {
-        return newRequest(url, directory, null, null);
+        return newRequest(url, directory, fileName, null);
     }
 
     /**

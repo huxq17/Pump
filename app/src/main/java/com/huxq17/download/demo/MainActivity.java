@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     //http://www.httpwatch.com/httpgallery/chunked/chunkedimage.aspx
     String url4 = "http://v.nq6.com/xinqu.apk";
     //    String url5 = "http://t2.hddhhn.com/uploads/tu/201612/98/st93.png";
-    String url5 = "http://wap.apk.anzhi.com/data5/apk/202006/11/6fd0efef754daacf87fa72e3770f5927_82253600.apk";
+    String url5 = "http://wdj.anzhi.com/dl_app.php?s=2397021&channel=wandoujia";
     private ProgressDialog progressDialog;
     private final static String TAG = "groupA";
 
@@ -107,14 +107,14 @@ public class MainActivity extends AppCompatActivity {
                         .forceReDownload(true)
 //                        .disableBreakPointDownload()
                         .submit();
-//                Pump.newRequest(url4)
-//                        .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
-//                        .forceReDownload(true)
-//                        .submit();
-//                Pump.newRequest(url2)
-//                        .tag(TAG)
-//                        .forceReDownload(true)
-//                        .submit();
+                Pump.newRequest(url4)
+                        .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
+                        .forceReDownload(true)
+                        .submit();
+                Pump.newRequest(url2)
+                        .tag(TAG)
+                        .forceReDownload(true)
+                        .submit();
             }
         });
 

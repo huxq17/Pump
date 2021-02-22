@@ -288,7 +288,6 @@ public class DownloadDetailsInfo {
     }
 
     public void deleteTempDir() {
-        //TODO 要改成Android Q 的删除方式
         if (getTempDir() != null) {
             FileUtil.deleteDir(getTempDir());
         }

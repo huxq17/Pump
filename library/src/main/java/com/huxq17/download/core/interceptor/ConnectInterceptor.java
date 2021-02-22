@@ -175,11 +175,11 @@ public class ConnectInterceptor implements DownloadInterceptor {
     }
 
     private boolean checkIsSpaceNotEnough(long contentLength) {
+        Context context = PumpFactory.getService(IDownloadManager.class).getContext();
         long downloadDirUsableSpace = Util.getUsableSpace(downloadInfo.getTempDir());
-        long dataFileUsableSpace = Util.getUsableSpace(Environment.getDataDirectory());
+        long dataFileUsableSpace = Util.getUsableSpace(context.getFilesDir().getParentFile());
         long minUsableStorageSpace = PumpFactory.getService(IDownloadConfigService.class).getMinUsableSpace();
         if (downloadDirUsableSpace < contentLength * 2 || dataFileUsableSpace <= minUsableStorageSpace) {
-            Context context = PumpFactory.getService(IDownloadManager.class).getContext();
             String downloadFileAvailableSize = Formatter.formatFileSize(context, downloadDirUsableSpace);
             LogUtil.e("Download directory is" + downloadInfo.getTempDir() + " and usable space is " +
                     downloadFileAvailableSize + ";but download file's contentLength is " + contentLength);

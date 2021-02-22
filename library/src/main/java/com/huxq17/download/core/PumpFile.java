@@ -29,6 +29,7 @@ import static com.huxq17.download.utils.Util.closeQuietly;
 public class PumpFile {
     private File file;
     private String filePath;
+    private String pathAboveQ;
     private final ContentResolver contentResolver;
     private Uri contentUri;
     private final Uri schemaUri;
@@ -46,7 +47,12 @@ public class PumpFile {
     }
 
     public File getFile() {
-        return file;
+        if (getSchemaUri() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            queryFileContentUri();
+            return new File(pathAboveQ);
+        } else {
+            return file;
+        }
     }
 
     public boolean isDirectory() {
@@ -71,6 +77,15 @@ public class PumpFile {
 
     public Uri getContentUri() {
         return contentUri;
+    }
+
+    public String getRealPath() {
+        if (getSchemaUri() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            queryFileContentUri();
+            return pathAboveQ;
+        } else {
+            return filePath;
+        }
     }
 
     public long length() {
@@ -111,11 +126,15 @@ public class PumpFile {
     }
 
     public boolean createNewFile() {
+        return createNewFile(true);
+    }
+
+    public boolean createNewFile(boolean isPending) {
         if (getSchemaUri() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ContentValues contentValues = new ContentValues();
             contentValues.put(MediaStore.Files.FileColumns.DISPLAY_NAME, file.getName());
             contentValues.put(MediaStore.Files.FileColumns.RELATIVE_PATH, file.getParent());
-            contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, 1);
+            contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, isPending);
             contentUri = contentResolver.insert(schemaUri, contentValues);
             //correct file name.
             if (contentUri != null) {
@@ -259,10 +278,11 @@ public class PumpFile {
             relativePath = relativePath + File.separator;
         }
         String[] selectionArgs = new String[]{relativePath, file.getName()};
-        Cursor cursor = contentResolver.query(getQueryUri(schemaUri), new String[]{MediaStore.MediaColumns._ID, queryPathKey, MediaStore.MediaColumns.DISPLAY_NAME},
+        Cursor cursor = contentResolver.query(getQueryUri(schemaUri), new String[]{MediaStore.MediaColumns._ID, MediaStore.MediaColumns.DATA, queryPathKey, MediaStore.MediaColumns.DISPLAY_NAME},
                 buildQueryBundle(selection, selectionArgs), null);
         if (cursor != null && cursor.moveToFirst()) {
             fileMediaStoreId = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
+            pathAboveQ = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DATA));
         }
         Util.closeQuietly(cursor);
         if (fileMediaStoreId != null) {
