@@ -7,7 +7,6 @@ import com.huxq17.download.DownloadProvider;
 import com.huxq17.download.ErrorCode;
 import com.huxq17.download.core.task.DownloadTask;
 import com.huxq17.download.utils.FileUtil;
-import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.utils.Util;
 
 import java.io.File;
@@ -51,7 +50,7 @@ public class DownloadDetailsInfo {
     private String transferEncoding;
     private String md5;
 
-    private final Uri schemaUri;
+    private Uri schemaUri;
 
     public DownloadDetailsInfo(String url, String filePath) {
         this(url, filePath, null, url, System.currentTimeMillis(), null);
@@ -59,7 +58,7 @@ public class DownloadDetailsInfo {
 
     public DownloadDetailsInfo(String url, String filePath, String tag, String id, long createTime, Uri schemaUri) {
         this.url = url;
-        if (TextUtils.isEmpty(id)) {
+        if (TextUtils.isEmpty(id) || id == null) {
             this.id = url;
         } else {
             this.id = id;
@@ -68,7 +67,7 @@ public class DownloadDetailsInfo {
         this.createTime = createTime;
         this.schemaUri = schemaUri;
         if (filePath != null) {
-            createDownloadFile(filePath);
+            createDownloadFile(schemaUri, filePath);
         }
         speedMonitor = new SpeedMonitor();
     }
@@ -97,13 +96,14 @@ public class DownloadDetailsInfo {
                 filePath = filePath + downloadFile.getName();
             }
             if (!filePath.equals(oldFilePath)) {
-                createDownloadFile(filePath);
+                createDownloadFile(schemaUri, filePath);
             }
         }
     }
 
-    private PumpFile createDownloadFile(String filePath) {
-        if (downloadFile == null) {
+    private PumpFile createDownloadFile(Uri uri, String filePath) {
+        if (downloadFile == null || uri != schemaUri) {
+            schemaUri = uri;
             downloadFile = new PumpFile(filePath, schemaUri);
         } else {
             deleteDownloadFile();
@@ -111,6 +111,7 @@ public class DownloadDetailsInfo {
         }
         return downloadFile;
     }
+
 
     public void setDownloadTask(DownloadTask downloadTask) {
         this.downloadTask = downloadTask;
@@ -126,6 +127,12 @@ public class DownloadDetailsInfo {
 
     public void setDownloadRequest(DownloadRequest downloadRequest) {
         this.downloadRequest = downloadRequest;
+        setFilePath(downloadRequest.getFilePath());
+        Uri uri = downloadRequest.getUri();
+        if (schemaUri != uri) {
+            String filePath = getFilePath();
+            createDownloadFile(uri, filePath);
+        }
     }
 
     public boolean isDisableBreakPointDownload() {
@@ -210,7 +217,7 @@ public class DownloadDetailsInfo {
 
     public File getTempDir() {
         if (tempDir == null && this.url != null) {
-            tempDir = Util.getTempDir(this.url);
+            tempDir = Util.getTempDir(this.id + url.hashCode());
         }
         return tempDir;
     }

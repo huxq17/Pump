@@ -3,7 +3,6 @@ package com.huxq17.download.core.interceptor;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 
@@ -81,8 +80,10 @@ public class ConnectInterceptor implements DownloadInterceptor {
             }
             return downloadInfo.snapshot();
         }
-        prepareDownloadFile(downloadTask, response);
-
+        if(!prepareDownloadFile(downloadTask, response)){
+            downloadInfo.setErrorCode(ErrorCode.ERROR_CREATE_FILE_FAILED);
+            return downloadInfo.snapshot();
+        }
         final String lastModified = conn.getHeader("Last-Modified");
         final String eTag = conn.getHeader("ETag");
         final String acceptRanges = conn.getHeader("Accept-Ranges");
@@ -181,7 +182,7 @@ public class ConnectInterceptor implements DownloadInterceptor {
         long minUsableStorageSpace = PumpFactory.getService(IDownloadConfigService.class).getMinUsableSpace();
         if (downloadDirUsableSpace < contentLength * 2 || dataFileUsableSpace <= minUsableStorageSpace) {
             String downloadFileAvailableSize = Formatter.formatFileSize(context, downloadDirUsableSpace);
-            LogUtil.e("Download directory is" + downloadInfo.getTempDir() + " and usable space is " +
+            LogUtil.e("Download temp directory is" + downloadInfo.getTempDir() + " and usable space is " +
                     downloadFileAvailableSize + ";but download file's contentLength is " + contentLength);
             return true;
         }
@@ -274,7 +275,7 @@ public class ConnectInterceptor implements DownloadInterceptor {
                 .create(downloadRequest.getHttpRequestBuilder());
     }
 
-    private void prepareDownloadFile(DownloadTask downloadTask, Response response) {
+    private boolean prepareDownloadFile(DownloadTask downloadTask, Response response) {
         DownloadDetailsInfo downloadDetailsInfo = downloadTask.getDownloadInfo();
         PumpFile downloadFile = downloadDetailsInfo.getDownloadFile();
         Uri schemaUri = downloadDetailsInfo.getSchemaUri();
@@ -296,7 +297,8 @@ public class ConnectInterceptor implements DownloadInterceptor {
             downloadDetailsInfo.setFilePath(parentDirectory + File.separatorChar + fileName);
         }
         downloadDetailsInfo.deleteDownloadFile();
-        downloadDetailsInfo.getDownloadFile().createNewFile();
+        boolean createResult = downloadDetailsInfo.getDownloadFile().createNewFile();
         downloadTask.updateInfo();
+        return createResult;
     }
 }

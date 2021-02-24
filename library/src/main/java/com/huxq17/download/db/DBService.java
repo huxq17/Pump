@@ -74,7 +74,7 @@ public class DBService {
         contentValues.put(DownloadProvider.DownloadTable.TAG, downloadInfo.getTag());
         contentValues.put(DownloadProvider.DownloadTable.ID, downloadInfo.getId());
         contentValues.put(DownloadProvider.DownloadTable.CREATE_TIME, downloadInfo.getCreateTime());
-        contentValues.put(DownloadProvider.DownloadTable.SCHEMA_URI, downloadInfo.getSchemaUri() == null ? "" : downloadInfo.getSchemaUri().toString());
+        contentValues.put(DownloadProvider.DownloadTable.SCHEMA_URI, downloadInfo.getSchemaUri() == null ? null : downloadInfo.getSchemaUri().toString());
         db.replace(DownloadProvider.DownloadTable.TABLE_NAME, null, contentValues);
         closeDatabase();
     }

@@ -64,6 +64,7 @@ public class DownloadProvider extends ContentProvider {
         public static final String CREATE_TIME = "create_time";
         public static final String TAG = "tag";
         public static final String SCHEMA_URI = "schema_uri";
+        public static final String MIME_TYPE = "mime_type";
     }
 
     public static final class CacheTable {

@@ -43,7 +43,7 @@ public class DemoApplication extends Application {
 
         @Override
         public int getMaxDownloadNumber() {
-            return 1;
+            return 2;
         }
 
         @Override

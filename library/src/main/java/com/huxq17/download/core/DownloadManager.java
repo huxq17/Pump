@@ -40,11 +40,6 @@ public class DownloadManager implements IDownloadManager {
             LogUtil.e("task " + downloadRequest.getName() + " is running,we need do nothing.");
             return;
         }
-        DownloadDetailsInfo downloadInfo = downloadInfoManager.get(id);
-        if (downloadInfo != null) {
-            downloadRequest.setDownloadInfo(downloadInfo);
-            downloadInfo.setFilePath(downloadRequest.getFilePath());
-        }
         downloadDispatcher.enqueueRequest(downloadRequest);
     }
 
@@ -118,7 +113,8 @@ public class DownloadManager implements IDownloadManager {
         if (downloadRequest != null) {
             submit(downloadRequest);
         } else {
-            DownloadRequest.newRequest(transferInfo.getUrl(), transferInfo.getFilePath(),transferInfo.getSchemaUri()).submit();
+            DownloadRequest.newRequest(transferInfo.getUrl(), transferInfo.getFilePath(),transferInfo.getSchemaUri())
+                    .setId(transferInfo.getId()).submit();
         }
     }
 

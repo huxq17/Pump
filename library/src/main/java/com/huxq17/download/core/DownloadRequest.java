@@ -89,10 +89,6 @@ public final class DownloadRequest {
         return filePath;
     }
 
-    public void setFilePath(String filePath) {
-        downloadInfo.setFilePath(filePath);
-    }
-
     public int getThreadNum() {
         return Math.max(threadNum, 1);
     }

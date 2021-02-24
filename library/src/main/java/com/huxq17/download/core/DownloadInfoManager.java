@@ -60,9 +60,9 @@ public class DownloadInfoManager {
         String id = cursor.getString(7);
         DownloadDetailsInfo info = downloadInfoMap.get(id);
         if (info == null) {
-            String uriString = cursor.getString(8);
+            String uriString = cursor.getString(9);
             info = new DownloadDetailsInfo(cursor.getString(0), cursor.getString(1),
-                    cursor.getString(6), id, cursor.getLong(5), uriString.isEmpty() ? null : Uri.parse(uriString));
+                    cursor.getString(6), id, cursor.getLong(5), uriString == null ? null : Uri.parse(uriString));
             info.setThreadNum(cursor.getInt(2));
             info.setContentLength(cursor.getLong(3));
             info.setFinished(cursor.getShort(4));

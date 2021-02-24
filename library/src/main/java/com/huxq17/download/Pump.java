@@ -2,6 +2,8 @@ package com.huxq17.download;
 
 
 import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 
 import androidx.annotation.NonNull;
 
@@ -26,7 +28,7 @@ public class Pump {
      * @param url remote url
      */
     public static DownloadRequest.DownloadGenerator newRequest(String url) {
-        return newRequest(url, null, null);
+        return newRequest(url, null);
     }
 
     /**
@@ -36,7 +38,7 @@ public class Pump {
      * @param directory the directory that save download file or full path.
      */
     public static DownloadRequest.DownloadGenerator newRequest(String url, String directory) {
-        return newRequest(url, directory, null);
+        return newRequest(url, directory, null,null);
     }
 
     /**
@@ -54,12 +56,64 @@ public class Pump {
      * Create a new download request.
      *
      * @param url       remote url
+     * @param directory the directory that save download file or full path.
+     * @param uri       the storage uri like {@link MediaStore.Downloads#EXTERNAL_CONTENT_URI}
+     */
+    public static DownloadRequest.DownloadGenerator newRequest(String url, String directory, Uri uri) {
+        return newRequest(url, directory, null, uri);
+    }
+
+    /**
+     * Create a new download request.
+     *
+     * @param url       remote url
      * @param directory the directory that save download file
      * @param fileName  specify file name
+     * @param uri       the storage uri like {@link MediaStore.Downloads#EXTERNAL_CONTENT_URI}
      */
     public static DownloadRequest.DownloadGenerator newRequest(String url, String directory, String fileName, Uri uri) {
         String filePath = directory != null ? (directory + File.separator + (fileName == null ? "" : fileName)) : null;
         return DownloadRequest.newRequest(url, filePath, uri);
+    }
+
+    public static DownloadRequest.DownloadGenerator newRequestToDownload(String url, String directory) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            return newRequest(url, Environment.DIRECTORY_DOWNLOADS + directory, MediaStore.Downloads.EXTERNAL_CONTENT_URI);
+        } else {
+            String dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath()
+                    + (directory == null ? "" : directory);
+            return newRequest(url, dirPath);
+        }
+    }
+
+    public static DownloadRequest.DownloadGenerator newRequestToMusic(String url, String directory) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            return newRequest(url, Environment.DIRECTORY_MUSIC + directory, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+        } else {
+            String dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getAbsolutePath()
+                    + (directory == null ? "" : directory);
+            return newRequest(url, dirPath);
+        }
+    }
+
+    public static DownloadRequest.DownloadGenerator newRequestToPicture(String url, String directory) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            return newRequest(url, Environment.DIRECTORY_PICTURES + directory, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        } else {
+            String dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath()
+                    + (directory == null ? "" : directory);
+            return newRequest(url, dirPath);
+        }
+    }
+
+    public static DownloadRequest.DownloadGenerator newRequestToMovie(String url, String directory) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            return newRequest(url, Environment.DIRECTORY_MOVIES+ directory, MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
+        } else {
+            String dirPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES).getAbsolutePath()
+                    + (directory == null ? "" : directory);
+            return newRequest(url, dirPath);
+        }
     }
 
     /**

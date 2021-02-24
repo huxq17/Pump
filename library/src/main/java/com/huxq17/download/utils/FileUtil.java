@@ -70,7 +70,7 @@ public class FileUtil {
             return false;
         }
         try {
-            return  file.createNewFile();
+            return file.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
         }

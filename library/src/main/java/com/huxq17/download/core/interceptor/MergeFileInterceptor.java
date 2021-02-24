@@ -82,7 +82,7 @@ public class MergeFileInterceptor implements DownloadInterceptor {
         long downloadDirUsableSpace = Util.getUsableSpace(downloadFile.getFile());
         if (downloadDirUsableSpace < contentLength) {
             String downloadFileAvailableSize = Formatter.formatFileSize(context, downloadDirUsableSpace);
-            LogUtil.e("Merge file failed! Download directory is" + downloadInfo.getTempDir() + " and usable space is " +
+            LogUtil.e("Merge file failed! Download directory is" + downloadFile.getFile() + " and usable space is " +
                     downloadFileAvailableSize + ";but download file's contentLength is " + contentLength);
             return true;
         }

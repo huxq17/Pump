@@ -86,6 +86,10 @@ public final class DownloadInfo {
         return downloadFile != null ? downloadFile.getPath() : null;
     }
 
+    public PumpFile getDownloadFile(){
+        return downloadFile;
+    }
+
     public String getName() {
         return downloadFile == null ? "" : downloadFile.getName();
     }

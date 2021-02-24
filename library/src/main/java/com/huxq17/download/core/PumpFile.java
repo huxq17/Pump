@@ -49,7 +49,11 @@ public class PumpFile {
     public File getFile() {
         if (getSchemaUri() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             queryFileContentUri();
-            return new File(pathAboveQ);
+            if (pathAboveQ == null) {
+                return null;
+            } else {
+                return new File(pathAboveQ);
+            }
         } else {
             return file;
         }
@@ -93,10 +97,11 @@ public class PumpFile {
         if (shouldUseUri()) {
             if (contentUri != null) {
                 Cursor cursor = contentResolver.query(getQueryUri(contentUri),
-                        new String[]{MediaStore.MediaColumns.SIZE},
+                        new String[]{MediaStore.MediaColumns.SIZE, MediaStore.MediaColumns.DATA},
                         buildQueryBundle(null, null), null);
                 if (cursor != null && cursor.moveToFirst()) {
-                    length = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns.SIZE));
+                    length = cursor.getLong(cursor.getColumnIndex(MediaStore.MediaColumns.SIZE));
+                    pathAboveQ = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DATA));
                 }
                 Util.closeQuietly(cursor);
             } else {
@@ -110,11 +115,12 @@ public class PumpFile {
                     relativePath = relativePath + File.separator;
                 }
                 Cursor cursor = contentResolver.query(getQueryUri(schemaUri),
-                        new String[]{MediaStore.MediaColumns._ID, MediaStore.MediaColumns.SIZE},
+                        new String[]{MediaStore.MediaColumns._ID, MediaStore.MediaColumns.SIZE, MediaStore.MediaColumns.DATA},
                         buildQueryBundle(selection, new String[]{relativePath, file.getName()}),
                         null);
                 if (cursor != null && cursor.moveToFirst()) {
-                    length = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns.SIZE));
+                    length = cursor.getLong(cursor.getColumnIndex(MediaStore.MediaColumns.SIZE));
+                    pathAboveQ = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DATA));
                     contentUri = Uri.withAppendedPath(schemaUri, "" + cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID)));
                 }
                 Util.closeQuietly(cursor);
@@ -122,11 +128,14 @@ public class PumpFile {
         } else {
             length = file.length();
         }
+        if (length == 0 && pathAboveQ != null) {
+            length = new File(pathAboveQ).length();
+        }
         return length;
     }
 
     public boolean createNewFile() {
-        return createNewFile(true);
+        return createNewFile(false);
     }
 
     public boolean createNewFile(boolean isPending) {
@@ -134,16 +143,24 @@ public class PumpFile {
             ContentValues contentValues = new ContentValues();
             contentValues.put(MediaStore.Files.FileColumns.DISPLAY_NAME, file.getName());
             contentValues.put(MediaStore.Files.FileColumns.RELATIVE_PATH, file.getParent());
-            contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, isPending);
-            contentUri = contentResolver.insert(schemaUri, contentValues);
+            if (isPending) {
+                contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, 1);
+            }
+            try {
+                contentUri = contentResolver.insert(schemaUri, contentValues);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return false;
+            }
             //correct file name.
             if (contentUri != null) {
                 Cursor cursor = contentResolver.query(getQueryUri(contentUri),
-                        new String[]{MediaStore.MediaColumns.RELATIVE_PATH, MediaStore.MediaColumns.DISPLAY_NAME},
+                        new String[]{MediaStore.MediaColumns.RELATIVE_PATH, MediaStore.MediaColumns.DISPLAY_NAME, MediaStore.MediaColumns.DATA},
                         buildQueryBundle(null, null), null);
                 if (cursor != null && cursor.moveToFirst()) {
                     String path = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.RELATIVE_PATH));
                     String name = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME));
+                    pathAboveQ = cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DATA));
                     if (!name.equals(file.getName())) {
                         file = new File(path, name);
                         filePath = file.getPath();
@@ -159,6 +176,7 @@ public class PumpFile {
 
     public boolean exists() {
         if (shouldUseUri()) {
+            contentUri = null;
             queryFileContentUri();
             return contentUri != null;
         } else {
@@ -168,16 +186,21 @@ public class PumpFile {
 
     public boolean delete() {
         if (shouldUseUri()) {
-            queryFileContentUri();
-            int result = 0;
-            String selection = null;
-            String[] selectionArgs = null;
-            if (contentUri != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    result = DownloadProvider.context.getContentResolver().delete(contentUri, buildQueryBundle(selection, selectionArgs));
-                } else {
-                    result = DownloadProvider.context.getContentResolver().delete(getQueryUri(contentUri), selection, selectionArgs);
-                }
+            int result;
+            String queryPathKey = MediaStore.MediaColumns.RELATIVE_PATH;
+            String selection = queryPathKey + "=? and " + MediaStore.MediaColumns.DISPLAY_NAME + "=?";
+            String relativePath = file.getParent();
+            if (relativePath == null) {
+                throw new IllegalArgumentException("relativePath is null.");
+            }
+            if (!relativePath.endsWith(File.separator)) {
+                relativePath = relativePath + File.separator;
+            }
+            String[] selectionArgs = new String[]{relativePath, file.getName()};
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                result = DownloadProvider.context.getContentResolver().delete(schemaUri, buildQueryBundle(selection, selectionArgs));
+            } else {
+                result = DownloadProvider.context.getContentResolver().delete(getQueryUri(schemaUri), selection, selectionArgs);
             }
             contentUri = null;
             return result == 1;
@@ -306,7 +329,7 @@ public class PumpFile {
         return queryBundle;
     }
 
-    public boolean shouldUseUri(){
+    public boolean shouldUseUri() {
         return getSchemaUri() != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 }

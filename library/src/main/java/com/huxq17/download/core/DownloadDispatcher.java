@@ -2,8 +2,6 @@ package com.huxq17.download.core;
 
 import android.content.Context;
 import android.net.Uri;
-import android.os.Build;
-import android.os.storage.StorageManager;
 import android.text.format.Formatter;
 
 import com.huxq17.download.DownloadProvider;
@@ -16,10 +14,7 @@ import com.huxq17.download.db.DBService;
 import com.huxq17.download.utils.LogUtil;
 import com.huxq17.download.utils.Util;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -153,11 +148,8 @@ public class DownloadDispatcher extends Thread {
         DownloadDetailsInfo downloadInfo = downloadRequest.getDownloadInfo();
         if (downloadInfo == null) {
             downloadInfo = createDownloadInfo(id, url, filePath, tag, schemaUri);
-            downloadRequest.setDownloadInfo(downloadInfo);
         }
-        if (downloadInfo.getFilePath() != null && downloadRequest.getFilePath() == null) {
-            downloadRequest.setFilePath(downloadInfo.getFilePath());
-        }
+        downloadRequest.setDownloadInfo(downloadInfo);
         downloadInfo.setDownloadRequest(downloadRequest);
         downloadInfo.setStatus(DownloadInfo.Status.STOPPED);
         return new DownloadTask(downloadRequest);
@@ -170,7 +162,7 @@ public class DownloadDispatcher extends Thread {
         long minUsableStorageSpace = getMinUsableStorageSpace();
         if (dataFileUsableSpace <= minUsableStorageSpace) {
             String dataFileAvailableSize = Formatter.formatFileSize(context, dataFileUsableSpace);
-            LogUtil.e("Data directory usable space [" + dataFileAvailableSize+"] and less than minUsableStorageSpace["+Formatter.formatFileSize(context, minUsableStorageSpace));
+            LogUtil.e("Data directory usable space [" + dataFileAvailableSize + "] and less than minUsableStorageSpace[" + Formatter.formatFileSize(context, minUsableStorageSpace));
             DownloadDetailsInfo downloadInfo = downloadInfoManager.createDownloadInfo(downloadRequest.getUrl(),
                     filePath, downloadRequest.getTag(), downloadRequest.getId(), System.currentTimeMillis(), downloadRequest.getUri(), false);
             downloadInfo.setErrorCode(ErrorCode.ERROR_USABLE_SPACE_NOT_ENOUGH);
@@ -186,11 +178,10 @@ public class DownloadDispatcher extends Thread {
 
     DownloadDetailsInfo createDownloadInfo(String id, String url, String filePath, String tag, Uri schemaUri) {
         DownloadDetailsInfo downloadInfo = DBService.getInstance().getDownloadInfo(id);
-        if (downloadInfo != null) {
-            return downloadInfo;
+        if (downloadInfo == null) {
+            //create a new instance if not found.
+            downloadInfo = downloadInfoManager.createDownloadInfo(url, filePath, tag, id, System.currentTimeMillis(), schemaUri);
         }
-        //create a new instance if not found.
-        downloadInfo = downloadInfoManager.createDownloadInfo(url, filePath, tag, id, System.currentTimeMillis(), schemaUri);
         DBService.getInstance().updateInfo(downloadInfo);
         return downloadInfo;
     }
