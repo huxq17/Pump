@@ -10,7 +10,7 @@ import com.huxq17.download.DownloadProvider;
 
 public class DBOpenHelper extends SQLiteOpenHelper {
     public DBOpenHelper(Context context) {
-        super(context, "pump.db", null, 6);
+        super(context, "pump.db", null, 7);
     }
 
     @Override
@@ -36,8 +36,8 @@ public class DBOpenHelper extends SQLiteOpenHelper {
                 + DownloadProvider.DownloadTable.CREATE_TIME + " TIMESTAMP NOT NULL default (strftime('%s','now','localtime')*1000+(strftime('%f','now','localtime')-strftime('%S','now','localtime'))*1000),"
                 + DownloadProvider.DownloadTable.TAG + " CHAR,"
                 + DownloadProvider.DownloadTable.ID + " CHAR primary key,"
-                + DownloadProvider.DownloadTable.MIME_TYPE + " CHAR,"
-                + DownloadProvider.DownloadTable.SCHEMA_URI + " CHAR);");
+                + DownloadProvider.DownloadTable.SCHEMA_URI + " CHAR,"
+                + DownloadProvider.DownloadTable.MIME_TYPE + " CHAR);");
         db.execSQL("CREATE TABLE IF NOT EXISTS " + DownloadProvider.CacheTable.TABLE_NAME + " ("
                 + DownloadProvider.CacheTable.URL + " CHAR primary key,"
                 + DownloadProvider.CacheTable.ETAG + " CHAR,"
@@ -136,8 +136,8 @@ public class DBOpenHelper extends SQLiteOpenHelper {
         if (oldVersion < 5) {
             newVersion5(db, oldVersion);
         }
-        db.execSQL("ALTER TABLE " + DownloadProvider.DownloadTable.TABLE_NAME + " ADD COLUMN " + DownloadProvider.DownloadTable.MIME_TYPE + " CHAR;");
         db.execSQL("ALTER TABLE " + DownloadProvider.DownloadTable.TABLE_NAME + " ADD COLUMN " + DownloadProvider.DownloadTable.SCHEMA_URI + " CHAR;");
+        db.execSQL("ALTER TABLE " + DownloadProvider.DownloadTable.TABLE_NAME + " ADD COLUMN " + DownloadProvider.DownloadTable.MIME_TYPE + " CHAR;");
     }
 
 

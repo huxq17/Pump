@@ -24,6 +24,8 @@ import com.huxq17.download.core.DownloadListener;
 import com.huxq17.download.demo.installapk.APK;
 import com.huxq17.download.utils.LogUtil;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -51,7 +53,7 @@ public class DownloadListActivity extends AppCompatActivity {
         @Override
         public void onFailed() {
             super.onFailed();
-            LogUtil.e("onFailed code=" + getDownloadInfo().getErrorCode());
+            LogUtil.e("onFailed id=" + getDownloadInfo().getId() + ";code=" + getDownloadInfo().getErrorCode());
         }
     };
     private final HashMap<DownloadViewHolder, DownloadInfo> map = new HashMap<>();
@@ -69,7 +71,9 @@ public class DownloadListActivity extends AppCompatActivity {
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         //Get all download list.
         downloadInfoList = TextUtils.isEmpty(tag) ? Pump.getAllDownloadList() : Pump.getDownloadListByTag(tag);
-
+        for (DownloadInfo downloadInfo : downloadInfoList) {
+            LogUtil.e("id="+downloadInfo.getId()+";createTime="+downloadInfo.getCreateTime());
+        }
         //Sort download list if need，default sort by createTime DESC
 //        Collections.sort(downloadInfoList, new Comparator<DownloadInfo>() {
 //            @Override
@@ -134,6 +138,7 @@ public class DownloadListActivity extends AppCompatActivity {
         TextView tvName;
         TextView tvStatus;
         TextView tvSpeed;
+        TextView tvCreateTime;
         TextView tvDownload;
         DownloadInfo downloadInfo;
         DownloadInfo.Status status;
@@ -146,6 +151,7 @@ public class DownloadListActivity extends AppCompatActivity {
             tvStatus = itemView.findViewById(R.id.bt_status);
             tvSpeed = itemView.findViewById(R.id.tv_speed);
             tvDownload = itemView.findViewById(R.id.tv_download);
+            tvCreateTime = itemView.findViewById(R.id.tvCreateTime);
             tvStatus.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
             dialog = new AlertDialog.Builder(itemView.getContext())
@@ -173,6 +179,10 @@ public class DownloadListActivity extends AppCompatActivity {
             String speed = "";
             int progress = downloadInfo.getProgress();
             progressBar.setProgress(progress);
+
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss.sss");
+            String createTime =format.format(new Date(downloadInfo.getCreateTime()));
+            tvCreateTime.setText(createTime);
             switch (status) {
                 case STOPPED:
                     tvStatus.setText("Start");
@@ -220,11 +230,11 @@ public class DownloadListActivity extends AppCompatActivity {
                         break;
                     case FINISHED:
                         Uri contentUri = downloadInfo.getContentUri();
-                        if(contentUri!=null){
+                        if (contentUri != null) {
                             APK.with(itemView.getContext())
                                     .from(contentUri)
                                     .install();
-                        }else{
+                        } else {
                             APK.with(itemView.getContext())
                                     .from(downloadInfo.getFilePath())
                                     .install();

@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
                 .forceReDownload(true)
 //                        .disableBreakPointDownload()
                 .submit();
-        Pump.newRequestToMovie(url4, "/ababapump")
+        Pump.newRequestToMovie(url4, "/ababapump/movie")
                 .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
                 .forceReDownload(true)
                 .submit();
@@ -137,12 +137,12 @@ public class MainActivity extends AppCompatActivity {
                 .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
                 .forceReDownload(true)
                 .submit();
-        Pump.newRequestToPicture(url4, "/ababapump")
+        Pump.newRequestToPicture(url4, "/ababapump/picture")
                 .setId(url4+"23")
                 .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
                 .forceReDownload(true)
                 .submit();
-        Pump.newRequestToMusic(url4, "/ababapump")
+        Pump.newRequestToMusic(url4, "/ababapump/music")
                 .setId(url4+"45")
                 .setDownloadTaskExecutor(DemoApplication.getInstance().musicDownloadDispatcher)
                 .forceReDownload(true)

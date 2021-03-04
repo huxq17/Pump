@@ -3,6 +3,8 @@ package com.huxq17.download.core;
 import android.database.Cursor;
 import android.net.Uri;
 
+import com.huxq17.download.DownloadProvider;
+
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -60,12 +62,17 @@ public class DownloadInfoManager {
         String id = cursor.getString(7);
         DownloadDetailsInfo info = downloadInfoMap.get(id);
         if (info == null) {
-            String uriString = cursor.getString(9);
-            info = new DownloadDetailsInfo(cursor.getString(0), cursor.getString(1),
-                    cursor.getString(6), id, cursor.getLong(5), uriString == null ? null : Uri.parse(uriString));
-            info.setThreadNum(cursor.getInt(2));
-            info.setContentLength(cursor.getLong(3));
-            info.setFinished(cursor.getShort(4));
+            String uriString = cursor.getString(cursor.getColumnIndex(DownloadProvider.DownloadTable.SCHEMA_URI));
+
+            info = new DownloadDetailsInfo(cursor.getString(cursor.getColumnIndex(DownloadProvider.DownloadTable.URL)),
+                    cursor.getString(cursor.getColumnIndex(DownloadProvider.DownloadTable.PATH)),
+                    cursor.getString(cursor.getColumnIndex(DownloadProvider.DownloadTable.TAG)),
+                    id,
+                    cursor.getLong(cursor.getColumnIndex(DownloadProvider.DownloadTable.CREATE_TIME)),
+                    uriString == null || uriString.isEmpty() ? null : Uri.parse(uriString));
+            info.setThreadNum(cursor.getInt(cursor.getColumnIndex(DownloadProvider.DownloadTable.THREAD_NUM)));
+            info.setContentLength(cursor.getLong(cursor.getColumnIndex(DownloadProvider.DownloadTable.FILE_LENGTH)));
+            info.setFinished(cursor.getShort(cursor.getColumnIndex(DownloadProvider.DownloadTable.FINISHED)));
             info.calculateDownloadProgress();
             downloadInfoMap.put(id, info);
         }
